@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navigation = [
@@ -22,7 +22,11 @@ export default function Navbar() {
       <div className="container">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold text-primary">Can2Curb</span>
+            <img 
+              src="/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png" 
+              alt="Can2Curb Logo" 
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -32,9 +36,17 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))}
-            <Link to="/login" className="btn-primary !py-2">
-              Log In
-            </Link>
+            <div className="flex space-x-4">
+              <Link to="/customer/login" className="btn-primary !py-2">
+                Customer Login
+              </Link>
+              <Link to="/employee/login" className="nav-link">
+                Employee
+              </Link>
+              <Link to="/admin/login" className="nav-link">
+                Admin
+              </Link>
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -72,11 +84,25 @@ export default function Navbar() {
                 </Link>
               ))}
               <Link
-                to="/login"
-                className="block btn-primary text-center !py-2"
+                to="/customer/login"
+                className="block btn-primary text-center !py-2 mb-2"
                 onClick={() => setIsOpen(false)}
               >
-                Log In
+                Customer Login
+              </Link>
+              <Link
+                to="/employee/login"
+                className="block nav-link py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Employee Login
+              </Link>
+              <Link
+                to="/admin/login"
+                className="block nav-link py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Admin Login
               </Link>
             </div>
           </motion.div>
