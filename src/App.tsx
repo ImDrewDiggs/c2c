@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Subscription from "./pages/Subscription";
+import Schedule from "./pages/Schedule";
 import CustomerLogin from "./pages/auth/CustomerLogin";
 import EmployeeLogin from "./pages/auth/EmployeeLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/subscription" element={<Subscription />} />
+            <Route path="/schedule" element={<Schedule />} />
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/employee/login" element={<EmployeeLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
