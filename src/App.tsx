@@ -9,6 +9,7 @@ import Subscription from "./pages/Subscription";
 import CustomerLogin from "./pages/auth/CustomerLogin";
 import EmployeeLogin from "./pages/auth/EmployeeLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
+import AdminDashboard from "./pages/admin/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/employee/login" element={<EmployeeLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
