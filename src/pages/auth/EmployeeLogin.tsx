@@ -1,34 +1,33 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function EmployeeLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setLoading(true);
     try {
-      // TODO: Implement Supabase authentication with employee role check
-      toast({
-        title: "Coming soon!",
-        description: "Employee authentication will be implemented with Supabase.",
-      });
-    } catch (error) {
+      await signIn(email, password, 'employee');
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "An error occurred during login.",
+        description: error.message || "An error occurred during login",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,8 +105,8 @@ export default function EmployeeLogin() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </div>
         </motion.form>

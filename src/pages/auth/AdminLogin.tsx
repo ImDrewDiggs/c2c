@@ -1,8 +1,7 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
@@ -12,19 +11,23 @@ import { useToast } from "@/hooks/use-toast";
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await signIn(email, password, 'admin');
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "An error occurred during login.",
+        description: error.message || "An error occurred during login",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,8 +105,8 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </div>
         </motion.form>
