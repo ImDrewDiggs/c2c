@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -35,7 +34,7 @@ export default function CustomerLogin() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="card max-w-md w-full space-y-8">
         <div>
-          <Link to="/" className="inline-flex items-center text-sm text-gray-400 hover:text-white mb-8">
+          <Link to="/" className="inline-flex items-center text-sm text-gray-400 hover:text-gray-300 mb-8">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
@@ -49,7 +48,7 @@ export default function CustomerLogin() {
               alt="Can2Curb Logo"
               className="mx-auto h-16 w-auto mb-6"
             />
-            <h2 className="text-3xl font-bold">Customer Login</h2>
+            <h2 className="text-3xl font-bold text-white">Customer Login</h2>
             <p className="mt-2 text-sm text-gray-400">
               Welcome back! Please enter your details to access your account.
             </p>

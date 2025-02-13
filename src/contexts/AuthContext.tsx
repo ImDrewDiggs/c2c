@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -89,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw new Error('Failed to fetch user role');
         }
 
-        if (userData.role !== role) {
+        if (!userData || userData.role !== role) {
           await signOut();
           throw new Error('Invalid role for this login portal');
         }
