@@ -50,12 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function fetchUserData(userId: string) {
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('profiles') // Changed from 'user_profiles' to 'profiles'
       .select('*')
       .eq('id', userId)
       .single();
 
     if (error) {
+      console.error('Error fetching user data:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -69,21 +70,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string, role: UserRole) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (signInError) throw signInError;
 
-      if (data.user) {
+      if (signInData.user) {
         const { data: userData, error: userError } = await supabase
-          .from('user_profiles')
+          .from('profiles') // Changed from 'user_profiles' to 'profiles'
           .select('role')
-          .eq('id', data.user.id)
+          .eq('id', signInData.user.id)
           .single();
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error('Error fetching user role:', userError);
+          throw new Error('Failed to fetch user role');
+        }
 
         if (userData.role !== role) {
           await signOut();
@@ -109,11 +113,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error: any) {
+      console.error('Sign in error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred during login",
       });
+      throw error; // Re-throw to be handled by the component
     }
   };
 
