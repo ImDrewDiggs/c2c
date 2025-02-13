@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Subscription from "./pages/Subscription";
 import Schedule from "./pages/Schedule";
 import CustomerLogin from "./pages/auth/CustomerLogin";
+import CustomerRegister from "./pages/auth/CustomerRegister";
 import EmployeeLogin from "./pages/auth/EmployeeLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/customer/login" element={<CustomerLogin />} />
+            <Route path="/customer/register" element={<CustomerRegister />} />
             <Route path="/employee/login" element={<EmployeeLogin />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
