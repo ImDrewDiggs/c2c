@@ -56,6 +56,57 @@ export type Database = {
           },
         ]
       }
+      employee_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          employee_id: string | null
+          id: string
+          notes: string | null
+          pickup_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["pickup_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          notes?: string | null
+          pickup_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["pickup_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          notes?: string | null
+          pickup_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["pickup_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_tasks_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_tasks_pickup_id_fkey"
+            columns: ["pickup_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_pickups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           address: string
@@ -86,33 +137,236 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          status: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          status: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          status?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          customer_id: string | null
+          id: string
+          payment_date: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_id: string | null
+          subscription_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          customer_id?: string | null
+          id?: string
+          payment_date?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_id?: string | null
+          subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          customer_id?: string | null
+          id?: string
+          payment_date?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_id?: string | null
+          subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          active_tracking: boolean | null
+          avatar_url: string | null
+          company: string | null
           created_at: string
           email: string
+          full_name: string | null
           id: string
+          phone: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
         }
         Insert: {
+          active_tracking?: boolean | null
+          avatar_url?: string | null
+          company?: string | null
           created_at?: string
           email: string
+          full_name?: string | null
           id: string
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Update: {
+          active_tracking?: boolean | null
+          avatar_url?: string | null
+          company?: string | null
           created_at?: string
           email?: string
+          full_name?: string | null
           id?: string
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Relationships: []
       }
+      scheduled_pickups: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          description: string | null
+          end_time: string
+          id: string
+          location_id: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["pickup_status"] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          location_id?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["pickup_status"] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          location_id?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["pickup_status"] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_pickups_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_pickups_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          customer_id: string | null
+          id: string
+          status: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          customer_id?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          customer_id?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracking_data: {
         Row: {
           appointment_id: string | null
+          employee_id: string
           id: string
           lat: number
           lng: number
@@ -121,6 +375,7 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
+          employee_id: string
           id?: string
           lat: number
           lng: number
@@ -129,6 +384,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
+          employee_id?: string
           id?: string
           lat?: number
           lng?: number
@@ -153,6 +409,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      payment_status: "pending" | "completed" | "failed"
+      pickup_status:
+        | "pending"
+        | "assigned"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+      subscription_status: "active" | "cancelled" | "overdue"
       tracking_status: "pending" | "in_progress" | "completed"
       user_role: "admin" | "employee" | "customer"
     }
