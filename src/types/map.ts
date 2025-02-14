@@ -17,10 +17,9 @@ export interface Assignment {
   house_id: string;
   employee_id: string;
   status: 'pending' | 'in_progress' | 'completed';
-  assigned_date: string;
+  assigned_date: string | null;
   completed_at: string | null;
-  created_at: string;
-  house?: House;
+  created_at: string | null;
 }
 
 export interface EmployeeLocation {
@@ -28,5 +27,7 @@ export interface EmployeeLocation {
   employee_id: string;
   latitude: number;
   longitude: number;
-  timestamp: string;
+  timestamp: string | null;
+  is_online: boolean;
+  last_seen_at: string | null;
 }

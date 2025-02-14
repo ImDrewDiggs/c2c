@@ -98,6 +98,8 @@ export type Database = {
         Row: {
           employee_id: string
           id: string
+          is_online: boolean | null
+          last_seen_at: string | null
           latitude: number
           longitude: number
           timestamp: string | null
@@ -105,6 +107,8 @@ export type Database = {
         Insert: {
           employee_id: string
           id?: string
+          is_online?: boolean | null
+          last_seen_at?: string | null
           latitude: number
           longitude: number
           timestamp?: string | null
@@ -112,6 +116,8 @@ export type Database = {
         Update: {
           employee_id?: string
           id?: string
+          is_online?: boolean | null
+          last_seen_at?: string | null
           latitude?: number
           longitude?: number
           timestamp?: string | null

@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { House, Location, Assignment } from '@/types/map';
+import { House, Location, Assignment, EmployeeLocation } from '@/types/map';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,10 +15,21 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Custom marker icons
+const employeeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 interface MapProps {
   houses: House[];
   assignments: Assignment[];
   currentLocation: Location | null;
+  employeeLocations?: EmployeeLocation[];
 }
 
 // Auto-center map component
@@ -34,7 +45,7 @@ function AutoCenter({ currentLocation }: { currentLocation: Location | null }) {
   return null;
 }
 
-export default function Map({ houses, assignments, currentLocation }: MapProps) {
+export default function Map({ houses, assignments, currentLocation, employeeLocations = [] }: MapProps) {
   const { user } = useAuth();
   const mapRef = useRef<L.Map | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +62,8 @@ export default function Map({ houses, assignments, currentLocation }: MapProps) 
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
           timestamp: new Date().toISOString(),
+          is_online: true,
+          last_seen_at: new Date().toISOString(),
         }, {
           onConflict: 'employee_id'
         });
@@ -81,8 +94,26 @@ export default function Map({ houses, assignments, currentLocation }: MapProps) 
       
       {/* Current location marker */}
       <Marker position={[currentLocation.latitude, currentLocation.longitude]}>
-        <Popup>Your current location</Popup>
+        <Popup>Admin location</Popup>
       </Marker>
+
+      {/* Employee location markers */}
+      {employeeLocations.map((employee) => (
+        <Marker
+          key={employee.id}
+          position={[employee.latitude, employee.longitude]}
+          icon={employeeIcon}
+        >
+          <Popup>
+            <div className="text-sm">
+              <p className="font-semibold">Employee ID: {employee.employee_id}</p>
+              <p className="text-gray-600">
+                Last seen: {new Date(employee.last_seen_at || '').toLocaleString()}
+              </p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
 
       {/* House markers */}
       {houses.map((house) => (

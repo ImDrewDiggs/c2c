@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,8 +22,8 @@ import {
 import { Calendar, Users, CheckCircle, Clock, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Map from "@/components/Map/Map";
-import { useState } from "react";
-import { House, Assignment } from "@/types/map";
+import { useState, useEffect } from "react";
+import { House, Assignment, EmployeeLocation } from "@/types/map";
 
 const mockRevenueData = [
   { name: "Mon", amount: 1200 },
@@ -53,6 +54,7 @@ const mockPickups = [
 
 export default function AdminDashboard() {
   const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
 
   const { data: stats } = useQuery({
     queryKey: ["adminStats"],
@@ -89,8 +91,51 @@ export default function AdminDashboard() {
     },
   });
 
+  // Subscribe to real-time employee location updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('employee-locations')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'employee_locations'
+        },
+        async (payload) => {
+          const { data: locations, error } = await supabase
+            .from('employee_locations')
+            .select('*')
+            .eq('is_online', true);
+          
+          if (!error && locations) {
+            setEmployeeLocations(locations);
+          }
+        }
+      )
+      .subscribe();
+
+    // Initial fetch of employee locations
+    const fetchEmployeeLocations = async () => {
+      const { data: locations, error } = await supabase
+        .from('employee_locations')
+        .select('*')
+        .eq('is_online', true);
+      
+      if (!error && locations) {
+        setEmployeeLocations(locations);
+      }
+    };
+
+    fetchEmployeeLocations();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   // Get admin's location for map center
-  useState(() => {
+  useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -132,7 +177,7 @@ export default function AdminDashboard() {
             <Users className="h-10 w-10 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Active Employees</p>
-              <h3 className="text-2xl font-bold">{stats?.activeEmployees}</h3>
+              <h3 className="text-2xl font-bold">{employeeLocations.length}</h3>
             </div>
           </div>
         </Card>
@@ -218,6 +263,7 @@ export default function AdminDashboard() {
             houses={houses}
             assignments={assignments}
             currentLocation={currentLocation}
+            employeeLocations={employeeLocations}
           />
         </div>
       </Card>
