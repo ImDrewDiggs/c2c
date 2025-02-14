@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,6 +19,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Calendar, Users, CheckCircle, Clock, DollarSign } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import Map from "@/components/Map/Map";
+import { useState } from "react";
+import { House, Assignment } from "@/types/map";
 
 const mockRevenueData = [
   { name: "Mon", amount: 1200 },
@@ -49,6 +52,8 @@ const mockPickups = [
 ];
 
 export default function AdminDashboard() {
+  const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+
   const { data: stats } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => ({
@@ -61,6 +66,50 @@ export default function AdminDashboard() {
       todayRevenue: 2400,
     }),
   });
+
+  const { data: houses = [] } = useQuery<House[]>({
+    queryKey: ["houses"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("houses")
+        .select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: assignments = [] } = useQuery<Assignment[]>({
+    queryKey: ["assignments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("assignments")
+        .select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Get admin's location for map center
+  useState(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Default to a central location if geolocation fails
+          setCurrentLocation({
+            latitude: 40.7128,
+            longitude: -74.0060,
+          });
+        }
+      );
+    }
+  }, []);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -161,11 +210,15 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Live Map */}
+      {/* Live Operations Map */}
       <Card className="p-6">
         <h3 className="text-xl font-semibold mb-4">Live Operations Map</h3>
-        <div className="h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
-          <p className="text-gray-500">Map integration coming soon...</p>
+        <div className="h-[400px]">
+          <Map
+            houses={houses}
+            assignments={assignments}
+            currentLocation={currentLocation}
+          />
         </div>
       </Card>
     </div>
