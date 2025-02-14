@@ -12,6 +12,7 @@ import CustomerRegister from "./pages/auth/CustomerRegister";
 import EmployeeLogin from "./pages/auth/EmployeeLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
+import EmployeeDashboard from "./pages/employee/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/customer/register" element={<CustomerRegister />} />
             <Route path="/employee/login" element={<EmployeeLogin />} />
+            <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />

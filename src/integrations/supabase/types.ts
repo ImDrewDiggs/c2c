@@ -56,6 +56,68 @@ export type Database = {
           },
         ]
       }
+      assignments: {
+        Row: {
+          assigned_date: string | null
+          completed_at: string | null
+          created_at: string | null
+          employee_id: string
+          house_id: string
+          id: string
+          status: Database["public"]["Enums"]["job_status"] | null
+        }
+        Insert: {
+          assigned_date?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id: string
+          house_id: string
+          id?: string
+          status?: Database["public"]["Enums"]["job_status"] | null
+        }
+        Update: {
+          assigned_date?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id?: string
+          house_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["job_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_locations: {
+        Row: {
+          employee_id: string
+          id: string
+          latitude: number
+          longitude: number
+          timestamp: string | null
+        }
+        Insert: {
+          employee_id: string
+          id?: string
+          latitude: number
+          longitude: number
+          timestamp?: string | null
+        }
+        Update: {
+          employee_id?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
       employee_tasks: {
         Row: {
           completed_at: string | null
@@ -106,6 +168,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      houses: {
+        Row: {
+          address: string
+          created_at: string | null
+          id: string
+          latitude: number
+          longitude: number
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+        }
+        Relationships: []
       }
       locations: {
         Row: {
@@ -409,6 +495,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      job_status: "pending" | "in_progress" | "completed"
       payment_status: "pending" | "completed" | "failed"
       pickup_status:
         | "pending"
