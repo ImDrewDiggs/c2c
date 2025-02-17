@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Subscription from "./pages/Subscription";
+import ServicesAndPrices from "./pages/ServicesAndPrices";
 import Schedule from "./pages/Schedule";
 import CustomerLogin from "./pages/auth/CustomerLogin";
 import CustomerRegister from "./pages/auth/CustomerRegister";
@@ -26,6 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/subscription" element={<Subscription />} />
+            <Route path="/services-and-prices" element={<ServicesAndPrices />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/customer/register" element={<CustomerRegister />} />
