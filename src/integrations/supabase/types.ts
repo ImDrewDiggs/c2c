@@ -135,7 +135,7 @@ export type Database = {
           id: string
           premiere_price: number
           premium_price: number
-          service_type: string
+          service_type: string | null
           standard_price: number
           unit_range_end: number | null
           unit_range_start: number
@@ -148,7 +148,7 @@ export type Database = {
           id?: string
           premiere_price: number
           premium_price: number
-          service_type?: string
+          service_type?: string | null
           standard_price: number
           unit_range_end?: number | null
           unit_range_start: number
@@ -161,7 +161,7 @@ export type Database = {
           id?: string
           premiere_price?: number
           premium_price?: number
-          service_type?: string
+          service_type?: string | null
           standard_price?: number
           unit_range_end?: number | null
           unit_range_start?: number
