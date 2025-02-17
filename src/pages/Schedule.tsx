@@ -18,10 +18,15 @@ import { Calendar } from '@/components/ui/calendar';
 
 interface Appointment {
   id: string;
-  date: string;
+  title: string;
+  start_time: string;
+  end_time: string;
   user_id: string;
-  status: 'pending' | 'confirmed' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed';
   created_at: string;
+  location_id: string;
+  description?: string;
+  updated_at: string;
 }
 
 export default function Schedule() {
@@ -37,7 +42,7 @@ export default function Schedule() {
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
-        .order('date', { ascending: true });
+        .order('start_time', { ascending: true });
       
       if (error) throw error;
       return data as Appointment[];
@@ -51,8 +56,12 @@ export default function Schedule() {
         .from('appointments')
         .insert([
           {
-            date: date.toISOString(),
+            title: 'Pickup',
+            start_time: date.toISOString(),
+            end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
             status: 'pending',
+            location_id: '1', // You might want to make this dynamic based on user's location
+            user_id: '1', // This should be the actual user's ID when authentication is implemented
           },
         ])
         .select()
@@ -99,8 +108,8 @@ export default function Schedule() {
           initialView="dayGridMonth"
           dateClick={(info) => handleDateClick(info.date)}
           events={appointments.map(apt => ({
-            title: 'Pickup',
-            date: apt.date,
+            title: apt.title,
+            date: apt.start_time,
             backgroundColor: apt.status === 'pending' ? '#FFA500' : '#22C55E',
           }))}
           height="auto"
