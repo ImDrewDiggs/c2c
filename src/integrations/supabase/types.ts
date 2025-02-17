@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics_data: {
+        Row: {
+          active_employees: number
+          completed_pickups: number
+          created_at: string | null
+          date: string
+          id: string
+          total_pickups: number
+          total_revenue: number
+          updated_at: string | null
+        }
+        Insert: {
+          active_employees?: number
+          completed_pickups?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          total_pickups?: number
+          total_revenue?: number
+          updated_at?: string | null
+        }
+        Update: {
+          active_employees?: number
+          completed_pickups?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          total_pickups?: number
+          total_revenue?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           created_at: string
@@ -93,6 +126,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      community_pricing: {
+        Row: {
+          comprehensive_price: number
+          created_at: string
+          discount_percentage: number
+          id: string
+          premiere_price: number
+          premium_price: number
+          service_type: string
+          standard_price: number
+          unit_range_end: number | null
+          unit_range_start: number
+          updated_at: string
+        }
+        Insert: {
+          comprehensive_price: number
+          created_at?: string
+          discount_percentage: number
+          id?: string
+          premiere_price: number
+          premium_price: number
+          service_type?: string
+          standard_price: number
+          unit_range_end?: number | null
+          unit_range_start: number
+          updated_at?: string
+        }
+        Update: {
+          comprehensive_price?: number
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          premiere_price?: number
+          premium_price?: number
+          service_type?: string
+          standard_price?: number
+          unit_range_end?: number | null
+          unit_range_start?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       employee_locations: {
         Row: {
@@ -411,6 +486,60 @@ export type Database = {
           },
         ]
       }
+      service_addons: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      service_features: {
+        Row: {
+          created_at: string
+          feature: string
+          id: string
+          service_level: string
+          service_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feature: string
+          id?: string
+          service_level: string
+          service_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feature?: string
+          id?: string
+          service_level?: string
+          service_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string | null
@@ -509,6 +638,7 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "cancelled"
+      service_tier: "standard" | "premium" | "comprehensive" | "premiere"
       subscription_status: "active" | "cancelled" | "overdue"
       tracking_status: "pending" | "in_progress" | "completed"
       user_role: "admin" | "employee" | "customer"

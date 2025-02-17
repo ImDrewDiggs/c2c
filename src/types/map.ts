@@ -20,6 +20,7 @@ export interface Assignment {
   assigned_date: string | null;
   completed_at: string | null;
   created_at: string | null;
+  house?: House; // Add this to support the joined house data
 }
 
 export interface EmployeeLocation {

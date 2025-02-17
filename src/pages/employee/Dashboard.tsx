@@ -65,7 +65,7 @@ export default function EmployeeDashboard() {
 
     const fetchData = async () => {
       try {
-        // Fetch assignments
+        // Fetch assignments with house data included
         const { data: assignmentsData, error: assignmentsError } = await supabase
           .from('assignments')
           .select('*, house:houses(*)')
@@ -73,7 +73,7 @@ export default function EmployeeDashboard() {
 
         if (assignmentsError) throw assignmentsError;
 
-        // Get unique house IDs from assignments
+        // Extract unique house IDs from assignments
         const houseIds = assignmentsData.map(a => a.house_id);
 
         // Fetch houses
