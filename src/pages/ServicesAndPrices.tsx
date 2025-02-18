@@ -16,8 +16,8 @@ import { Check } from "lucide-react";
 interface ServiceTier {
   name: string;
   price: number;
-  frequency: string;
   features: string[];
+  perk?: string;
 }
 
 interface CommunityTier {
@@ -31,37 +31,49 @@ interface CommunityTier {
 
 const singleFamilyTiers: ServiceTier[] = [
   {
-    name: "Basic Weekly Service",
-    price: 29.99,
-    frequency: "weekly",
+    name: "Standard Service",
+    price: 49.99,
     features: [
-      "Weekly cleaning service",
-      "Standard disinfection",
-      "Basic deodorizing",
+      "Moving one trash can and one recycling bin to and from the curb weekly",
+      "Additional cans: $5/month each",
+      "Driveways over 50 feet: Additional $10/month",
+      "No additional services included"
     ],
+    perk: "Budget-conscious customers who want basic convenience for trash management"
   },
   {
-    name: "Premium Weekly Service",
-    price: 39.99,
-    frequency: "weekly",
+    name: "Premium Service",
+    price: 74.99,
     features: [
-      "Weekly cleaning service",
-      "Premium disinfection",
-      "Advanced deodorizing",
-      "Priority scheduling",
+      "Everything in Standard Service",
+      "Trash can cleaning service once per month",
+      "Priority customer support for service requests or adjustments"
     ],
+    perk: "Perfect for customers who value a clean and odor-free trash can with minimal effort"
   },
   {
-    name: "Bi-Weekly Service",
-    price: 44.99,
-    frequency: "bi-weekly",
+    name: "Comprehensive Service",
+    price: 99.99,
     features: [
-      "Bi-weekly cleaning",
-      "Premium disinfection",
-      "Advanced deodorizing",
-      "Flexible scheduling",
+      "Everything in Premium Service",
+      "Bulk trash removal (up to 3 large items per quarter)",
+      "Pet waste pickup service once per week",
+      "Discounts on junk removal services (10% off standard rates)"
     ],
+    perk: "Designed for busy households needing additional cleanup assistance and value-added services"
   },
+  {
+    name: "Premiere Service",
+    price: 149.99,
+    features: [
+      "Everything in Comprehensive Service",
+      "Unlimited bulk trash removal (up to 1 item per week)",
+      "Twice-monthly trash can cleaning",
+      "Daily trash removal service (on demand, up to 5 pickups per week)",
+      "Access to a personal account manager for custom needs and special requests"
+    ],
+    perk: "Ultimate convenience for clients who prioritize time and an immaculate environment"
+  }
 ];
 
 const communityTiers: CommunityTier[] = [
@@ -97,25 +109,27 @@ export default function ServicesAndPrices() {
                 <TableRow>
                   <TableHead className="w-[200px]">Service Tier</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead>Frequency</TableHead>
-                  <TableHead className="w-[300px]">Features</TableHead>
+                  <TableHead className="w-[400px]">Features</TableHead>
+                  <TableHead className="w-[300px]">Target Customer</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {singleFamilyTiers.map((tier) => (
                   <TableRow key={tier.name}>
                     <TableCell className="font-medium">{tier.name}</TableCell>
-                    <TableCell>${tier.price}/service</TableCell>
-                    <TableCell>{tier.frequency}</TableCell>
+                    <TableCell>${tier.price}/month</TableCell>
                     <TableCell>
-                      <ul className="list-none">
+                      <ul className="list-none space-y-1">
                         {tier.features.map((feature) => (
                           <li key={feature} className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-primary" />
-                            {feature}
+                            <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                            <span className="text-sm">{feature}</span>
                           </li>
                         ))}
                       </ul>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {tier.perk}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
@@ -17,8 +18,8 @@ interface ServiceTier {
   name: string;
   description: string;
   price: number;
-  frequency: string;
   features: string[];
+  perk?: string;
 }
 
 interface CommunityTier {
@@ -35,43 +36,57 @@ interface CommunityTier {
 
 const singleFamilyTiers: ServiceTier[] = [
   {
-    id: "basic-weekly",
-    name: "Basic Weekly Service",
-    description: "Professional cleaning of your trash cans every week",
-    price: 29.99,
-    frequency: "weekly",
+    id: "standard",
+    name: "Standard Service",
+    description: "Basic convenience for trash management",
+    price: 49.99,
     features: [
-      "Weekly cleaning service",
-      "Standard disinfection",
-      "Basic deodorizing",
+      "Moving one trash can and one recycling bin to and from the curb weekly",
+      "Additional cans: $5/month each",
+      "Driveways over 50 feet: Additional $10/month",
+      "No additional services included"
     ],
+    perk: "Budget-conscious customers who want basic convenience for trash management"
   },
   {
-    id: "premium-weekly",
-    name: "Premium Weekly Service",
-    description: "Enhanced weekly cleaning with premium features",
-    price: 39.99,
-    frequency: "weekly",
+    id: "premium",
+    name: "Premium Service",
+    description: "Enhanced service with monthly cleaning",
+    price: 74.99,
     features: [
-      "Weekly cleaning service",
-      "Premium disinfection",
-      "Advanced deodorizing",
-      "Priority scheduling",
+      "Everything in Standard Service",
+      "Trash can cleaning service once per month",
+      "Priority customer support for service requests or adjustments"
     ],
+    perk: "Perfect for customers who value a clean and odor-free trash can with minimal effort"
   },
   {
-    id: "bi-weekly",
-    name: "Bi-Weekly Service",
-    description: "Professional cleaning every two weeks",
-    price: 44.99,
-    frequency: "bi-weekly",
+    id: "comprehensive",
+    name: "Comprehensive Service",
+    description: "Complete service package with additional benefits",
+    price: 99.99,
     features: [
-      "Bi-weekly cleaning",
-      "Premium disinfection",
-      "Advanced deodorizing",
-      "Flexible scheduling",
+      "Everything in Premium Service",
+      "Bulk trash removal (up to 3 large items per quarter)",
+      "Pet waste pickup service once per week",
+      "Discounts on junk removal services (10% off standard rates)"
     ],
+    perk: "Designed for busy households needing additional cleanup assistance and value-added services"
   },
+  {
+    id: "premiere",
+    name: "Premiere Service",
+    description: "Ultimate convenience and personalized service",
+    price: 149.99,
+    features: [
+      "Everything in Comprehensive Service",
+      "Unlimited bulk trash removal (up to 1 item per week)",
+      "Twice-monthly trash can cleaning",
+      "Daily trash removal service (on demand, up to 5 pickups per week)",
+      "Access to a personal account manager for custom needs and special requests"
+    ],
+    perk: "Ultimate convenience for clients who prioritize time and an immaculate environment"
+  }
 ];
 
 const communityTiers: CommunityTier[] = [
@@ -265,7 +280,6 @@ const Subscription = () => {
   return (
     <div className="min-h-screen py-12">
       <div className="container">
-        {/* Running Total */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -301,7 +315,7 @@ const Subscription = () => {
                 <SelectContent>
                   {singleFamilyTiers.map((tier) => (
                     <SelectItem key={tier.id} value={tier.id}>
-                      {tier.name} - ${tier.price}/{tier.frequency}
+                      {tier.name} - ${tier.price}/month
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -322,6 +336,11 @@ const Subscription = () => {
                       </li>
                     ))}
                   </ul>
+                  {getSelectedTier()?.perk && (
+                    <div className="mt-4 p-4 bg-secondary/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground">{getSelectedTier()?.perk}</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
