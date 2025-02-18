@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ServiceTier {
   id: string;
@@ -384,14 +385,14 @@ const Subscription = () => {
         </Tabs>
 
         <div className="mt-8 text-center">
-          <button
-            className="btn-primary"
+          <Button
+            size="lg"
             onClick={() => {
               alert("Please log in to complete your subscription");
             }}
           >
             Complete Subscription
-          </button>
+          </Button>
         </div>
       </div>
     </div>
