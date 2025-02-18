@@ -5,6 +5,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
+import About from "./pages/About";
+import Testimonials from "./pages/Testimonials";
 import Subscription from "./pages/Subscription";
 import ServicesAndPrices from "./pages/ServicesAndPrices";
 import Schedule from "./pages/Schedule";
@@ -26,6 +28,8 @@ const App = () => (
           <Navbar />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/services-and-prices" element={<ServicesAndPrices />} />
             <Route path="/schedule" element={<Schedule />} />

@@ -8,7 +8,7 @@ const navigation = [
   { name: "Home", path: "/" },
   { name: "About Us", path: "/about" },
   { name: "Testimonials", path: "/testimonials" },
-  { name: "Services & Pricing", path: "/services" },
+  { name: "Services & Pricing", path: "/services-and-prices" },
   { name: "Subscription", path: "/subscription" },
   { name: "FAQs", path: "/faqs" },
   { name: "Contact Us", path: "/contact" },
