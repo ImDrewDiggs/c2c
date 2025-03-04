@@ -28,8 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserData(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Listen for auth changes
@@ -39,8 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserData(session.user.id);
       } else {
         setUserData(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
@@ -49,27 +50,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function fetchUserData(userId: string) {
-    const { data, error } = await supabase
-      .from('profiles') // Changed from 'user_profiles' to 'profiles'
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    if (error) {
-      console.error('Error fetching user data:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch user data",
-      });
-      return;
+      if (error) {
+        console.error('Error fetching user data:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch user data",
+        });
+        setUserData(null);
+        return;
+      }
+
+      setUserData(data);
+    } catch (err) {
+      console.error('Unexpected error during fetchUserData:', err);
+      setUserData(null);
+    } finally {
+      setLoading(false);
     }
-
-    setUserData(data);
   }
 
   const signIn = async (email: string, password: string, role: UserRole) => {
     try {
+      setLoading(true);
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -79,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (signInData.user) {
         const { data: userData, error: userError } = await supabase
-          .from('profiles') // Changed from 'user_profiles' to 'profiles'
+          .from('profiles')
           .select('role')
           .eq('id', signInData.user.id)
           .single();
@@ -93,6 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await signOut();
           throw new Error('Invalid role for this login portal');
         }
+
+        await fetchUserData(signInData.user.id);
 
         toast({
           title: "Success",
@@ -120,11 +133,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: error.message || "An error occurred during login",
       });
       throw error; // Re-throw to be handled by the component
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       await supabase.auth.signOut();
       navigate('/');
       toast({
@@ -137,6 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Error",
         description: "Error signing out",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
