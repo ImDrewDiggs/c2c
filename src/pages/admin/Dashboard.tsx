@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +15,7 @@ import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { Loader2 } from "lucide-react";
+import { HouseRow, AssignmentRow, EmployeeLocationRow } from "@/lib/supabase-types";
 
 const mockRevenueData = [
   { name: "Mon", amount: 1200 },
@@ -89,9 +89,15 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("houses")
-        .select("*");
+        .select("*") as { data: HouseRow[] | null, error: any };
       if (error) throw error;
-      return data;
+      return data?.map(house => ({
+        id: house.id,
+        address: house.address,
+        latitude: house.latitude,
+        longitude: house.longitude,
+        created_at: house.created_at
+      })) || [];
     },
   });
 
@@ -100,9 +106,17 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignments")
-        .select("*");
+        .select("*") as { data: AssignmentRow[] | null, error: any };
       if (error) throw error;
-      return data;
+      return data?.map(assignment => ({
+        id: assignment.id,
+        house_id: assignment.house_id,
+        employee_id: assignment.employee_id,
+        status: assignment.status,
+        assigned_date: assignment.assigned_date,
+        completed_at: assignment.completed_at,
+        created_at: assignment.created_at
+      })) || [];
     },
   });
 
@@ -120,11 +134,18 @@ export default function AdminDashboard() {
         async (payload) => {
           const { data: locations, error } = await supabase
             .from('employee_locations')
-            .select('*')
-            .eq('is_online', true);
+            .select('*') as { data: EmployeeLocationRow[] | null, error: any };
           
           if (!error && locations) {
-            setEmployeeLocations(locations);
+            setEmployeeLocations(locations.map(loc => ({
+              id: loc.id,
+              employee_id: loc.employee_id,
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              timestamp: loc.timestamp,
+              is_online: loc.is_online,
+              last_seen_at: loc.last_seen_at
+            })));
             setActiveEmployees(locations.length);
           }
         }
@@ -135,11 +156,18 @@ export default function AdminDashboard() {
     const fetchEmployeeLocations = async () => {
       const { data: locations, error } = await supabase
         .from('employee_locations')
-        .select('*')
-        .eq('is_online', true);
+        .select('*') as { data: EmployeeLocationRow[] | null, error: any };
       
       if (!error && locations) {
-        setEmployeeLocations(locations);
+        setEmployeeLocations(locations.map(loc => ({
+          id: loc.id,
+          employee_id: loc.employee_id,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          timestamp: loc.timestamp,
+          is_online: loc.is_online,
+          last_seen_at: loc.last_seen_at
+        })));
         setActiveEmployees(locations.length);
       }
     };

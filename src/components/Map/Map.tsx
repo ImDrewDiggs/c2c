@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -6,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { House, Location, Assignment, EmployeeLocation } from '@/types/map';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { EmployeeLocationRow } from '@/lib/supabase-types';
 
 // Fix Leaflet default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -51,29 +51,33 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
   const [loading, setLoading] = useState(true);
 
   // Update employee location in real-time
+  const updateLocation = async (userId: string, location: Location) => {
+    const { error } = await supabase
+      .from('employee_locations')
+      .upsert({
+        employee_id: userId,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        timestamp: new Date().toISOString(),
+        is_online: true,
+        last_seen_at: new Date().toISOString(),
+      } as EmployeeLocationRow, {
+        onConflict: 'employee_id'
+      });
+
+    if (error) {
+      console.error('Error updating location:', error);
+    }
+  };
+
   useEffect(() => {
     if (!user || !currentLocation) return;
 
-    const updateLocation = async () => {
-      const { error } = await supabase
-        .from('employee_locations')
-        .upsert({
-          employee_id: user.id,
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-          timestamp: new Date().toISOString(),
-          is_online: true,
-          last_seen_at: new Date().toISOString(),
-        }, {
-          onConflict: 'employee_id'
-        });
-
-      if (error) {
-        console.error('Error updating location:', error);
-      }
+    const updateEmployeeLocation = async () => {
+      await updateLocation(user.id, currentLocation);
     };
 
-    updateLocation();
+    updateEmployeeLocation();
   }, [currentLocation, user]);
 
   if (!currentLocation) {

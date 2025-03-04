@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from '@/components/ui/calendar';
+import { AppointmentRow } from '@/lib/supabase-types';
 
 interface Appointment {
   id: string;
@@ -41,11 +41,21 @@ export default function Schedule() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('appointments')
-        .select('*')
-        .order('start_time', { ascending: true });
+        .select('*') as { data: AppointmentRow[] | null, error: any };
       
       if (error) throw error;
-      return data as Appointment[];
+      return data?.map(apt => ({
+        id: apt.id,
+        title: apt.title,
+        start_time: apt.start_time,
+        end_time: apt.end_time,
+        user_id: apt.user_id,
+        status: apt.status,
+        created_at: apt.created_at,
+        location_id: apt.location_id,
+        description: apt.description,
+        updated_at: apt.updated_at
+      })) || [];
     },
   });
 
@@ -54,16 +64,14 @@ export default function Schedule() {
     mutationFn: async (date: Date) => {
       const { data, error } = await supabase
         .from('appointments')
-        .insert([
-          {
-            title: 'Pickup',
-            start_time: date.toISOString(),
-            end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
-            status: 'pending',
-            location_id: '1', // You might want to make this dynamic based on user's location
-            user_id: '1', // This should be the actual user's ID when authentication is implemented
-          },
-        ])
+        .insert([{
+          title: 'Pickup',
+          start_time: date.toISOString(),
+          end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+          status: 'pending',
+          location_id: '1', // You might want to make this dynamic based on user's location
+          user_id: '1', // This should be the actual user's ID when authentication is implemented
+        } as AppointmentRow])
         .select()
         .single();
 
