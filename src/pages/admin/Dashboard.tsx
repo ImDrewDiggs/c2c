@@ -7,6 +7,15 @@ import { StatsOverview } from "@/components/admin/StatsOverview";
 import { PickupsTable } from "@/components/admin/PickupsTable";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { OperationsMap } from "@/components/admin/OperationsMap";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { QuickLinks } from "@/components/admin/QuickLinks";
+import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
+import { useAuth } from "@/contexts/AuthContext";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
+import { useToast } from "@/hooks/use-toast";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { Loader2 } from "lucide-react";
 
 const mockRevenueData = [
   { name: "Mon", amount: 1200 },
@@ -38,6 +47,29 @@ const mockPickups = [
 export default function AdminDashboard() {
   const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
+  const [activeEmployees, setActiveEmployees] = useState<number>(0);
+  const { user, userData } = useAuth();
+  const { toast } = useToast();
+  const [adminRestricted, setAdminRestricted] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check if user is admin
+  useEffect(() => {
+    if (userData) {
+      if (userData.role !== 'admin') {
+        setAdminRestricted(true);
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You do not have permission to access the admin dashboard.",
+        });
+      } else if (userData.email !== 'diggs844037@yahoo.com') {
+        // Allow access but with restrictions
+        setAdminRestricted(true);
+      }
+      setLoading(false);
+    }
+  }, [userData, toast]);
 
   const { data: stats } = useQuery({
     queryKey: ["adminStats"],
@@ -93,6 +125,7 @@ export default function AdminDashboard() {
           
           if (!error && locations) {
             setEmployeeLocations(locations);
+            setActiveEmployees(locations.length);
           }
         }
       )
@@ -107,6 +140,7 @@ export default function AdminDashboard() {
       
       if (!error && locations) {
         setEmployeeLocations(locations);
+        setActiveEmployees(locations.length);
       }
     };
 
@@ -139,26 +173,82 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (userData?.role !== 'admin') {
+    return (
+      <div className="container mx-auto p-6">
+        <Card className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
+          <p>You do not have permission to access the admin dashboard.</p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        {userData?.email === 'diggs844037@yahoo.com' && (
+          <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            Super Admin
+          </div>
+        )}
+      </div>
 
       <StatsOverview 
         stats={stats || { dailyPickups: 0, pendingPickups: 0, todayRevenue: 0 }}
-        activeEmployeesCount={employeeLocations.length}
+        activeEmployeesCount={activeEmployees}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PickupsTable pickups={mockPickups} />
-        <RevenueChart data={mockRevenueData} />
-      </div>
+      <QuickLinks superAdmin={userData?.email === 'diggs844037@yahoo.com'} />
 
-      <OperationsMap
-        houses={houses}
-        assignments={assignments}
-        currentLocation={currentLocation}
-        employeeLocations={employeeLocations}
-      />
+      <Tabs defaultValue="operations" className="space-y-6">
+        <TabsList className="grid grid-cols-4 w-full md:w-auto">
+          <TabsTrigger value="operations">Operations</TabsTrigger>
+          <TabsTrigger value="employees">Employee Tracker</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="operations" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PickupsTable pickups={mockPickups} />
+            <RevenueChart data={mockRevenueData} />
+          </div>
+
+          <OperationsMap
+            houses={houses}
+            assignments={assignments}
+            currentLocation={currentLocation}
+            employeeLocations={employeeLocations}
+          />
+        </TabsContent>
+
+        <TabsContent value="employees">
+          <EmployeeTracker 
+            employeeLocations={employeeLocations} 
+            currentLocation={currentLocation}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserManagement 
+            superAdmin={userData?.email === 'diggs844037@yahoo.com'} 
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

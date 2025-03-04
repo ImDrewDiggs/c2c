@@ -9,329 +9,151 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      analytics_data: {
+      audit_logs: {
         Row: {
-          active_employees: number
-          completed_pickups: number
-          created_at: string | null
-          date: string
-          id: string
-          total_pickups: number
-          total_revenue: number
-          updated_at: string | null
-        }
-        Insert: {
-          active_employees?: number
-          completed_pickups?: number
-          created_at?: string | null
-          date?: string
-          id?: string
-          total_pickups?: number
-          total_revenue?: number
-          updated_at?: string | null
-        }
-        Update: {
-          active_employees?: number
-          completed_pickups?: number
-          created_at?: string | null
-          date?: string
-          id?: string
-          total_pickups?: number
-          total_revenue?: number
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      appointments: {
-        Row: {
+          action: string
           created_at: string
-          description: string | null
-          end_time: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
           id: string
-          location_id: string
-          start_time: string
-          status: Database["public"]["Enums"]["tracking_status"] | null
-          title: string
-          updated_at: string
-          user_id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
         }
         Insert: {
+          action: string
           created_at?: string
-          description?: string | null
-          end_time: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
           id?: string
-          location_id: string
-          start_time: string
-          status?: Database["public"]["Enums"]["tracking_status"] | null
-          title: string
-          updated_at?: string
-          user_id: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Update: {
+          action?: string
           created_at?: string
-          description?: string | null
-          end_time?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
           id?: string
-          location_id?: string
-          start_time?: string
-          status?: Database["public"]["Enums"]["tracking_status"] | null
-          title?: string
-          updated_at?: string
-          user_id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "appointments_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      assignments: {
-        Row: {
-          assigned_date: string | null
-          completed_at: string | null
-          created_at: string | null
-          employee_id: string
-          house_id: string
-          id: string
-          status: Database["public"]["Enums"]["job_status"] | null
-        }
-        Insert: {
-          assigned_date?: string | null
-          completed_at?: string | null
-          created_at?: string | null
-          employee_id: string
-          house_id: string
-          id?: string
-          status?: Database["public"]["Enums"]["job_status"] | null
-        }
-        Update: {
-          assigned_date?: string | null
-          completed_at?: string | null
-          created_at?: string | null
-          employee_id?: string
-          house_id?: string
-          id?: string
-          status?: Database["public"]["Enums"]["job_status"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assignments_house_id_fkey"
-            columns: ["house_id"]
-            isOneToOne: false
-            referencedRelation: "houses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      community_pricing: {
-        Row: {
-          comprehensive_price: number
-          created_at: string
-          discount_percentage: number
-          id: string
-          premiere_price: number
-          premium_price: number
-          service_type: string | null
-          standard_price: number
-          unit_range_end: number | null
-          unit_range_start: number
-          updated_at: string
-        }
-        Insert: {
-          comprehensive_price: number
-          created_at?: string
-          discount_percentage: number
-          id?: string
-          premiere_price: number
-          premium_price: number
-          service_type?: string | null
-          standard_price: number
-          unit_range_end?: number | null
-          unit_range_start: number
-          updated_at?: string
-        }
-        Update: {
-          comprehensive_price?: number
-          created_at?: string
-          discount_percentage?: number
-          id?: string
-          premiere_price?: number
-          premium_price?: number
-          service_type?: string | null
-          standard_price?: number
-          unit_range_end?: number | null
-          unit_range_start?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      employee_locations: {
-        Row: {
-          employee_id: string
-          id: string
-          is_online: boolean | null
-          last_seen_at: string | null
-          latitude: number
-          longitude: number
-          timestamp: string | null
-        }
-        Insert: {
-          employee_id: string
-          id?: string
-          is_online?: boolean | null
-          last_seen_at?: string | null
-          latitude: number
-          longitude: number
-          timestamp?: string | null
-        }
-        Update: {
-          employee_id?: string
-          id?: string
-          is_online?: boolean | null
-          last_seen_at?: string | null
-          latitude?: number
-          longitude?: number
-          timestamp?: string | null
-        }
-        Relationships: []
-      }
-      employee_tasks: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          employee_id: string | null
-          id: string
-          notes: string | null
-          pickup_id: string | null
-          started_at: string | null
-          status: Database["public"]["Enums"]["pickup_status"] | null
-          updated_at: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          employee_id?: string | null
-          id?: string
-          notes?: string | null
-          pickup_id?: string | null
-          started_at?: string | null
-          status?: Database["public"]["Enums"]["pickup_status"] | null
-          updated_at?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          employee_id?: string | null
-          id?: string
-          notes?: string | null
-          pickup_id?: string | null
-          started_at?: string | null
-          status?: Database["public"]["Enums"]["pickup_status"] | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "employee_tasks_employee_id_fkey"
-            columns: ["employee_id"]
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "employee_tasks_pickup_id_fkey"
-            columns: ["pickup_id"]
-            isOneToOne: false
-            referencedRelation: "scheduled_pickups"
-            referencedColumns: ["id"]
-          },
         ]
       }
-      houses: {
+      notifications: {
         Row: {
-          address: string
-          created_at: string | null
-          id: string
-          latitude: number
-          longitude: number
-        }
-        Insert: {
-          address: string
-          created_at?: string | null
-          id?: string
-          latitude: number
-          longitude: number
-        }
-        Update: {
-          address?: string
-          created_at?: string | null
-          id?: string
-          latitude?: number
-          longitude?: number
-        }
-        Relationships: []
-      }
-      locations: {
-        Row: {
-          address: string
           created_at: string
           id: string
-          lat: number
-          lng: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          address: string
-          created_at?: string
-          id?: string
-          lat: number
-          lng: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          address?: string
-          created_at?: string
-          id?: string
-          lat?: number
-          lng?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notification_logs: {
-        Row: {
-          created_at: string | null
-          id: string
           message: string
-          status: string
-          type: string
+          read: boolean | null
+          title: string
           user_id: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           message: string
-          status: string
-          type: string
+          read?: boolean | null
+          title: string
           user_id?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           message?: string
-          status?: string
-          type?: string
+          read?: boolean | null
+          title?: string
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "notification_logs_user_id_fkey"
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_attempts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          payment_method: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          payment_method: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_method?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          created_at: string
+          details: string
+          id: string
+          is_default: boolean | null
+          last_used_at: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details: string
+          id?: string
+          is_default?: boolean | null
+          last_used_at?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string
+          id?: string
+          is_default?: boolean | null
+          last_used_at?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -342,64 +164,48 @@ export type Database = {
       payments: {
         Row: {
           amount: number
-          created_at: string | null
-          currency: string | null
-          customer_id: string | null
+          created_at: string
+          description: string | null
           id: string
-          payment_date: string | null
-          status: Database["public"]["Enums"]["payment_status"] | null
-          stripe_payment_id: string | null
-          subscription_id: string | null
-          updated_at: string | null
+          masked_details: string | null
+          payment_method: string
+          status: string
+          user_id: string
         }
         Insert: {
           amount: number
-          created_at?: string | null
-          currency?: string | null
-          customer_id?: string | null
+          created_at?: string
+          description?: string | null
           id?: string
-          payment_date?: string | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          stripe_payment_id?: string | null
-          subscription_id?: string | null
-          updated_at?: string | null
+          masked_details?: string | null
+          payment_method: string
+          status: string
+          user_id: string
         }
         Update: {
           amount?: number
-          created_at?: string | null
-          currency?: string | null
-          customer_id?: string | null
+          created_at?: string
+          description?: string | null
           id?: string
-          payment_date?: string | null
-          status?: Database["public"]["Enums"]["payment_status"] | null
-          stripe_payment_id?: string | null
-          subscription_id?: string | null
-          updated_at?: string | null
+          masked_details?: string | null
+          payment_method?: string
+          status?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "payments_customer_id_fkey"
-            columns: ["customer_id"]
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
       }
       profiles: {
         Row: {
-          active_tracking: boolean | null
-          avatar_url: string | null
-          company: string | null
           created_at: string
-          email: string
+          email: string | null
           full_name: string | null
           id: string
           phone: string | null
@@ -407,11 +213,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          active_tracking?: boolean | null
-          avatar_url?: string | null
-          company?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
@@ -419,11 +222,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          active_tracking?: boolean | null
-          avatar_url?: string | null
-          company?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -432,202 +232,185 @@ export type Database = {
         }
         Relationships: []
       }
-      scheduled_pickups: {
+      service_logs: {
         Row: {
-          created_at: string | null
-          customer_id: string | null
-          description: string | null
-          end_time: string
+          completed_date: string | null
+          created_at: string
+          employee_id: string | null
           id: string
-          location_id: string | null
-          start_time: string
-          status: Database["public"]["Enums"]["pickup_status"] | null
-          title: string
-          updated_at: string | null
+          notes: string | null
+          scheduled_date: string
+          status: Database["public"]["Enums"]["service_status"] | null
+          subscription_id: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          customer_id?: string | null
-          description?: string | null
-          end_time: string
+          completed_date?: string | null
+          created_at?: string
+          employee_id?: string | null
           id?: string
-          location_id?: string | null
-          start_time: string
-          status?: Database["public"]["Enums"]["pickup_status"] | null
-          title: string
-          updated_at?: string | null
+          notes?: string | null
+          scheduled_date: string
+          status?: Database["public"]["Enums"]["service_status"] | null
+          subscription_id?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
-          customer_id?: string | null
-          description?: string | null
-          end_time?: string
+          completed_date?: string | null
+          created_at?: string
+          employee_id?: string | null
           id?: string
-          location_id?: string | null
-          start_time?: string
-          status?: Database["public"]["Enums"]["pickup_status"] | null
-          title?: string
-          updated_at?: string | null
+          notes?: string | null
+          scheduled_date?: string
+          status?: Database["public"]["Enums"]["service_status"] | null
+          subscription_id?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "scheduled_pickups_customer_id_fkey"
-            columns: ["customer_id"]
+            foreignKeyName: "service_logs_employee_id_fkey"
+            columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "scheduled_pickups_location_id_fkey"
-            columns: ["location_id"]
+            foreignKeyName: "service_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
             isOneToOne: false
-            referencedRelation: "locations"
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
       }
-      service_addons: {
+      service_plans: {
         Row: {
           created_at: string
           description: string | null
+          frequency: string
           id: string
           name: string
           price: number
-          updated_at: string
         }
         Insert: {
           created_at?: string
           description?: string | null
+          frequency: string
           id?: string
           name: string
           price: number
-          updated_at?: string
         }
         Update: {
           created_at?: string
           description?: string | null
+          frequency?: string
           id?: string
           name?: string
           price?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      service_features: {
-        Row: {
-          created_at: string
-          feature: string
-          id: string
-          service_level: string
-          service_type: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          feature: string
-          id?: string
-          service_level: string
-          service_type?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          feature?: string
-          id?: string
-          service_level?: string
-          service_type?: string
-          updated_at?: string
         }
         Relationships: []
       }
       subscriptions: {
         Row: {
-          created_at: string | null
-          current_period_end: string | null
-          current_period_start: string | null
-          customer_id: string | null
+          created_at: string
           id: string
-          status: Database["public"]["Enums"]["subscription_status"] | null
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          updated_at: string | null
+          next_service_date: string | null
+          plan_id: string | null
+          start_date: string
+          status: string | null
+          updated_at: string
+          user_id: string | null
         }
         Insert: {
-          created_at?: string | null
-          current_period_end?: string | null
-          current_period_start?: string | null
-          customer_id?: string | null
+          created_at?: string
           id?: string
-          status?: Database["public"]["Enums"]["subscription_status"] | null
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          updated_at?: string | null
+          next_service_date?: string | null
+          plan_id?: string | null
+          start_date: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          created_at?: string | null
-          current_period_end?: string | null
-          current_period_start?: string | null
-          customer_id?: string | null
+          created_at?: string
           id?: string
-          status?: Database["public"]["Enums"]["subscription_status"] | null
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          updated_at?: string | null
+          next_service_date?: string | null
+          plan_id?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "subscriptions_customer_id_fkey"
-            columns: ["customer_id"]
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "service_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      tracking_data: {
+      system_logs: {
         Row: {
-          appointment_id: string | null
-          employee_id: string
+          created_at: string
+          details: Json | null
           id: string
-          lat: number
-          lng: number
-          timestamp: string
-          user_id: string
+          level: string
+          message: string
+          source: string
         }
         Insert: {
-          appointment_id?: string | null
-          employee_id: string
+          created_at?: string
+          details?: Json | null
           id?: string
-          lat: number
-          lng: number
-          timestamp?: string
-          user_id: string
+          level: string
+          message: string
+          source: string
         }
         Update: {
-          appointment_id?: string | null
-          employee_id?: string
+          created_at?: string
+          details?: Json | null
           id?: string
-          lat?: number
-          lng?: number
-          timestamp?: string
-          user_id?: string
+          level?: string
+          message?: string
+          source?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "tracking_data_appointment_id_fkey"
-            columns: ["appointment_id"]
-            isOneToOne: false
-            referencedRelation: "appointments"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_system_event: {
+        Args: {
+          p_level: string
+          p_source: string
+          p_message: string
+          p_details?: Json
+        }
+        Returns: string
+      }
+      log_user_action: {
+        Args: {
+          p_user_id: string
+          p_action: string
+          p_entity_type: string
+          p_entity_id?: string
+          p_details?: Json
+          p_ip_address?: string
+          p_user_agent?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       job_status: "pending" | "in_progress" | "completed"
@@ -638,6 +421,7 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "cancelled"
+      service_status: "pending" | "in_progress" | "completed" | "cancelled"
       service_tier: "standard" | "premium" | "comprehensive" | "premiere"
       subscription_status: "active" | "cancelled" | "overdue"
       tracking_status: "pending" | "in_progress" | "completed"
