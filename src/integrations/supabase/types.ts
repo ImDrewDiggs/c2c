@@ -9,6 +9,98 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_time: string
+          id: string
+          location_id: string | null
+          start_time: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          location_id?: string | null
+          start_time: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          location_id?: string | null
+          start_time?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          assigned_date: string | null
+          completed_at: string | null
+          created_at: string | null
+          employee_id: string | null
+          house_id: string | null
+          id: string
+          status: string | null
+        }
+        Insert: {
+          assigned_date?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          house_id?: string | null
+          id?: string
+          status?: string | null
+        }
+        Update: {
+          assigned_date?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          house_id?: string | null
+          id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -52,6 +144,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      employee_locations: {
+        Row: {
+          employee_id: string | null
+          id: string
+          is_online: boolean | null
+          last_seen_at: string | null
+          latitude: number
+          longitude: number
+          timestamp: string | null
+        }
+        Insert: {
+          employee_id?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          latitude: number
+          longitude: number
+          timestamp?: string | null
+        }
+        Update: {
+          employee_id?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          latitude?: number
+          longitude?: number
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_locations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      houses: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+        }
+        Relationships: []
       }
       notifications: {
         Row: {

@@ -6,6 +6,7 @@ import { House, Location, Assignment } from '@/types/map';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { HouseRow, AssignmentRow } from '@/lib/supabase-types';
 
 export default function EmployeeDashboard() {
   const { user, userData } = useAuth();
@@ -68,24 +69,48 @@ export default function EmployeeDashboard() {
         // Fetch assignments with house data included
         const { data: assignmentsData, error: assignmentsError } = await supabase
           .from('assignments')
-          .select('*, house:houses(*)')
-          .eq('employee_id', user.id);
+          .select('*, house:houses(*)') as { data: (AssignmentRow & { house: HouseRow })[] | null, error: any };
 
         if (assignmentsError) throw assignmentsError;
 
-        // Extract unique house IDs from assignments
-        const houseIds = assignmentsData.map(a => a.house_id);
+        if (assignmentsData) {
+          // Extract house IDs from assignments
+          const houseIds = assignmentsData
+            .filter(a => a.house_id)
+            .map(a => a.house_id);
 
-        // Fetch houses
-        const { data: housesData, error: housesError } = await supabase
-          .from('houses')
-          .select('*')
-          .in('id', houseIds);
+          // Fetch houses
+          const { data: housesData, error: housesError } = await supabase
+            .from('houses')
+            .select('*')
+            .in('id', houseIds) as { data: HouseRow[] | null, error: any };
 
-        if (housesError) throw housesError;
+          if (housesError) throw housesError;
 
-        setAssignments(assignmentsData);
-        setHouses(housesData);
+          if (assignmentsData && housesData) {
+            const mappedAssignments: Assignment[] = assignmentsData.map(a => ({
+              id: a.id,
+              house_id: a.house_id,
+              employee_id: a.employee_id,
+              status: a.status,
+              assigned_date: a.assigned_date,
+              completed_at: a.completed_at,
+              created_at: a.created_at,
+              house: a.house
+            }));
+
+            const mappedHouses: House[] = housesData.map(h => ({
+              id: h.id,
+              address: h.address,
+              latitude: h.latitude,
+              longitude: h.longitude,
+              created_at: h.created_at
+            }));
+
+            setAssignments(mappedAssignments);
+            setHouses(mappedHouses);
+          }
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
@@ -119,11 +144,21 @@ export default function EmployeeDashboard() {
           // Refetch data when assignments change
           const { data, error } = await supabase
             .from('assignments')
-            .select('*, house:houses(*)')
-            .eq('employee_id', user.id);
+            .select('*, house:houses(*)') as { data: (AssignmentRow & { house: HouseRow })[] | null, error: any };
 
           if (!error && data) {
-            setAssignments(data);
+            const mappedAssignments: Assignment[] = data.map(a => ({
+              id: a.id,
+              house_id: a.house_id,
+              employee_id: a.employee_id,
+              status: a.status,
+              assigned_date: a.assigned_date,
+              completed_at: a.completed_at,
+              created_at: a.created_at,
+              house: a.house
+            }));
+            
+            setAssignments(mappedAssignments);
           }
         }
       )

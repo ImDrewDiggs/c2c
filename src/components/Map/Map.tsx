@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -52,16 +53,20 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
 
   // Update employee location in real-time
   const updateLocation = async (userId: string, location: Location) => {
+    if (!userId || !location) return;
+    
+    const locationData: Partial<EmployeeLocationRow> = {
+      employee_id: userId,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      timestamp: new Date().toISOString(),
+      is_online: true,
+      last_seen_at: new Date().toISOString(),
+    };
+
     const { error } = await supabase
       .from('employee_locations')
-      .upsert({
-        employee_id: userId,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        timestamp: new Date().toISOString(),
-        is_online: true,
-        last_seen_at: new Date().toISOString(),
-      } as EmployeeLocationRow, {
+      .upsert(locationData, {
         onConflict: 'employee_id'
       });
 

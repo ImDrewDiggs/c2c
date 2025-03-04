@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -13,7 +14,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Calendar } from '@/components/ui/calendar';
 import { AppointmentRow } from '@/lib/supabase-types';
 
 interface Appointment {
@@ -62,16 +62,18 @@ export default function Schedule() {
   // Create new appointment
   const createAppointment = useMutation({
     mutationFn: async (date: Date) => {
+      const newAppointment: Omit<AppointmentRow, 'id' | 'created_at' | 'updated_at'> = {
+        title: 'Pickup',
+        start_time: date.toISOString(),
+        end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+        status: 'pending',
+        location_id: '1', // You might want to make this dynamic based on user's location
+        user_id: '1', // This should be the actual user's ID when authentication is implemented
+      };
+
       const { data, error } = await supabase
         .from('appointments')
-        .insert([{
-          title: 'Pickup',
-          start_time: date.toISOString(),
-          end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
-          status: 'pending',
-          location_id: '1', // You might want to make this dynamic based on user's location
-          user_id: '1', // This should be the actual user's ID when authentication is implemented
-        } as AppointmentRow])
+        .insert([newAppointment])
         .select()
         .single();
 

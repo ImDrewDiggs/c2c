@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,9 +89,11 @@ export default function AdminDashboard() {
     queryKey: ["houses"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("houses")
-        .select("*") as { data: HouseRow[] | null, error: any };
+        .from('houses')
+        .select('*') as { data: HouseRow[] | null, error: any };
+      
       if (error) throw error;
+      
       return data?.map(house => ({
         id: house.id,
         address: house.address,
@@ -105,9 +108,11 @@ export default function AdminDashboard() {
     queryKey: ["assignments"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("assignments")
-        .select("*") as { data: AssignmentRow[] | null, error: any };
+        .from('assignments')
+        .select('*') as { data: AssignmentRow[] | null, error: any };
+      
       if (error) throw error;
+      
       return data?.map(assignment => ({
         id: assignment.id,
         house_id: assignment.house_id,
@@ -137,7 +142,7 @@ export default function AdminDashboard() {
             .select('*') as { data: EmployeeLocationRow[] | null, error: any };
           
           if (!error && locations) {
-            setEmployeeLocations(locations.map(loc => ({
+            const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
               id: loc.id,
               employee_id: loc.employee_id,
               latitude: loc.latitude,
@@ -145,8 +150,10 @@ export default function AdminDashboard() {
               timestamp: loc.timestamp,
               is_online: loc.is_online,
               last_seen_at: loc.last_seen_at
-            })));
-            setActiveEmployees(locations.length);
+            }));
+            
+            setEmployeeLocations(mappedLocations);
+            setActiveEmployees(mappedLocations.length);
           }
         }
       )
@@ -159,7 +166,7 @@ export default function AdminDashboard() {
         .select('*') as { data: EmployeeLocationRow[] | null, error: any };
       
       if (!error && locations) {
-        setEmployeeLocations(locations.map(loc => ({
+        const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
           id: loc.id,
           employee_id: loc.employee_id,
           latitude: loc.latitude,
@@ -167,8 +174,10 @@ export default function AdminDashboard() {
           timestamp: loc.timestamp,
           is_online: loc.is_online,
           last_seen_at: loc.last_seen_at
-        })));
-        setActiveEmployees(locations.length);
+        }));
+        
+        setEmployeeLocations(mappedLocations);
+        setActiveEmployees(mappedLocations.length);
       }
     };
 
