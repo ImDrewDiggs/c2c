@@ -55,7 +55,9 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
   const updateLocation = async (userId: string, location: Location) => {
     if (!userId || !location) return;
     
-    const locationData: Partial<EmployeeLocationRow> = {
+    // Instead of using Partial<EmployeeLocationRow>, explicitly define the object
+    // with required latitude and longitude fields to satisfy TypeScript
+    const locationData = {
       employee_id: userId,
       latitude: location.latitude,
       longitude: location.longitude,
