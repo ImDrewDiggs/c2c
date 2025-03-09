@@ -10,7 +10,8 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MapPin, RefreshCw, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPin, RefreshCw, Clock, Search, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EmployeeLocation, Location } from "@/types/map";
 import Map from "@/components/Map/Map";
@@ -31,8 +32,11 @@ interface EmployeeTrackerProps {
 
 export function EmployeeTracker({ employeeLocations, currentLocation }: EmployeeTrackerProps) {
   const [employees, setEmployees] = useState<EmployeeData[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<EmployeeData[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
   // Fetch employee profiles to map to locations
   useEffect(() => {
@@ -53,7 +57,7 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
           
           return {
             id: location.employee_id,
-            name: profile?.full_name || 'Unknown Employee',
+            name: profile?.full_name || `Employee ID: ${location.employee_id.substring(0, 8)}...`,
             startTime: new Date(location.timestamp || new Date()).toLocaleTimeString(),
             status: location.is_online ? 'active' : 'inactive',
             lastActive: new Date(location.last_seen_at || new Date()).toLocaleString(),
@@ -62,11 +66,33 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
         });
 
         setEmployees(employeeData);
+        setFilteredEmployees(employeeData);
       }
     }
 
     fetchEmployeeData();
   }, [employeeLocations]);
+
+  // Filter employees based on search and status filter
+  useEffect(() => {
+    let filtered = employees;
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(emp => 
+        emp.name.toLowerCase().includes(query) || 
+        emp.id.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(emp => emp.status === statusFilter);
+    }
+    
+    setFilteredEmployees(filtered);
+  }, [searchQuery, statusFilter, employees]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -93,6 +119,44 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
             Refresh
           </Button>
         </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search employees..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant={statusFilter === "all" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setStatusFilter("all")}
+            >
+              All
+            </Button>
+            <Button 
+              variant={statusFilter === "active" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setStatusFilter("active")}
+              className={statusFilter === "active" ? "bg-green-600 hover:bg-green-700" : ""}
+            >
+              Active
+            </Button>
+            <Button 
+              variant={statusFilter === "inactive" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setStatusFilter("inactive")}
+              className={statusFilter === "inactive" ? "bg-gray-500 hover:bg-gray-600" : ""}
+            >
+              Inactive
+            </Button>
+          </div>
+        </div>
         
         <Table>
           <TableHeader>
@@ -105,7 +169,7 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
             </TableRow>
           </TableHeader>
           <TableBody>
-            {employees.map((employee) => (
+            {filteredEmployees.map((employee) => (
               <TableRow key={employee.id} className={selectedEmployee === employee.id ? 'bg-accent/20' : ''}>
                 <TableCell className="font-medium">{employee.name}</TableCell>
                 <TableCell>{employee.startTime}</TableCell>
@@ -137,10 +201,10 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
                 </TableCell>
               </TableRow>
             ))}
-            {employees.length === 0 && (
+            {filteredEmployees.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-4 text-gray-500">
-                  No active employees found
+                  {employees.length === 0 ? 'No active employees found' : 'No employees match your filters'}
                 </TableCell>
               </TableRow>
             )}
@@ -162,6 +226,15 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
             currentLocation={currentLocation}
             employeeLocations={filteredLocations}
           />
+        </div>
+
+        <div className="mt-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span>
+              Map updates automatically. Last refresh: {new Date().toLocaleTimeString()}
+            </span>
+          </div>
         </div>
       </Card>
     </div>

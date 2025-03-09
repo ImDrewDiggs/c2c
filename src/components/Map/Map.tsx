@@ -26,6 +26,42 @@ const employeeIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+const activeEmployeeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const adminIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const completedHouseIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const pendingHouseIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 interface MapProps {
   houses: House[];
   assignments: Assignment[];
@@ -46,8 +82,75 @@ function AutoCenter({ currentLocation }: { currentLocation: Location | null }) {
   return null;
 }
 
+// Real-time location tracking
+function LocationTracker() {
+  const map = useMap();
+  const { user, userData } = useAuth();
+  const watchId = useRef<number | null>(null);
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    // Only track location for employees and admins
+    if (userData?.role !== 'employee' && userData?.role !== 'admin') return;
+    
+    // Update location every 15 seconds
+    const updateInterval = setInterval(async () => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            
+            // Update Supabase with current location
+            if (userData?.role === 'employee') {
+              try {
+                const locationData = {
+                  employee_id: user.id,
+                  latitude: latitude,
+                  longitude: longitude,
+                  timestamp: new Date().toISOString(),
+                  is_online: true,
+                  last_seen_at: new Date().toISOString(),
+                };
+                
+                const { error } = await supabase
+                  .from('employee_locations')
+                  .upsert(locationData, {
+                    onConflict: 'employee_id'
+                  });
+                
+                if (error) {
+                  console.error('Error updating location:', error);
+                } else {
+                  console.log('Location updated successfully');
+                }
+              } catch (error) {
+                console.error('Error in location tracking:', error);
+              }
+            }
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+          },
+          { enableHighAccuracy: true }
+        );
+      }
+    }, 15000);
+    
+    return () => {
+      clearInterval(updateInterval);
+      if (watchId.current !== null) {
+        navigator.geolocation.clearWatch(watchId.current);
+      }
+    };
+  }, [user, userData]);
+  
+  return null;
+}
+
 export default function Map({ houses, assignments, currentLocation, employeeLocations = [] }: MapProps) {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const mapRef = useRef<L.Map | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,8 +158,6 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
   const updateLocation = async (userId: string, location: Location) => {
     if (!userId || !location) return;
     
-    // Instead of using Partial<EmployeeLocationRow>, explicitly define the object
-    // with required latitude and longitude fields to satisfy TypeScript
     const locationData = {
       employee_id: userId,
       latitude: location.latitude,
@@ -74,22 +175,45 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
 
     if (error) {
       console.error('Error updating location:', error);
+    } else {
+      console.log('Location updated successfully');
     }
   };
 
   useEffect(() => {
-    if (!user || !currentLocation) return;
+    if (!user || !currentLocation || userData?.role !== 'employee') return;
 
     const updateEmployeeLocation = async () => {
       await updateLocation(user.id, currentLocation);
     };
 
     updateEmployeeLocation();
-  }, [currentLocation, user]);
+    
+    // Set up interval to update location regularly
+    const intervalId = setInterval(() => {
+      if (user && currentLocation) {
+        updateEmployeeLocation();
+      }
+    }, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, [currentLocation, user, userData]);
 
   if (!currentLocation) {
     return <div>Loading map...</div>;
   }
+
+  // Get assignment status for each house
+  const getHouseStatus = (houseId: string) => {
+    const assignment = assignments.find(a => a.house_id === houseId);
+    return assignment?.status || 'unassigned';
+  };
+
+  // Get assigned employee for each house
+  const getAssignedEmployee = (houseId: string) => {
+    const assignment = assignments.find(a => a.house_id === houseId);
+    return assignment?.employee_id || null;
+  };
 
   return (
     <MapContainer
@@ -104,8 +228,20 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
       />
       
       {/* Current location marker */}
-      <Marker position={[currentLocation.latitude, currentLocation.longitude]}>
-        <Popup>Admin location</Popup>
+      <Marker 
+        position={[currentLocation.latitude, currentLocation.longitude]}
+        icon={userData?.role === 'admin' ? adminIcon : activeEmployeeIcon}
+      >
+        <Popup>
+          <div className="text-sm">
+            <p className="font-semibold">
+              {userData?.role === 'admin' ? 'Admin Location' : 'Your Location'}
+            </p>
+            <p className="text-gray-600">
+              Last updated: {new Date().toLocaleTimeString()}
+            </p>
+          </div>
+        </Popup>
       </Marker>
 
       {/* Employee location markers */}
@@ -113,12 +249,15 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
         <Marker
           key={employee.id}
           position={[employee.latitude, employee.longitude]}
-          icon={employeeIcon}
+          icon={employee.is_online ? activeEmployeeIcon : employeeIcon}
         >
           <Popup>
             <div className="text-sm">
               <p className="font-semibold">Employee ID: {employee.employee_id}</p>
-              <p className="text-gray-600">
+              <p className="text-xs text-gray-600">
+                Status: {employee.is_online ? 'Active' : 'Inactive'}
+              </p>
+              <p className="text-xs text-gray-600">
                 Last seen: {new Date(employee.last_seen_at || '').toLocaleString()}
               </p>
             </div>
@@ -127,28 +266,43 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
       ))}
 
       {/* House markers */}
-      {houses.map((house) => (
-        <Marker
-          key={house.id}
-          position={[house.latitude, house.longitude]}
-          icon={L.divIcon({
-            className: 'custom-div-icon',
-            html: `<div style="background-color: #4F46E5; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>`,
-            iconSize: [10, 10],
-          })}
-        >
-          <Popup>
-            <div className="text-sm">
-              <p className="font-semibold">{house.address}</p>
-              <p className="text-gray-600">
-                Status: {assignments.find(a => a.house_id === house.id)?.status || 'unassigned'}
-              </p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {houses.map((house) => {
+        const status = getHouseStatus(house.id);
+        const icon = status === 'completed' ? completedHouseIcon : 
+                     status === 'pending' ? pendingHouseIcon : L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+        
+        return (
+          <Marker
+            key={house.id}
+            position={[house.latitude, house.longitude]}
+            icon={icon}
+          >
+            <Popup>
+              <div className="text-sm">
+                <p className="font-semibold">{house.address}</p>
+                <p className="text-gray-600">
+                  Status: <span className="capitalize">{status}</span>
+                </p>
+                {getAssignedEmployee(house.id) && (
+                  <p className="text-gray-600">
+                    Assigned to: Employee {getAssignedEmployee(house.id)}
+                  </p>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
 
       <AutoCenter currentLocation={currentLocation} />
+      <LocationTracker />
     </MapContainer>
   );
 }

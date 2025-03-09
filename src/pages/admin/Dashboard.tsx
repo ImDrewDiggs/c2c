@@ -54,7 +54,7 @@ export default function AdminDashboard() {
   const [adminRestricted, setAdminRestricted] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is admin
+  // Check if user is admin with correct credentials
   useEffect(() => {
     if (userData) {
       if (userData.role !== 'admin') {
@@ -64,8 +64,11 @@ export default function AdminDashboard() {
           title: "Access Denied",
           description: "You do not have permission to access the admin dashboard.",
         });
-      } else if (userData.email !== 'diggs844037@yahoo.com') {
-        // Allow access but with restrictions
+      } else if (userData.email === 'diggs844037@yahoo.com') {
+        // Super admin with full access
+        setAdminRestricted(false);
+      } else {
+        // Regular admin with restrictions
         setAdminRestricted(true);
       }
       setLoading(false);
@@ -137,6 +140,8 @@ export default function AdminDashboard() {
           table: 'employee_locations'
         },
         async (payload) => {
+          console.log("Real-time location update received:", payload);
+          
           const { data: locations, error } = await supabase
             .from('employee_locations')
             .select('*') as { data: EmployeeLocationRow[] | null, error: any };
@@ -153,7 +158,7 @@ export default function AdminDashboard() {
             }));
             
             setEmployeeLocations(mappedLocations);
-            setActiveEmployees(mappedLocations.length);
+            setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
           }
         }
       )
@@ -166,6 +171,8 @@ export default function AdminDashboard() {
         .select('*') as { data: EmployeeLocationRow[] | null, error: any };
       
       if (!error && locations) {
+        console.log("Initial employee locations loaded:", locations);
+        
         const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
           id: loc.id,
           employee_id: loc.employee_id,
@@ -177,7 +184,7 @@ export default function AdminDashboard() {
         }));
         
         setEmployeeLocations(mappedLocations);
-        setActiveEmployees(mappedLocations.length);
+        setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
       }
     };
 

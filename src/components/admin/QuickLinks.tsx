@@ -10,7 +10,13 @@ import {
   Calendar, 
   Building, 
   Trash2,
-  User
+  User,
+  MapPin,
+  Truck,
+  BarChart,
+  Bell,
+  HelpCircle,
+  MessageSquare
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -19,70 +25,133 @@ interface QuickLinksProps {
 }
 
 export function QuickLinks({ superAdmin }: QuickLinksProps) {
+  const mainActions = [
+    {
+      label: "Manage Employees",
+      icon: Users,
+      path: "/admin/employees",
+      description: "Add, edit and manage employee accounts"
+    },
+    {
+      label: "Manage Customers",
+      icon: User,
+      path: "/admin/customers",
+      description: "View and manage customer accounts"
+    },
+    {
+      label: "Update Pricing",
+      icon: DollarSign,
+      path: "/admin/pricing",
+      description: "Update service pricing plans"
+    },
+    {
+      label: "Schedules",
+      icon: Calendar,
+      path: "/admin/schedules",
+      description: "View and manage collection schedules"
+    }
+  ];
+
+  const superAdminActions = [
+    {
+      label: "Site Settings",
+      icon: Settings,
+      path: "/admin/settings",
+      description: "Configure global site settings"
+    },
+    {
+      label: "Reports",
+      icon: FileText,
+      path: "/admin/reports",
+      description: "Generate detailed reports"
+    },
+    {
+      label: "Properties",
+      icon: Building,
+      path: "/admin/properties",
+      description: "Manage service locations"
+    },
+    {
+      label: "Service Logs",
+      icon: Trash2,
+      path: "/admin/service-logs",
+      description: "Review service history and logs"
+    },
+    {
+      label: "GPS Tracking",
+      icon: MapPin,
+      path: "/admin/gps-tracking",
+      description: "Real-time employee location tracking"
+    },
+    {
+      label: "Fleet Management",
+      icon: Truck,
+      path: "/admin/fleet",
+      description: "Manage waste collection vehicles"
+    },
+    {
+      label: "Advanced Analytics",
+      icon: BarChart,
+      path: "/admin/advanced-analytics",
+      description: "In-depth business analytics"
+    },
+    {
+      label: "Notifications",
+      icon: Bell,
+      path: "/admin/notifications",
+      description: "Manage system notifications"
+    },
+    {
+      label: "Knowledge Base",
+      icon: HelpCircle,
+      path: "/admin/knowledge-base",
+      description: "Documentation and training resources"
+    },
+    {
+      label: "Support Tickets",
+      icon: MessageSquare,
+      path: "/admin/support-tickets",
+      description: "View and respond to support requests"
+    }
+  ];
+
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
+      
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Link to="/admin/employees">
-          <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-            <Users className="h-5 w-5" />
-            <span>Manage Employees</span>
-          </Button>
-        </Link>
-        
-        <Link to="/admin/customers">
-          <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-            <User className="h-5 w-5" />
-            <span>Manage Customers</span>
-          </Button>
-        </Link>
-        
-        <Link to="/admin/pricing">
-          <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-            <DollarSign className="h-5 w-5" />
-            <span>Update Pricing</span>
-          </Button>
-        </Link>
-        
-        <Link to="/admin/schedules">
-          <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-            <Calendar className="h-5 w-5" />
-            <span>Schedules</span>
-          </Button>
-        </Link>
-
-        {superAdmin && (
-          <>
-            <Link to="/admin/settings">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-                <Settings className="h-5 w-5" />
-                <span>Site Settings</span>
-              </Button>
-            </Link>
-            
-            <Link to="/admin/reports">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-                <FileText className="h-5 w-5" />
-                <span>Reports</span>
-              </Button>
-            </Link>
-            
-            <Link to="/admin/properties">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-                <Building className="h-5 w-5" />
-                <span>Properties</span>
-              </Button>
-            </Link>
-            
-            <Link to="/admin/service-logs">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-1">
-                <Trash2 className="h-5 w-5" />
-                <span>Service Logs</span>
-              </Button>
-            </Link>
-          </>
-        )}
+        {mainActions.map((action, index) => (
+          <Link to={action.path} key={index}>
+            <Button variant="outline" className="w-full h-24 flex flex-col gap-1">
+              <action.icon className="h-5 w-5" />
+              <span>{action.label}</span>
+              <span className="text-xs text-muted-foreground line-clamp-1">{action.description}</span>
+            </Button>
+          </Link>
+        ))}
       </div>
+      
+      {superAdmin && (
+        <>
+          <div className="mt-6 mb-4 flex items-center">
+            <div className="h-px flex-1 bg-muted"></div>
+            <span className="px-4 text-sm text-muted-foreground">Super Admin Actions</span>
+            <div className="h-px flex-1 bg-muted"></div>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {superAdminActions.map((action, index) => (
+              <Link to={action.path} key={index}>
+                <Button variant="outline" className="w-full h-24 flex flex-col gap-1">
+                  <action.icon className="h-5 w-5" />
+                  <span className="text-sm leading-tight">{action.label}</span>
+                  <span className="text-xs text-muted-foreground line-clamp-1">{action.description}</span>
+                </Button>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </Card>
   );
 }
