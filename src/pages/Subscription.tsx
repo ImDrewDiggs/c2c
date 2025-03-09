@@ -1,31 +1,9 @@
-
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { CheckCircle2, Circle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-interface ServiceTier {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  features: string[];
-  perk?: string;
-}
-
-interface CommunityTier {
-  id: string;
-  unitRange: string;
-  rangeStart: number;
-  rangeEnd: number | null;
-  discount: number;
-  standardPrice: number;
-  premiumPrice: number;
-  comprehensivePrice: number;
-  premierePrice: number;
-}
+import PricingDisplay from "@/components/subscription/PricingDisplay";
+import SingleFamilyPlans, { ServiceTier } from "@/components/subscription/SingleFamilyPlans";
+import MultiFamilyPlans, { CommunityTier, ServiceType } from "@/components/subscription/MultiFamilyPlans";
 
 const singleFamilyTiers: ServiceTier[] = [
   {
@@ -206,7 +184,7 @@ const communityTiers: CommunityTier[] = [
   }
 ];
 
-const communityServiceTypes = [
+const communityServiceTypes: ServiceType[] = [
   { id: "standard", name: "Standard Service" },
   { id: "premium", name: "Premium Service" },
   { id: "comprehensive", name: "Comprehensive Service" },
@@ -271,31 +249,14 @@ const Subscription = () => {
     return 0;
   };
 
-  const getSelectedCommunityTierData = () => {
-    return communityTiers.find(tier => tier.id === selectedCommunityTier);
-  };
-
   return (
     <div className="min-h-screen py-12">
       <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass mb-8 p-6"
-        >
-          <h2 className="text-2xl font-bold text-center mb-2">
-            Selected Services Total
-          </h2>
-          <p className="text-4xl font-bold text-primary text-center">
-            ${calculateTotal().toFixed(2)}
-            <span className="text-lg text-gray-400">/month</span>
-          </p>
-          {selectedTab === "multi-family" && getDiscount() > 0 && (
-            <p className="text-center text-sm text-green-600 mt-2">
-              Includes {getDiscount()}% volume discount
-            </p>
-          )}
-        </motion.div>
+        <PricingDisplay 
+          total={calculateTotal()} 
+          discount={getDiscount()} 
+          subscriptionType={selectedTab} 
+        />
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -304,158 +265,27 @@ const Subscription = () => {
           </TabsList>
 
           <TabsContent value="single-family">
-            <div className="card p-6">
-              <h3 className="text-xl font-semibold mb-4">Choose Your Service Plan</h3>
-              
-              <div className="space-y-4">
-                {singleFamilyTiers.map((tier) => (
-                  <div 
-                    key={tier.id}
-                    className={`flex items-start space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedTier === tier.id ? "bg-primary/10" : "hover:bg-secondary/5"
-                    }`}
-                    onClick={() => setSelectedTier(tier.id)}
-                  >
-                    <div className="mt-0.5 flex-shrink-0">
-                      {selectedTier === tier.id ? (
-                        <CheckCircle2 className="h-5 w-5 text-primary" />
-                      ) : (
-                        <Circle className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-baseline justify-between">
-                        <h4 className="font-medium">{tier.name}</h4>
-                        <span className="text-primary font-semibold">${tier.price}/month</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{tier.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {getSelectedTier() && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-6"
-                >
-                  <h4 className="font-semibold mb-2">Included Features:</h4>
-                  <ul className="space-y-2">
-                    {getSelectedTier()?.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2">
-                        <CheckCircle2 className="text-primary h-5 w-5 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  {getSelectedTier()?.perk && (
-                    <div className="mt-4 p-4 bg-secondary/10 rounded-lg">
-                      <p className="text-sm text-muted-foreground">{getSelectedTier()?.perk}</p>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </div>
+            <SingleFamilyPlans
+              tiers={singleFamilyTiers}
+              selectedTier={selectedTier}
+              onTierSelect={setSelectedTier}
+            />
           </TabsContent>
 
           <TabsContent value="multi-family">
-            <div className="card p-6">
-              <h3 className="text-xl font-semibold mb-4">Choose Your Community Plan</h3>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Number of Units</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={unitCount || ""}
-                    onChange={(e) => setUnitCount(parseInt(e.target.value) || 0)}
-                    placeholder="Enter number of units"
-                  />
-                  {unitCount > 0 && unitCount <= 10 && (
-                    <p className="text-sm text-yellow-600 mt-1">
-                      For communities with 10 or fewer units, please contact us for custom pricing.
-                    </p>
-                  )}
-                </div>
-
-                {unitCount > 10 && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Community Size & Discount</label>
-                      <div className="grid gap-3">
-                        {communityTiers.map((tier) => (
-                          <div 
-                            key={tier.id}
-                            className={`flex items-start space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                              selectedCommunityTier === tier.id ? "bg-primary/10" : "hover:bg-secondary/5"
-                            }`}
-                            onClick={() => setSelectedCommunityTier(tier.id)}
-                          >
-                            <div className="mt-0.5 flex-shrink-0">
-                              {selectedCommunityTier === tier.id ? (
-                                <CheckCircle2 className="h-5 w-5 text-primary" />
-                              ) : (
-                                <Circle className="h-5 w-5 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-baseline justify-between">
-                                <h4 className="font-medium">{tier.unitRange} Units</h4>
-                                <span className="text-green-600 font-semibold">{tier.discount}% Discount</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Service Level</label>
-                      <div className="grid gap-3">
-                        {communityServiceTypes.map((service) => (
-                          <div 
-                            key={service.id}
-                            className={`flex items-start space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                              selectedCommunityService === service.id ? "bg-primary/10" : "hover:bg-secondary/5"
-                            }`}
-                            onClick={() => setSelectedCommunityService(service.id)}
-                          >
-                            <div className="mt-0.5 flex-shrink-0">
-                              {selectedCommunityService === service.id ? (
-                                <CheckCircle2 className="h-5 w-5 text-primary" />
-                              ) : (
-                                <Circle className="h-5 w-5 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div>
-                              <h4 className="font-medium">{service.name}</h4>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {unitCount > 10 && selectedCommunityService && selectedCommunityTier && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="p-4 bg-secondary/10 rounded-lg"
-                  >
-                    <h4 className="font-semibold mb-2">Pricing Details:</h4>
-                    <ul className="space-y-2">
-                      <li>Price per unit: ${getPricePerUnit().toFixed(2)}</li>
-                      <li>Number of units: {unitCount}</li>
-                      <li>Volume discount: {getDiscount()}%</li>
-                      <li className="font-semibold">Total monthly cost: ${calculateTotal().toFixed(2)}</li>
-                    </ul>
-                  </motion.div>
-                )}
-              </div>
-            </div>
+            <MultiFamilyPlans
+              unitCount={unitCount}
+              onUnitCountChange={setUnitCount}
+              communityTiers={communityTiers}
+              serviceTypes={communityServiceTypes}
+              selectedCommunityTierId={selectedCommunityTier}
+              selectedServiceId={selectedCommunityService}
+              onCommunityTierSelect={setSelectedCommunityTier}
+              onServiceSelect={setSelectedCommunityService}
+              pricePerUnit={getPricePerUnit()}
+              totalPrice={calculateTotal()}
+              discount={getDiscount()}
+            />
           </TabsContent>
         </Tabs>
 
