@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -53,7 +52,6 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
-  // Check if user is admin with correct credentials
   useEffect(() => {
     if (userData) {
       if (userData.role !== 'admin') {
@@ -120,7 +118,6 @@ export default function AdminDashboard() {
     },
   });
 
-  // Subscribe to real-time employee location updates
   useEffect(() => {
     const channel = supabase
       .channel('employee-locations')
@@ -156,7 +153,6 @@ export default function AdminDashboard() {
       )
       .subscribe();
 
-    // Initial fetch of employee locations
     const fetchEmployeeLocations = async () => {
       const { data: locations, error } = await supabase
         .from('employee_locations')
@@ -187,7 +183,6 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // Get admin's location for map center
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -199,7 +194,6 @@ export default function AdminDashboard() {
         },
         (error) => {
           console.error("Error getting location:", error);
-          // Default to a central location if geolocation fails
           setCurrentLocation({
             latitude: 40.7128,
             longitude: -74.0060,
@@ -280,9 +274,7 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="users">
-          <UserManagement 
-            superAdmin={isSuperAdmin} 
-          />
+          <UserManagement />
         </TabsContent>
       </Tabs>
     </div>

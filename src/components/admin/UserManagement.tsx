@@ -33,6 +33,7 @@ interface UserData {
   phone?: string;
 }
 
+// Update the component to not take props since we'll use useAuth directly
 export function UserManagement() {
   const [employees, setEmployees] = useState<UserData[]>([]);
   const [customers, setCustomers] = useState<UserData[]>([]);
