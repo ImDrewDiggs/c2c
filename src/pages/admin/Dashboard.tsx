@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { House, Assignment, EmployeeLocation } from "@/types/map";
 import { StatsOverview } from "@/components/admin/StatsOverview";
 import { PickupsTable } from "@/components/admin/PickupsTable";
@@ -49,27 +49,19 @@ export default function AdminDashboard() {
   const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<number>(0);
-  const { user, userData } = useAuth();
+  const { user, userData, isSuperAdmin } = useAuth();
   const { toast } = useToast();
-  const [adminRestricted, setAdminRestricted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Check if user is admin with correct credentials
   useEffect(() => {
     if (userData) {
       if (userData.role !== 'admin') {
-        setAdminRestricted(true);
         toast({
           variant: "destructive",
           title: "Access Denied",
           description: "You do not have permission to access the admin dashboard.",
         });
-      } else if (userData.email === 'diggs844037@yahoo.com') {
-        // Super admin with full access
-        setAdminRestricted(false);
-      } else {
-        // Regular admin with restrictions
-        setAdminRestricted(true);
       }
       setLoading(false);
     }
@@ -240,7 +232,7 @@ export default function AdminDashboard() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        {userData?.email === 'diggs844037@yahoo.com' && (
+        {isSuperAdmin && (
           <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
             Super Admin
           </div>
@@ -252,7 +244,7 @@ export default function AdminDashboard() {
         activeEmployeesCount={activeEmployees}
       />
 
-      <QuickLinks superAdmin={userData?.email === 'diggs844037@yahoo.com'} />
+      <QuickLinks />
 
       <Tabs defaultValue="operations" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full md:w-auto">
@@ -289,7 +281,7 @@ export default function AdminDashboard() {
 
         <TabsContent value="users">
           <UserManagement 
-            superAdmin={userData?.email === 'diggs844037@yahoo.com'} 
+            superAdmin={isSuperAdmin} 
           />
         </TabsContent>
       </Tabs>

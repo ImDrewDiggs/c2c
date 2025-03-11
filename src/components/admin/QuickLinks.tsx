@@ -19,12 +19,11 @@ import {
   MessageSquare
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface QuickLinksProps {
-  superAdmin: boolean;
-}
-
-export function QuickLinks({ superAdmin }: QuickLinksProps) {
+export function QuickLinks() {
+  const { isSuperAdmin } = useAuth();
+  
   const mainActions = [
     {
       label: "Manage Employees",
@@ -131,7 +130,7 @@ export function QuickLinks({ superAdmin }: QuickLinksProps) {
         ))}
       </div>
       
-      {superAdmin && (
+      {isSuperAdmin && (
         <>
           <div className="mt-6 mb-4 flex items-center">
             <div className="h-px flex-1 bg-muted"></div>

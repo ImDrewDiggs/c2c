@@ -20,8 +20,9 @@ import {
   Shield,
   User
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserData {
   id: string;
@@ -32,16 +33,13 @@ interface UserData {
   phone?: string;
 }
 
-interface UserManagementProps {
-  superAdmin: boolean;
-}
-
-export function UserManagement({ superAdmin }: UserManagementProps) {
+export function UserManagement() {
   const [employees, setEmployees] = useState<UserData[]>([]);
   const [customers, setCustomers] = useState<UserData[]>([]);
   const [admins, setAdmins] = useState<UserData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -64,7 +62,7 @@ export function UserManagement({ superAdmin }: UserManagementProps) {
       
       // Fetch admins (only for super admin)
       let adminData: UserData[] = [];
-      if (superAdmin) {
+      if (isSuperAdmin) {
         const { data: admins, error: adminError } = await supabase
           .from('profiles')
           .select('*')
@@ -92,7 +90,7 @@ export function UserManagement({ superAdmin }: UserManagementProps) {
 
   useEffect(() => {
     fetchUsers();
-  }, [superAdmin, toast]);
+  }, [isSuperAdmin, toast]);
 
   const handleRefresh = () => {
     fetchUsers();
@@ -161,7 +159,7 @@ export function UserManagement({ superAdmin }: UserManagementProps) {
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                {superAdmin && (
+                {isSuperAdmin && (
                   <Button 
                     variant="ghost" 
                     size="sm"
@@ -200,7 +198,7 @@ export function UserManagement({ superAdmin }: UserManagementProps) {
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            {superAdmin && (
+            {isSuperAdmin && (
               <Button size="sm">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add User
@@ -219,7 +217,7 @@ export function UserManagement({ superAdmin }: UserManagementProps) {
               <User className="h-4 w-4 mr-2" />
               Customers
             </TabsTrigger>
-            {superAdmin && (
+            {isSuperAdmin && (
               <TabsTrigger value="admins" className="flex items-center">
                 <Shield className="h-4 w-4 mr-2" />
                 Admins
@@ -235,7 +233,7 @@ export function UserManagement({ superAdmin }: UserManagementProps) {
             <UserTable users={customers} userType="customer" />
           </TabsContent>
 
-          {superAdmin && (
+          {isSuperAdmin && (
             <TabsContent value="admins">
               <UserTable users={admins} userType="admin" />
             </TabsContent>
