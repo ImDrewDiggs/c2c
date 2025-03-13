@@ -1,9 +1,11 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -19,10 +21,13 @@ const Index = () => {
           <p className="text-lg md:text-xl text-gray-300 mb-8">
             Professional trash can maintenance services that keep your property clean and hygienic
           </p>
-          <Link to="/services-and-prices" className="btn-primary inline-flex items-center group">
+          <button 
+            onClick={() => navigate("/services-and-prices")} 
+            className="btn-primary inline-flex items-center group"
+          >
             Get Started Today
             <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
         </motion.div>
       </section>
 

@@ -10,7 +10,7 @@ const navigation = [
   { name: "Testimonials", path: "/testimonials" },
   { name: "Services & Pricing", path: "/services-and-prices" },
   { name: "Subscription", path: "/subscription" },
-  { name: "FAQs", path: "/faq" }, // Updated to match the correct route in App.tsx
+  { name: "FAQs", path: "/faq" },
   { name: "Contact Us", path: "/contact" },
 ];
 
@@ -19,8 +19,11 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const handleNavigation = (path: string) => {
-    navigate(path);
     setIsOpen(false);
+    // Add a small delay to ensure the menu closes before navigation
+    setTimeout(() => {
+      navigate(path);
+    }, 10);
   };
 
   return (
