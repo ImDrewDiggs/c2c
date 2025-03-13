@@ -1,32 +1,39 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, ArrowLeft } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CustomerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { signIn, loading } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await signIn(email, password, 'customer');
-    } catch (error: any) {
+    if (!email || !password) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "An error occurred during login",
+        description: "Please provide both email and password",
       });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await signIn(email, password, 'customer');
+    } catch (error: any) {
+      console.error("Login error:", error);
+      // Toast is already handled in the signIn function
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -79,6 +86,7 @@ export default function CustomerLogin() {
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting || loading}
                 />
               </div>
             </div>
@@ -98,14 +106,20 @@ export default function CustomerLogin() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isSubmitting || loading}
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+            <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
+              {(isSubmitting || loading) ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : "Sign in"}
             </Button>
           </div>
 

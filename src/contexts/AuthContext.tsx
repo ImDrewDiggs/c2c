@@ -31,28 +31,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
+  // Initial session check
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      } else {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session check:', session?.user?.email || 'No session');
+        
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchUserData(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
         setLoading(false);
+      } finally {
+        setSessionChecked(true);
       }
-    });
+    };
+    
+    checkSession();
+  }, []);
 
-    // Listen for auth changes
+  // Auth state change listener
+  useEffect(() => {
+    if (!sessionChecked) return;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
-      setUser(session?.user ?? null);
+      
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setUserData(null);
+        setIsSuperAdmin(false);
+        setLoading(false);
+        return;
+      }
+      
       if (session?.user) {
+        setUser(session.user);
         await fetchUserData(session.user.id);
       } else {
+        setUser(null);
         setUserData(null);
         setIsSuperAdmin(false);
         setLoading(false);
@@ -62,13 +90,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [sessionChecked]);
 
-  // Check if current route is allowed for user's role
+  // Route protection logic
   useEffect(() => {
-    if (!loading && user && userData) {
-      const currentPath = location.pathname;
-      
+    if (loading) return;
+    
+    const currentPath = location.pathname;
+    
+    // Handle authenticated users
+    if (user && userData) {
       // Administrator check
       setIsSuperAdmin(userData.email === ADMIN_EMAIL);
       
@@ -90,9 +121,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Redirect based on user role
         redirectBasedOnRole(userData.role);
       }
-    } else if (!loading && !user) {
+    } 
+    // Handle unauthenticated users
+    else if (!user) {
       // Check if the user is trying to access a protected route when not logged in
-      const currentPath = location.pathname;
       const isAnyProtectedRoute = Object.values(roleBasedRoutes).flat().some(route => 
         currentPath.startsWith(route)
       );
@@ -110,12 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function fetchUserData(userId: string) {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user data:', error);
@@ -125,9 +156,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: "Failed to fetch user data",
         });
         setUserData(null);
+        setLoading(false);
         return;
       }
 
+      if (!data) {
+        console.error('No user profile found');
+        toast({
+          variant: "destructive",
+          title: "Error", 
+          description: "User profile not found",
+        });
+        setUserData(null);
+        setLoading(false);
+        return;
+      }
+
+      console.log('User data fetched:', data);
       setUserData(data);
       setIsSuperAdmin(data.email === ADMIN_EMAIL);
     } catch (err) {
@@ -158,48 +203,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string, role: UserRole) => {
     try {
       setLoading(true);
+      console.log(`Attempting to sign in as ${role} with email: ${email}`);
+      
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (signInError) throw signInError;
-
-      if (signInData.user) {
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', signInData.user.id)
-          .single();
-
-        if (userError) {
-          console.error('Error fetching user role:', userError);
-          throw new Error('Failed to fetch user role');
-        }
-
-        if (!userData || userData.role !== role) {
-          await signOut();
-          throw new Error(`Invalid role for this login portal. You tried to login as ${role} but your account is registered as ${userData?.role || 'unknown'}.`);
-        }
-
-        await fetchUserData(signInData.user.id);
-
-        toast({
-          title: "Success",
-          description: "Successfully logged in",
-        });
-
-        // Redirect based on role
-        redirectBasedOnRole(role);
+      if (signInError) {
+        console.error('Sign in error:', signInError);
+        throw signInError;
       }
+
+      if (!signInData.user) {
+        throw new Error('No user returned from sign in');
+      }
+
+      console.log('User signed in successfully:', signInData.user.email);
+      
+      // Fetch user data to verify role
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', signInData.user.id)
+        .maybeSingle();
+
+      if (userError) {
+        console.error('Error fetching user role:', userError);
+        throw new Error('Failed to fetch user role');
+      }
+
+      if (!userData) {
+        console.error('No user profile found');
+        await signOut();
+        throw new Error('User profile not found. Please contact support.');
+      }
+
+      if (userData.role !== role) {
+        console.error(`Role mismatch: account is ${userData.role}, tried to login as ${role}`);
+        await signOut();
+        throw new Error(`Invalid role for this login portal. You tried to login as ${role} but your account is registered as ${userData.role}.`);
+      }
+
+      await fetchUserData(signInData.user.id);
+
+      toast({
+        title: "Success",
+        description: "Successfully logged in",
+      });
+
+      // Redirect based on role
+      redirectBasedOnRole(role);
     } catch (error: any) {
-      console.error('Sign in error:', error);
+      console.error('Sign in process failed:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: error.message || "An error occurred during login",
       });
-      throw error; // Re-throw to be handled by the component
+      await signOut();
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -215,6 +278,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Successfully logged out",
       });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -222,6 +286,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } finally {
       setLoading(false);
+      setUser(null);
+      setUserData(null);
+      setIsSuperAdmin(false);
     }
   };
 
