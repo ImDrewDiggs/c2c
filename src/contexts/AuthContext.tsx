@@ -23,8 +23,8 @@ const roleBasedRoutes: Record<UserRole, string[]> = {
   admin: ['/admin']
 };
 
-// Define the super admin email
-const SUPER_ADMIN_EMAIL = 'diggs844037@yahoo.com';
+// Define the administrator email
+const ADMIN_EMAIL = 'diggs844037@yahoo.com';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -69,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!loading && user && userData) {
       const currentPath = location.pathname;
       
-      // Super admin check
-      setIsSuperAdmin(userData.email === SUPER_ADMIN_EMAIL);
+      // Administrator check
+      setIsSuperAdmin(userData.email === ADMIN_EMAIL);
       
       // Check if the user is trying to access a route they don't have permission for
       const isProtectedRoute = Object.entries(roleBasedRoutes).some(
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUserData(data);
-      setIsSuperAdmin(data.email === SUPER_ADMIN_EMAIL);
+      setIsSuperAdmin(data.email === ADMIN_EMAIL);
     } catch (err) {
       console.error('Unexpected error during fetchUserData:', err);
       setUserData(null);

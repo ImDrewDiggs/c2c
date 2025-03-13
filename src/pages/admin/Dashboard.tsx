@@ -228,7 +228,7 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         {isSuperAdmin && (
           <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-            Super Admin
+            Administrator
           </div>
         )}
       </div>
