@@ -10,7 +10,7 @@ const navigation = [
   { name: "Testimonials", path: "/testimonials" },
   { name: "Services & Pricing", path: "/services-and-prices" },
   { name: "Subscription", path: "/subscription" },
-  { name: "FAQs", path: "/faqs" },
+  { name: "FAQs", path: "/faq" }, // Updated to match the correct route in App.tsx
   { name: "Contact Us", path: "/contact" },
 ];
 
