@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,6 +16,12 @@ const navigation = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
 
   return (
     <nav className="glass sticky top-0 z-50">
@@ -37,15 +43,24 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="flex space-x-4">
-              <Link to="/customer/login" className="btn-primary !py-2">
+              <button 
+                onClick={() => navigate("/customer/login")} 
+                className="btn-primary !py-2"
+              >
                 Customer Login
-              </Link>
-              <Link to="/employee/login" className="nav-link">
+              </button>
+              <button 
+                onClick={() => navigate("/employee/login")} 
+                className="nav-link"
+              >
                 Employee
-              </Link>
-              <Link to="/admin/login" className="nav-link">
+              </button>
+              <button 
+                onClick={() => navigate("/admin/login")} 
+                className="nav-link"
+              >
                 Admin
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -83,27 +98,24 @@ export default function Navbar() {
                   {item.name}
                 </Link>
               ))}
-              <Link
-                to="/customer/login"
-                className="block btn-primary text-center !py-2 mb-2"
-                onClick={() => setIsOpen(false)}
+              <button
+                className="block btn-primary text-center !py-2 mb-2 w-full"
+                onClick={() => handleNavigation("/customer/login")}
               >
                 Customer Login
-              </Link>
-              <Link
-                to="/employee/login"
-                className="block nav-link py-2"
-                onClick={() => setIsOpen(false)}
+              </button>
+              <button
+                className="block nav-link py-2 w-full text-left"
+                onClick={() => handleNavigation("/employee/login")}
               >
                 Employee Login
-              </Link>
-              <Link
-                to="/admin/login"
-                className="block nav-link py-2"
-                onClick={() => setIsOpen(false)}
+              </button>
+              <button
+                className="block nav-link py-2 w-full text-left"
+                onClick={() => handleNavigation("/admin/login")}
               >
                 Admin Login
-              </Link>
+              </button>
             </div>
           </motion.div>
         )}
