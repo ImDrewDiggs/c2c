@@ -45,6 +45,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Wrap signIn to handle redirection after successful login
   const handleSignIn = async (email: string, password: string, role: UserRole) => {
     await signIn(email, password, role);
+    
+    // Special handling for admin email - always redirect to admin dashboard
+    if (email === ADMIN_EMAIL) {
+      console.log('Admin login detected, redirecting to admin dashboard');
+      navigate('/admin/dashboard');
+      return;
+    }
+    
     redirectBasedOnRole(role);
   };
 

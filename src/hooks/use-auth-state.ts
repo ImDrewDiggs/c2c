@@ -30,10 +30,16 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchUserData(session.user.id);
-        } else {
-          setLoading(false);
-        }
+          const profile = await fetchUserData(session.user.id);
+          // Special handling for admin user to ensure their profile exists
+          if (!profile && session.user.email === ADMIN_EMAIL) {
+            console.log('Creating missing admin profile');
+            await createAdminProfile(session.user.id, session.user.email);
+            await fetchUserData(session.user.id);
+          }
+        } 
+        
+        setLoading(false);
       } catch (error) {
         console.error('Error checking session:', error);
         setLoading(false);
@@ -44,6 +50,31 @@ export function useAuthState() {
     
     checkSession();
   }, []);
+
+  // Special function to ensure admin profile exists
+  const createAdminProfile = async (userId: string, email: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: email,
+          role: 'admin',
+          full_name: 'Admin User'
+        });
+      
+      if (error) {
+        console.error('Error creating admin profile:', error);
+        return false;
+      }
+      
+      console.log('Created admin profile for:', email);
+      return true;
+    } catch (err) {
+      console.error('Failed to create admin profile:', err);
+      return false;
+    }
+  };
 
   // Auth state change listener
   useEffect(() => {
@@ -62,7 +93,14 @@ export function useAuthState() {
       
       if (session?.user) {
         setUser(session.user);
-        await fetchUserData(session.user.id);
+        const profile = await fetchUserData(session.user.id);
+        
+        // Special handling for admin user
+        if (!profile && session.user.email === ADMIN_EMAIL) {
+          console.log('Creating missing admin profile on auth change');
+          await createAdminProfile(session.user.id, session.user.email);
+          await fetchUserData(session.user.id);
+        }
       } else {
         setUser(null);
         setUserData(null);
@@ -98,7 +136,26 @@ export function useAuthState() {
 
       console.log('User signed in successfully:', signInData.user.email);
       
-      // Check if user profile exists, create if missing
+      // Special handling for admin email
+      if (email === ADMIN_EMAIL) {
+        console.log('Admin user login detected');
+        const profile = await fetchUserData(signInData.user.id);
+        
+        if (!profile) {
+          console.log('No admin profile found, creating one');
+          await createAdminProfile(signInData.user.id, email);
+          await fetchUserData(signInData.user.id);
+        }
+        
+        toast({
+          title: "Success",
+          description: "Admin successfully logged in",
+        });
+        
+        return 'admin';
+      }
+      
+      // Regular profile check for non-admin users
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role')
@@ -135,8 +192,8 @@ export function useAuthState() {
         if (!created) {
           throw new Error('Failed to create user profile. Please contact support.');
         }
-      } else if (profileData.role !== role) {
-        // Role mismatch
+      } else if (profileData.role !== role && email !== ADMIN_EMAIL) {
+        // Role mismatch (skip for admin email)
         console.error(`Role mismatch: account is ${profileData.role}, tried to login as ${role}`);
         await signOut();
         throw new Error(`Invalid role for this login portal. You tried to login as ${role} but your account is registered as ${profileData.role}.`);
