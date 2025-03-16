@@ -23,6 +23,9 @@ const roleBasedRoutes: Record<UserRole, string[]> = {
   admin: ['/admin']
 };
 
+// Define public routes that should never trigger auth redirection
+const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
+
 // Define the administrator email
 const ADMIN_EMAIL = 'diggs844037@yahoo.com';
 
@@ -98,6 +101,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     const currentPath = location.pathname;
     
+    // Check if the current path is a public route
+    const isPublicRoute = publicRoutes.some(route => 
+      currentPath === route || currentPath.startsWith(route + '/')
+    );
+    
+    if (isPublicRoute) {
+      // Public routes are always accessible
+      return;
+    }
+    
     // Handle authenticated users
     if (user && userData) {
       // Administrator check
@@ -135,10 +148,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           title: "Authentication Required",
           description: "Please log in to access this page.",
         });
-        navigate('/');
+        navigate('/customer/login');
       }
     }
-  }, [loading, user, userData, location.pathname]);
+  }, [loading, user, userData, location.pathname, navigate]);
 
   async function fetchUserData(userId: string) {
     try {

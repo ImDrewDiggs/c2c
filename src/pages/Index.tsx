@@ -6,6 +6,11 @@ import { useNavigate } from "react-router-dom";
 const Index = () => {
   const navigate = useNavigate();
 
+  const handleGetStarted = () => {
+    console.log("Navigating to services-and-prices");
+    navigate("/services-and-prices");
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -22,7 +27,7 @@ const Index = () => {
             Professional trash can maintenance services that keep your property clean and hygienic
           </p>
           <button 
-            onClick={() => navigate("/services-and-prices")} 
+            onClick={handleGetStarted} 
             className="btn-primary inline-flex items-center group"
           >
             Get Started Today

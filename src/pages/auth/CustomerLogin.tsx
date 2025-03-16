@@ -26,9 +26,11 @@ export default function CustomerLogin() {
       return;
     }
     
+    console.log("Attempting to sign in with:", email);
     setIsSubmitting(true);
     try {
       await signIn(email, password, 'customer');
+      console.log("Sign in successful");
     } catch (error: any) {
       console.error("Login error:", error);
       // Toast is already handled in the signIn function
