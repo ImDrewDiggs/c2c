@@ -163,11 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error fetching user data:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch user data",
-        });
         setUserData(null);
         setLoading(false);
         return;
@@ -175,25 +170,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!data) {
         console.error('No user profile found');
-        toast({
-          variant: "destructive",
-          title: "Error", 
-          description: "User profile not found",
-        });
+        // Instead of immediately signing out, create a profile for known user roles
+        // For admin user - auto-create profile
+        if (userId && await createMissingUserProfile(userId)) {
+          // Retry fetching after creating
+          await fetchUserData(userId);
+          return;
+        }
+        
         setUserData(null);
-        setLoading(false);
-        return;
+      } else {
+        console.log('User data fetched:', data);
+        setUserData(data);
+        setIsSuperAdmin(data.email === ADMIN_EMAIL);
       }
-
-      console.log('User data fetched:', data);
-      setUserData(data);
-      setIsSuperAdmin(data.email === ADMIN_EMAIL);
     } catch (err) {
       console.error('Unexpected error during fetchUserData:', err);
       setUserData(null);
       setIsSuperAdmin(false);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Helper function to create missing profile for known users
+  async function createMissingUserProfile(userId: string): Promise<boolean> {
+    try {
+      // Get user details from auth
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+      
+      if (userError || !userData.user) {
+        console.error('Error fetching user details:', userError);
+        return false;
+      }
+      
+      const user = userData.user;
+      
+      // Determine role based on email (same logic as the trigger)
+      const role: UserRole = user.email === ADMIN_EMAIL ? 'admin' : 'customer';
+      
+      // Create the missing profile
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: user.email,
+          role: role,
+          full_name: user.user_metadata?.full_name || user.email
+        });
+      
+      if (insertError) {
+        console.error('Error creating user profile:', insertError);
+        return false;
+      }
+      
+      console.log('Created missing profile for user:', user.email);
+      return true;
+    } catch (err) {
+      console.error('Failed to create missing profile:', err);
+      return false;
     }
   }
 
@@ -234,28 +269,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log('User signed in successfully:', signInData.user.email);
       
-      // Fetch user data to verify role
-      const { data: userData, error: userError } = await supabase
+      // Check if user profile exists, create if missing
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', signInData.user.id)
         .maybeSingle();
-
-      if (userError) {
-        console.error('Error fetching user role:', userError);
-        throw new Error('Failed to fetch user role');
-      }
-
-      if (!userData) {
-        console.error('No user profile found');
+      
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        // Try to create the profile if it doesn't exist
+        const created = await createMissingUserProfile(signInData.user.id);
+        if (!created) {
+          throw new Error('Failed to create user profile. Please contact support.');
+        }
+        
+        // Re-fetch the profile after creation
+        const { data: newProfile, error: newProfileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', signInData.user.id)
+          .maybeSingle();
+          
+        if (newProfileError || !newProfile) {
+          throw new Error('Failed to verify user profile. Please contact support.');
+        }
+        
+        if (newProfile.role !== role) {
+          console.error(`Role mismatch: account is ${newProfile.role}, tried to login as ${role}`);
+          await signOut();
+          throw new Error(`Invalid role for this login portal. You tried to login as ${role} but your account is registered as ${newProfile.role}.`);
+        }
+      } else if (!profileData) {
+        // Profile doesn't exist, create it
+        const created = await createMissingUserProfile(signInData.user.id);
+        if (!created) {
+          throw new Error('Failed to create user profile. Please contact support.');
+        }
+      } else if (profileData.role !== role) {
+        // Role mismatch
+        console.error(`Role mismatch: account is ${profileData.role}, tried to login as ${role}`);
         await signOut();
-        throw new Error('User profile not found. Please contact support.');
-      }
-
-      if (userData.role !== role) {
-        console.error(`Role mismatch: account is ${userData.role}, tried to login as ${role}`);
-        await signOut();
-        throw new Error(`Invalid role for this login portal. You tried to login as ${role} but your account is registered as ${userData.role}.`);
+        throw new Error(`Invalid role for this login portal. You tried to login as ${role} but your account is registered as ${profileData.role}.`);
       }
 
       await fetchUserData(signInData.user.id);
