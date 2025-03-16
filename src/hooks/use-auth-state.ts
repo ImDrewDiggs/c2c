@@ -30,12 +30,16 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('User found in session, fetching profile:', session.user.id);
           const profile = await fetchUserData(session.user.id);
+          console.log('Profile fetched:', profile);
+          
           // Special handling for admin user to ensure their profile exists
           if (!profile && session.user.email === ADMIN_EMAIL) {
             console.log('Creating missing admin profile');
             await createAdminProfile(session.user.id, session.user.email);
-            await fetchUserData(session.user.id);
+            const adminProfile = await fetchUserData(session.user.id);
+            console.log('Admin profile created and fetched:', adminProfile);
           }
         } 
         
@@ -93,7 +97,9 @@ export function useAuthState() {
       
       if (session?.user) {
         setUser(session.user);
+        console.log('Auth state changed with user, fetching profile');
         const profile = await fetchUserData(session.user.id);
+        console.log('Profile after auth state change:', profile);
         
         // Special handling for admin user
         if (!profile && session.user.email === ADMIN_EMAIL) {
@@ -105,8 +111,9 @@ export function useAuthState() {
         setUser(null);
         setUserData(null);
         setIsSuperAdmin(false);
-        setLoading(false);
       }
+      
+      setLoading(false);
     });
 
     return () => {

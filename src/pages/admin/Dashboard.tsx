@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -48,22 +49,41 @@ export default function AdminDashboard() {
   const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<number>(0);
-  const { user, userData, isSuperAdmin } = useAuth();
+  const { user, userData, isSuperAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [hasAccessChecked, setHasAccessChecked] = useState(false);
 
   useEffect(() => {
-    if (userData) {
-      if (userData.role !== 'admin') {
+    // Check if we have verified the user's role
+    if (!authLoading) {
+      console.log("Auth loading completed. User data:", userData);
+      console.log("Is super admin:", isSuperAdmin);
+      
+      // Now check if the user is an admin
+      if (userData) {
+        if (userData.role !== 'admin') {
+          toast({
+            variant: "destructive",
+            title: "Access Denied",
+            description: "You do not have permission to access the admin dashboard.",
+          });
+        }
+        setHasAccessChecked(true);
+      } else if (user) {
+        // We have a user but no userData, something went wrong with profile loading
+        console.log("User is authenticated but profile not loaded correctly");
         toast({
           variant: "destructive",
-          title: "Access Denied",
-          description: "You do not have permission to access the admin dashboard.",
+          title: "Profile Error",
+          description: "Could not load your user profile. Please logout and try again.",
         });
+        setHasAccessChecked(true);
       }
+      
       setLoading(false);
     }
-  }, [userData, toast]);
+  }, [userData, authLoading, user, toast, isSuperAdmin]);
 
   const { data: stats } = useQuery({
     queryKey: ["adminStats"],
@@ -76,6 +96,7 @@ export default function AdminDashboard() {
       completedPickups: 9,
       todayRevenue: 2400,
     }),
+    enabled: !!userData && userData.role === 'admin'
   });
 
   const { data: houses = [] } = useQuery<House[]>({
@@ -95,6 +116,7 @@ export default function AdminDashboard() {
         created_at: house.created_at
       })) || [];
     },
+    enabled: !!userData && userData.role === 'admin'
   });
 
   const { data: assignments = [] } = useQuery<Assignment[]>({
@@ -116,9 +138,13 @@ export default function AdminDashboard() {
         created_at: assignment.created_at
       })) || [];
     },
+    enabled: !!userData && userData.role === 'admin'
   });
 
   useEffect(() => {
+    // Only set up real-time subscriptions if user is an admin
+    if (!userData || userData.role !== 'admin') return;
+    
     const channel = supabase
       .channel('employee-locations')
       .on(
@@ -181,7 +207,7 @@ export default function AdminDashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [userData]);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -203,15 +229,18 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  if (loading) {
+  // Show loading indicator while we're checking authentication or loading user data
+  if (authLoading || (loading && !hasAccessChecked)) {
     return (
       <div className="h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-lg">Loading admin dashboard...</span>
       </div>
     );
   }
 
-  if (userData?.role !== 'admin') {
+  // Show access denied if the user doesn't have admin role
+  if (!userData || userData.role !== 'admin') {
     return (
       <div className="container mx-auto p-6">
         <Card className="p-8 text-center">

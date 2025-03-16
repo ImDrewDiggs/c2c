@@ -14,6 +14,7 @@ export function useUserProfile() {
 
   async function fetchUserData(userId: string) {
     try {
+      console.log('Fetching user data for ID:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -37,19 +38,23 @@ export function useUserProfile() {
           return null;
         }
         
+        console.log('Auth user data:', userData);
         const isAdmin = userData?.user?.email === ADMIN_EMAIL;
+        console.log('Is admin email?', isAdmin);
         
         // For admin user - auto-create profile with admin role
         if (isAdmin) {
           console.log('Creating missing admin profile');
           if (await createMissingUserProfile(userId, true)) {
             // Retry fetching after creating
+            console.log('Admin profile created, refetching');
             return await fetchUserData(userId);
           }
         } 
         // For other users - create normal profile
         else if (await createMissingUserProfile(userId, false)) {
           // Retry fetching after creating
+          console.log('Regular profile created, refetching');
           return await fetchUserData(userId);
         }
         
@@ -60,6 +65,7 @@ export function useUserProfile() {
         setUserData(data);
         // Ensure admin is properly flagged
         const isAdmin = data.email === ADMIN_EMAIL || data.role === 'admin';
+        console.log('Setting isSuperAdmin to:', isAdmin);
         setIsSuperAdmin(isAdmin);
         
         // If this is admin email but role isn't set as admin, update it
@@ -71,6 +77,7 @@ export function useUserProfile() {
             .eq('id', userId);
             
           // Refetch to get updated data
+          console.log('Updated role, refetching profile');
           return await fetchUserData(userId);
         }
         
@@ -87,6 +94,7 @@ export function useUserProfile() {
   // Helper function to create missing profile for known users
   async function createMissingUserProfile(userId: string, isAdmin: boolean = false): Promise<boolean> {
     try {
+      console.log('Attempting to create missing profile for user ID:', userId, 'isAdmin:', isAdmin);
       // Get user details from auth
       const { data: userData, error: userError } = await supabase.auth.getUser();
       
@@ -96,9 +104,11 @@ export function useUserProfile() {
       }
       
       const user = userData.user;
+      console.log('Auth user data for profile creation:', user);
       
       // Determine role based on email or passed flag
       const role = isAdmin || user.email === ADMIN_EMAIL ? 'admin' : 'customer';
+      console.log('Setting user role to:', role);
       
       // Create the missing profile
       const { error: insertError } = await supabase
