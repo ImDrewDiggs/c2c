@@ -1,5 +1,5 @@
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  console.log('[DIAGNOSTIC][AuthContext] AuthProvider initialized');
 
   // Use our custom hooks
   const {
@@ -34,6 +35,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut
   } = useAuthState();
 
+  useEffect(() => {
+    console.log('[DIAGNOSTIC][AuthContext] AuthProvider useEffect - auth state update:', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasUserData: !!userData,
+      userRole: userData?.role,
+      isSuperAdmin,
+      isLoading: loading
+    });
+  }, [user, userData, isSuperAdmin, loading]);
+
   const { redirectBasedOnRole } = useRouteProtection(
     loading,
     user,
@@ -44,15 +56,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Wrap signIn to handle redirection after successful login
   const handleSignIn = async (email: string, password: string, role: UserRole) => {
+    console.log('[DIAGNOSTIC][AuthContext] handleSignIn called for email:', email, 'role:', role);
     await signIn(email, password, role);
     
     // Special handling for admin email - always redirect to admin dashboard
     if (email === ADMIN_EMAIL) {
-      console.log('Admin login detected, redirecting to admin dashboard');
+      console.log('[DIAGNOSTIC][AuthContext] Admin login detected, redirecting to admin dashboard');
       navigate('/admin/dashboard');
       return;
     }
     
+    console.log('[DIAGNOSTIC][AuthContext] Redirecting based on role:', role);
     redirectBasedOnRole(role);
   };
 
