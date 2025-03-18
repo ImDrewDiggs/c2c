@@ -5,6 +5,7 @@ import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useRouteProtection } from '@/hooks/use-route-protection';
 import { UserRole } from '@/lib/supabase';
+import { useAdminProfile } from '@/hooks/use-admin-profile';
 
 // Define protected routes by role
 const roleBasedRoutes: Record<UserRole, string[]> = {
@@ -16,13 +17,12 @@ const roleBasedRoutes: Record<UserRole, string[]> = {
 // Define public routes that should never trigger auth redirection
 const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
 
-// Define the administrator email
-const ADMIN_EMAIL = 'diggs844037@yahoo.com';
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const { ADMIN_EMAIL } = useAdminProfile();
+  
   console.log('[DIAGNOSTIC][AuthContext] AuthProvider initialized');
 
   // Use our custom hooks
