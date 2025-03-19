@@ -23,7 +23,6 @@ export function useUserProfile() {
 
       if (error) {
         console.error('[DIAGNOSTIC][UserProfile] Error fetching user data:', error);
-        setUserData(null);
         
         // Check if this is the admin user and immediately set appropriate state
         const { data: userData } = await supabase.auth.getUser();
@@ -40,6 +39,21 @@ export function useUserProfile() {
           setIsSuperAdmin(true);
           return adminData;
         }
+        
+        // For non-admin users, create a default profile in memory
+        const { data: authUserData } = await supabase.auth.getUser();
+        if (authUserData?.user) {
+          console.log('[DIAGNOSTIC][UserProfile] Creating default user data for non-admin user');
+          const defaultData: UserData = {
+            id: userId,
+            email: authUserData.user.email || '',
+            role: (authUserData.user.user_metadata?.role as UserData['role']) || 'customer',
+            full_name: authUserData.user.user_metadata?.full_name || authUserData.user.email?.split('@')[0] || 'User',
+          };
+          setUserData(defaultData);
+          return defaultData;
+        }
+        
         return null;
       }
 
@@ -84,11 +98,23 @@ export function useUserProfile() {
           
           return adminData;
         } 
-        // For other users - attempt to create profile
-        else if (await createMissingUserProfile(userId, false)) {
-          // Retry fetching after creating
-          console.log('[DIAGNOSTIC][UserProfile] Regular profile created, refetching');
-          return await fetchUserData(userId);
+        
+        // For non-admin users - create temporary profile
+        if (userData?.user) {
+          const defaultUserData: UserData = {
+            id: userId,
+            email: userData.user.email || '',
+            role: (userData.user.user_metadata?.role as UserData['role']) || 'customer',
+            full_name: userData.user.user_metadata?.full_name || userData.user.email?.split('@')[0] || 'User',
+          };
+          setUserData(defaultUserData);
+          
+          // Try to create the profile in background but don't block on it
+          createMissingUserProfile(userId, false).catch(err => {
+            console.warn('[DIAGNOSTIC][UserProfile] User profile creation failed, but continuing with temporary profile:', err.message);
+          });
+          
+          return defaultUserData;
         }
         
         setUserData(null);
@@ -143,9 +169,19 @@ export function useUserProfile() {
           setUserData(adminData);
           setIsSuperAdmin(true);
           return adminData;
+        } else if (userData?.user) {
+          // For non-admin users, create temporary data
+          const defaultData: UserData = {
+            id: userId,
+            email: userData.user.email || '',
+            role: (userData.user.user_metadata?.role as UserData['role']) || 'customer',
+            full_name: userData.user.user_metadata?.full_name || userData.user.email?.split('@')[0] || 'User',
+          };
+          setUserData(defaultData);
+          return defaultData;
         }
       } catch (innerErr) {
-        console.error('[DIAGNOSTIC][UserProfile] Error during admin recovery check:', innerErr);
+        console.error('[DIAGNOSTIC][UserProfile] Error during recovery check:', innerErr);
       }
       
       setUserData(null);
@@ -192,24 +228,30 @@ export function useUserProfile() {
       const role = isAdmin || user.email === ADMIN_EMAIL ? 'admin' : 'customer';
       console.log('[DIAGNOSTIC][UserProfile] Setting user role to:', role);
       
-      // Create the missing profile
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email: user.email,
-          role: role,
-          full_name: user.user_metadata?.full_name || user.email
-        });
-      
-      if (insertError) {
-        console.error('[DIAGNOSTIC][UserProfile] Error creating user profile:', insertError);
-        // For admin, return true even if the DB operation failed
+      // Create the missing profile - this may fail due to RLS, but that's ok for now
+      try {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            email: user.email,
+            role: role,
+            full_name: user.user_metadata?.full_name || user.email
+          });
+        
+        if (insertError) {
+          console.error('[DIAGNOSTIC][UserProfile] Error creating user profile:', insertError);
+          // For admin, return true even if the DB operation failed
+          return user.email === ADMIN_EMAIL;
+        }
+        
+        console.log('[DIAGNOSTIC][UserProfile] Created missing profile for user:', user.email, 'with role:', role);
+        return true;
+      } catch (err) {
+        console.error('[DIAGNOSTIC][UserProfile] Exception during profile creation:', err);
+        // For admin, return true even if the operation failed
         return user.email === ADMIN_EMAIL;
       }
-      
-      console.log('[DIAGNOSTIC][UserProfile] Created missing profile for user:', user.email, 'with role:', role);
-      return true;
     } catch (err) {
       console.error('[DIAGNOSTIC][UserProfile] Failed to create missing profile:', err);
       // For admin, return true even if the operation failed

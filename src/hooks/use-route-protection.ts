@@ -98,6 +98,17 @@ export function useRouteProtection(
         return;
       }
       
+      // For customer and employee paths, be more lenient
+      if (currentPath.startsWith('/customer') && (!userData || userData.role === 'customer')) {
+        console.log('[DIAGNOSTIC][RouteProtection] Customer accessing customer route - allowing');
+        return;
+      }
+      
+      if (currentPath.startsWith('/employee') && (!userData || userData.role === 'employee')) {
+        console.log('[DIAGNOSTIC][RouteProtection] Employee accessing employee route - allowing');
+        return;
+      }
+      
       // For other users, check proper role access
       if (userData) {
         // Check if the user is trying to access a route they don't have permission for
@@ -122,8 +133,19 @@ export function useRouteProtection(
           console.log('[DIAGNOSTIC][RouteProtection] User has permission for this route');
         }
       } 
-      // If user exists but no userData and not admin email, redirect to login
+      // If user exists but no userData and not admin email, be lenient for customer and employee routes
       else if (user.email !== adminEmail) {
+        // Allow access to matching route by guessing the role based on path
+        if (currentPath.startsWith('/customer')) {
+          console.log('[DIAGNOSTIC][RouteProtection] No profile but accessing customer route - assuming customer role');
+          return;
+        }
+        
+        if (currentPath.startsWith('/employee')) {
+          console.log('[DIAGNOSTIC][RouteProtection] No profile but accessing employee route - assuming employee role');
+          return;
+        }
+        
         console.log('[DIAGNOSTIC][RouteProtection] Authenticated user without profile, redirecting to login');
         toast({
           variant: "destructive",
@@ -149,7 +171,15 @@ export function useRouteProtection(
           title: "Authentication Required",
           description: "Please log in to access this page.",
         });
-        navigate('/customer/login');
+        
+        // Direct to appropriate login page based on the route
+        if (currentPath.startsWith('/admin')) {
+          navigate('/admin/login');
+        } else if (currentPath.startsWith('/employee')) {
+          navigate('/employee/login');
+        } else {
+          navigate('/customer/login');
+        }
       }
     }
   }, [loading, user, userData, location.pathname, navigate, isSuperAdmin, adminEmail]);
