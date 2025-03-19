@@ -1,4 +1,3 @@
-
 import { Database } from '@/integrations/supabase/types';
 import { Json } from '@/integrations/supabase/types';
 
@@ -42,6 +41,16 @@ export type AppointmentRow = {
   location_id: string;
   description?: string;
   updated_at: string;
+};
+
+export type WorkSessionRow = {
+  id: string;
+  employee_id: string;
+  clock_in: string;
+  clock_out: string | null;
+  total_hours: number | null;
+  is_active: boolean;
+  created_at: string;
 };
 
 // Type-safe helper for Supabase function return types
