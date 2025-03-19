@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -54,15 +53,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [hasAccessChecked, setHasAccessChecked] = useState(false);
 
+  const ADMIN_EMAIL = 'diggs844037@yahoo.com';
+
   useEffect(() => {
-    // Check if we have verified the user's role
     if (!authLoading) {
       console.log("Auth loading completed. User data:", userData);
       console.log("Is super admin:", isSuperAdmin);
       
-      // Now check if the user is an admin
+      if (user?.email === ADMIN_EMAIL) {
+        console.log("Admin email detected. Granting access regardless of profile status.");
+        setHasAccessChecked(true);
+        setLoading(false);
+        return;
+      }
+      
       if (userData) {
-        if (userData.role !== 'admin') {
+        if (userData.role !== 'admin' && !isSuperAdmin) {
           toast({
             variant: "destructive",
             title: "Access Denied",
@@ -71,8 +77,15 @@ export default function AdminDashboard() {
         }
         setHasAccessChecked(true);
       } else if (user) {
-        // We have a user but no userData, something went wrong with profile loading
         console.log("User is authenticated but profile not loaded correctly");
+        
+        if (user.email === ADMIN_EMAIL) {
+          console.log("Admin email detected without profile. Granting access anyway.");
+          setHasAccessChecked(true);
+          setLoading(false);
+          return;
+        }
+        
         toast({
           variant: "destructive",
           title: "Profile Error",
@@ -142,7 +155,6 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    // Only set up real-time subscriptions if user is an admin
     if (!userData || userData.role !== 'admin') return;
     
     const channel = supabase
@@ -229,7 +241,6 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  // Show loading indicator while we're checking authentication or loading user data
   if (authLoading || (loading && !hasAccessChecked)) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -239,8 +250,65 @@ export default function AdminDashboard() {
     );
   }
 
-  // Show access denied if the user doesn't have admin role
-  if (!userData || userData.role !== 'admin') {
+  if (user?.email === ADMIN_EMAIL) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            Administrator
+          </div>
+        </div>
+
+        <StatsOverview 
+          stats={stats || { dailyPickups: 0, pendingPickups: 0, todayRevenue: 0 }}
+          activeEmployeesCount={activeEmployees}
+        />
+
+        <QuickLinks />
+
+        <Tabs defaultValue="operations" className="space-y-6">
+          <TabsList className="grid grid-cols-4 w-full md:w-auto">
+            <TabsTrigger value="operations">Operations</TabsTrigger>
+            <TabsTrigger value="employees">Employee Tracker</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="users">User Management</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="operations" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PickupsTable pickups={mockPickups} />
+              <RevenueChart data={mockRevenueData} />
+            </div>
+
+            <OperationsMap
+              houses={houses}
+              assignments={assignments}
+              currentLocation={currentLocation}
+              employeeLocations={employeeLocations}
+            />
+          </TabsContent>
+
+          <TabsContent value="employees">
+            <EmployeeTracker 
+              employeeLocations={employeeLocations} 
+              currentLocation={currentLocation}
+            />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  if (!userData || (userData.role !== 'admin' && !isSuperAdmin)) {
     return (
       <div className="container mx-auto p-6">
         <Card className="p-8 text-center">

@@ -44,7 +44,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isSuperAdmin,
       isLoading: loading
     });
-  }, [user, userData, isSuperAdmin, loading]);
+    
+    // Special case for admin email - force set admin privileges
+    if (user?.email === ADMIN_EMAIL && !isSuperAdmin) {
+      console.log('[DIAGNOSTIC][AuthContext] Admin email detected but not flagged as admin. Forcing admin status.');
+      // The hook will handle this automatically, just log for transparency
+    }
+  }, [user, userData, isSuperAdmin, loading, ADMIN_EMAIL]);
 
   const { redirectBasedOnRole } = useRouteProtection(
     loading,

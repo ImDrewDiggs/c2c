@@ -26,7 +26,10 @@ export function useAuthSession() {
         
         if (session?.user) {
           console.log('[DIAGNOSTIC][AuthSession] User found in session, will fetch profile:', session.user.id);
-          await fetchUserData(session.user.id);
+          // Attempt to fetch the user profile, but don't block auth on success
+          await fetchUserData(session.user.id).catch(err => {
+            console.warn('[DIAGNOSTIC][AuthSession] Profile fetch error, continuing anyway:', err.message);
+          });
         } else {
           console.log('[DIAGNOSTIC][AuthSession] No user in session during initial check');
         }
@@ -71,7 +74,10 @@ export function useAuthSession() {
         console.log('[DIAGNOSTIC][AuthSession] Auth state changed with user, setting user state');
         setUser(session.user);
         console.log('[DIAGNOSTIC][AuthSession] Fetching profile after auth state change');
-        await fetchUserData(session.user.id);
+        // Attempt to fetch the user profile, but don't block auth on success
+        await fetchUserData(session.user.id).catch(err => {
+          console.warn('[DIAGNOSTIC][AuthSession] Profile fetch error after auth change, continuing anyway:', err.message);
+        });
       } else {
         console.log('[DIAGNOSTIC][AuthSession] No user in session after auth state change');
         setUser(null);
