@@ -10,7 +10,35 @@ export function useAdminProfile() {
     try {
       console.log('[DIAGNOSTIC][AdminProfile] Attempting to create admin profile for:', email);
       
-      // First try to create profile directly
+      // First check if profile already exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+        
+      if (checkError) {
+        console.error('[DIAGNOSTIC][AdminProfile] Error checking for existing profile:', checkError);
+      }
+      
+      // If profile exists, just update it to admin role
+      if (existingProfile) {
+        console.log('[DIAGNOSTIC][AdminProfile] Profile exists, updating to admin role');
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: 'admin' })
+          .eq('id', userId);
+          
+        if (updateError) {
+          console.error('[DIAGNOSTIC][AdminProfile] Error updating profile to admin:', updateError);
+          // Return true for admin email even if update fails
+          return email === ADMIN_EMAIL;
+        }
+        
+        return true;
+      }
+      
+      // If profile doesn't exist, create it
       const { error } = await supabase
         .from('profiles')
         .insert({
@@ -22,10 +50,7 @@ export function useAdminProfile() {
       
       if (error) {
         console.error('[DIAGNOSTIC][AdminProfile] Error creating admin profile:', error);
-        
-        // If direct insertion fails, try to invoke the database function
-        // Note: The RPC function is no longer being used as it's not defined in the current schema
-        console.log('[DIAGNOSTIC][AdminProfile] Direct insertion failed, assuming admin privileges for admin email');
+        // Return true for admin email even if creation fails
         return email === ADMIN_EMAIL;
       }
       

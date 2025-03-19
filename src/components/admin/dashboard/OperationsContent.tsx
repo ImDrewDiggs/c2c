@@ -3,6 +3,7 @@ import { House, Assignment, EmployeeLocation, Location } from "@/types/map";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { PickupsTable } from "@/components/admin/PickupsTable";
 import { OperationsMap } from "@/components/admin/OperationsMap";
+import { useEffect } from "react";
 
 interface OperationsContentProps {
   houses: House[];
@@ -21,6 +22,16 @@ export function OperationsContent({
   revenueData,
   pickups
 }: OperationsContentProps) {
+  // Log component rendering for debugging purposes
+  useEffect(() => {
+    console.log('[OperationsContent] Rendering with data:', {
+      housesCount: houses.length,
+      assignmentsCount: assignments.length,
+      hasCurrentLocation: !!currentLocation,
+      employeeLocationsCount: employeeLocations.length
+    });
+  }, [houses, assignments, currentLocation, employeeLocations]);
+
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

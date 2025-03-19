@@ -6,17 +6,30 @@ import { useUserProfile } from './use-user-profile';
 export function useAuthState() {
   const { user, loading: sessionLoading } = useAuthSession();
   const { signIn, signOut, loading: actionsLoading } = useAuthActions();
-  const { userData, isSuperAdmin } = useUserProfile();
+  const { userData, isSuperAdmin, ADMIN_EMAIL } = useUserProfile();
+  
+  // Determine if user is admin - directly by email or by profile status
+  const isAdminUser = user?.email === ADMIN_EMAIL || isSuperAdmin;
   
   // Combine loading states
   const loading = sessionLoading || actionsLoading;
+
+  // Log the current auth state for debugging
+  console.log('[useAuthState] Current auth state:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    isAdminEmail: user?.email === ADMIN_EMAIL,
+    isSuperAdmin,
+    isAdminUser
+  });
 
   return {
     user,
     userData,
     loading,
-    isSuperAdmin,
+    isSuperAdmin: isAdminUser, // Ensure isSuperAdmin reflects combined admin status
     signIn,
-    signOut
+    signOut,
+    ADMIN_EMAIL
   };
 }
