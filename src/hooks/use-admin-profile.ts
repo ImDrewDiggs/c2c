@@ -24,17 +24,9 @@ export function useAdminProfile() {
         console.error('[DIAGNOSTIC][AdminProfile] Error creating admin profile:', error);
         
         // If direct insertion fails, try to invoke the database function
-        try {
-          console.log('[DIAGNOSTIC][AdminProfile] Trying alternate method to create admin profile');
-          await supabase.rpc('create_admin_profile');
-          console.log('[DIAGNOSTIC][AdminProfile] Successfully invoked admin profile creation function');
-          return true;
-        } catch (rpcError) {
-          console.error('[DIAGNOSTIC][AdminProfile] Failed to create admin profile via RPC:', rpcError);
-          
-          // Even if both methods fail, we'll consider it a success for the admin user
-          return email === ADMIN_EMAIL;
-        }
+        // Note: The RPC function is no longer being used as it's not defined in the current schema
+        console.log('[DIAGNOSTIC][AdminProfile] Direct insertion failed, assuming admin privileges for admin email');
+        return email === ADMIN_EMAIL;
       }
       
       console.log('[DIAGNOSTIC][AdminProfile] Successfully created admin profile for:', email);
