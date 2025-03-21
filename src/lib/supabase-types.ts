@@ -1,3 +1,4 @@
+
 import { Database } from '@/integrations/supabase/types';
 import { Json } from '@/integrations/supabase/types';
 

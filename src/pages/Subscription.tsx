@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import PricingDisplay from "@/components/subscription/PricingDisplay";
 import SingleFamilyPlans, { ServiceTier } from "@/components/subscription/SingleFamilyPlans";
 import MultiFamilyPlans, { CommunityTier, ServiceType } from "@/components/subscription/MultiFamilyPlans";
+import { useAuth, useToast, useNavigate } from "@/hooks";
+import { supabase } from "@/lib/supabase";
 
 const singleFamilyTiers: ServiceTier[] = [
   {
@@ -197,6 +199,9 @@ const Subscription = () => {
   const [unitCount, setUnitCount] = useState<number>(0);
   const [selectedCommunityService, setSelectedCommunityService] = useState<string>("");
   const [selectedCommunityTier, setSelectedCommunityTier] = useState<string>("");
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const getSelectedTier = (): ServiceTier | undefined => {
     if (selectedTab === "single-family") {
@@ -249,6 +254,112 @@ const Subscription = () => {
     return 0;
   };
 
+  const handleCompleteSubscription = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to complete your subscription",
+        variant: "destructive"
+      });
+      navigate("/customer/login");
+      return;
+    }
+
+    try {
+      let planId = null;
+      const total = calculateTotal();
+      
+      if (selectedTab === "single-family" && selectedTier) {
+        const { data: existingPlans, error: planQueryError } = await supabase
+          .from('service_plans')
+          .select('id')
+          .eq('name', getSelectedTier()?.name || 'Standard Service')
+          .limit(1);
+        
+        if (planQueryError) throw planQueryError;
+        
+        if (existingPlans && existingPlans.length > 0) {
+          planId = existingPlans[0].id;
+        } else {
+          const selectedTierData = getSelectedTier();
+          if (selectedTierData) {
+            const { data: newPlan, error: planError } = await supabase
+              .from('service_plans')
+              .insert({
+                name: selectedTierData.name,
+                price: selectedTierData.price,
+                frequency: 'monthly',
+                description: selectedTierData.description
+              })
+              .select('id')
+              .single();
+            
+            if (planError) throw planError;
+            planId = newPlan.id;
+          }
+        }
+      } else if (selectedTab === "multi-family" && selectedCommunityService) {
+        const tier = communityTiers.find(tier => 
+          unitCount >= tier.rangeStart && (!tier.rangeEnd || unitCount <= tier.rangeEnd)
+        );
+        if (!tier || !selectedCommunityService) return;
+
+        const { data: newPlan, error: planError } = await supabase
+          .from('service_plans')
+          .insert({
+            name: selectedCommunityService,
+            price: tier[selectedCommunityService],
+            frequency: 'monthly',
+            description: `Monthly ${selectedCommunityService} service`
+          })
+          .select('id')
+          .single();
+        
+        if (planError) throw planError;
+        planId = newPlan.id;
+      }
+      
+      if (planId) {
+        const { data: subscription, error: subError } = await supabase
+          .from('subscriptions')
+          .insert({
+            plan_id: planId,
+            user_id: user.id,
+            start_date: new Date().toISOString().split('T')[0],
+            status: 'active',
+            next_service_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 1 week from now
+          })
+          .select('id')
+          .single();
+        
+        if (subError) throw subError;
+        
+        const { error: linkError } = await supabase
+          .from('customer_subscriptions')
+          .insert({
+            customer_id: user.id,
+            subscription_id: subscription.id
+          });
+        
+        if (linkError) throw linkError;
+        
+        toast({
+          title: "Subscription Created",
+          description: "Your subscription has been successfully created!",
+        });
+        
+        navigate("/customer/dashboard");
+      }
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "There was a problem creating your subscription. Please try again."
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen py-12">
       <div className="container">
@@ -292,9 +403,8 @@ const Subscription = () => {
         <div className="mt-8 text-center">
           <Button
             size="lg"
-            onClick={() => {
-              alert("Please log in to complete your subscription");
-            }}
+            onClick={handleCompleteSubscription}
+            disabled={!selectedTier && (!selectedCommunityService || unitCount <= 0)}
           >
             Complete Subscription
           </Button>

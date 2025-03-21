@@ -12,6 +12,7 @@ import ServicesAndPrices from "./pages/ServicesAndPrices";
 import Schedule from "./pages/Schedule";
 import CustomerLogin from "./pages/auth/CustomerLogin";
 import CustomerRegister from "./pages/auth/CustomerRegister";
+import CustomerDashboard from "./pages/customer/Dashboard";
 import EmployeeLogin from "./pages/auth/EmployeeLogin";
 import AdminLogin from "./pages/auth/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/customer/register" element={<CustomerRegister />} />
+            <Route path="/customer/dashboard" element={<CustomerDashboard />} />
             <Route path="/employee/login" element={<EmployeeLogin />} />
             <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
             <Route path="/admin/login" element={<AdminLogin />} />
