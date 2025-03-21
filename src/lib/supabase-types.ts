@@ -54,6 +54,14 @@ export type WorkSessionRow = {
   created_at: string;
 };
 
+export type CustomerSubscriptionRow = {
+  id: string;
+  customer_id: string;
+  subscription_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
 // Type-safe helper for Supabase function return types
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never;
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never;

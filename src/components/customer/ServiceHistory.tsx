@@ -1,197 +1,188 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { format, parseISO } from "date-fns";
+import { Calendar, Clock } from "lucide-react";
+import { CustomerSubscriptionRow } from "@/lib/supabase-types";
 
 interface ServiceHistoryProps {
   userId: string;
 }
 
-interface ServiceLog {
-  id: string;
-  scheduled_date: string;
-  completed_date: string | null;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  notes: string | null;
-  subscription: {
-    service_plan: {
-      name: string;
-    } | null;
-  } | null;
-}
-
-export default function ServiceHistory({ userId }: ServiceHistoryProps) {
-  const [serviceLogs, setServiceLogs] = useState<ServiceLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const { toast } = useToast();
-
-  useEffect(() => {
-    async function fetchServiceHistory() {
-      try {
-        // First get the customer's subscriptions
-        const { data: customerSubs, error: linkError } = await supabase
-          .from('customer_subscriptions')
-          .select('subscription_id')
-          .eq('customer_id', userId);
-
-        if (linkError) throw linkError;
-        
-        if (!customerSubs || customerSubs.length === 0) {
-          setServiceLogs([]);
-          setLoading(false);
-          return;
-        }
-
-        // Get the subscription IDs
-        const subscriptionIds = customerSubs.map(cs => cs.subscription_id);
-        
-        // Then get service logs linked to those subscriptions
-        const { data, error } = await supabase
-          .from('service_logs')
-          .select(`
-            id,
-            scheduled_date,
-            completed_date,
-            status,
-            notes,
-            subscriptions:subscription_id (
-              service_plans:plan_id (
-                name
-              )
-            )
-          `)
-          .in('subscription_id', subscriptionIds)
-          .order('scheduled_date', { ascending: false });
-
-        if (error) throw error;
-
-        // Transform the data structure to match our interface
-        const transformedLogs = data.map(log => ({
-          ...log,
-          subscription: log.subscriptions ? {
-            service_plan: log.subscriptions.service_plans
-          } : null
-        }));
-
-        setServiceLogs(transformedLogs);
-      } catch (error) {
-        console.error('Error fetching service logs:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load service history."
-        });
-      } finally {
-        setLoading(false);
+const ServiceHistory = ({ userId }: ServiceHistoryProps) => {
+  // Get service history for the customer
+  const { data: serviceHistory, isLoading, error } = useQuery({
+    queryKey: ['serviceHistory', userId],
+    queryFn: async () => {
+      // First get the customer-subscription links
+      const { data: customerSubs, error: customerSubsError } = await supabase
+        .from('customer_subscriptions')
+        .select('*')
+        .eq('customer_id', userId);
+      
+      if (customerSubsError) throw customerSubsError;
+      
+      if (!customerSubs || customerSubs.length === 0) {
+        return [];
       }
-    }
-
-    if (userId) {
-      fetchServiceHistory();
-    }
-  }, [userId, toast]);
-
-  const getStatusBadge = (status: ServiceLog['status']) => {
-    switch (status) {
-      case 'completed':
-        return <Badge className="bg-green-500">Completed</Badge>;
-      case 'in_progress':
-        return <Badge className="bg-blue-500">In Progress</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelled</Badge>;
-      case 'pending':
-      default:
-        return <Badge variant="outline">Scheduled</Badge>;
-    }
-  };
-
-  const filteredLogs = serviceLogs.filter(log => {
-    if (activeTab === 'all') return true;
-    return log.status === activeTab;
+      
+      // Then get the service logs for those subscriptions
+      const subscriptionIds = customerSubs.map(sub => sub.subscription_id);
+      
+      const { data: serviceLogs, error: logsError } = await supabase
+        .from('service_logs')
+        .select(`
+          *,
+          employee:employee_id (
+            full_name
+          ),
+          subscription:subscription_id (
+            service_plans:plan_id (
+              name
+            )
+          )
+        `)
+        .in('subscription_id', subscriptionIds)
+        .order('scheduled_date', { ascending: false });
+      
+      if (logsError) throw logsError;
+      
+      return serviceLogs || [];
+    },
+    enabled: !!userId,
   });
 
-  if (loading) {
+  // Get appointments for this user
+  const { data: appointments } = useQuery({
+    queryKey: ['userAppointments', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('start_time', { ascending: false });
+      
+      if (error) throw error;
+      
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[300px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (serviceLogs.length === 0) {
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Error loading service history. Please try again later.</p>
+      </div>
+    );
+  }
+
+  const combinedHistory = [
+    ...(serviceHistory || []).map(log => ({
+      id: log.id,
+      date: log.scheduled_date,
+      title: `${log.subscription?.service_plans?.name || 'Service'} Visit`,
+      status: log.status,
+      type: 'service',
+      employee: log.employee?.full_name || 'Not assigned',
+      notes: log.notes,
+      completed_date: log.completed_date
+    })),
+    ...(appointments || []).map(apt => ({
+      id: apt.id,
+      date: apt.start_time,
+      title: apt.title,
+      status: apt.status,
+      type: 'appointment',
+      employee: 'N/A',
+      notes: apt.description,
+      completed_date: null
+    }))
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  if (combinedHistory.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>No Service History</CardTitle>
-          <CardDescription>
-            You don't have any service records yet. They will appear here once you have scheduled services.
-          </CardDescription>
+          <CardDescription>You don't have any service history or scheduled appointments yet.</CardDescription>
         </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Service history will appear here once you've had services performed or scheduled pickups.</p>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="pending">Scheduled</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {filteredLogs.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No Services Found</CardTitle>
-            <CardDescription>
-              There are no service records with the selected status.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredLogs.map((log) => (
-            <Card key={log.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">
-                    {log.subscription?.service_plan?.name || "Standard Service"}
-                  </CardTitle>
-                  {getStatusBadge(log.status)}
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">Your Service History</h3>
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        {combinedHistory.map((item) => (
+          <Card key={`${item.type}-${item.id}`} className="overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg">{item.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-1 mt-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {format(parseISO(item.date), 'MMMM d, yyyy')}
+                  </CardDescription>
                 </div>
-                <CardDescription>
-                  Scheduled: {format(new Date(log.scheduled_date), "MMMM d, yyyy")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {log.completed_date && (
-                    <div>
-                      <span className="font-medium">Completed:</span>{" "}
-                      {format(new Date(log.completed_date), "MMMM d, yyyy")}
-                    </div>
-                  )}
-                  {log.notes && (
-                    <div>
-                      <span className="font-medium">Notes:</span>{" "}
-                      {log.notes}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                <Badge 
+                  variant={
+                    item.status === 'completed' ? "default" : 
+                    item.status === 'cancelled' ? "destructive" : 
+                    "secondary"
+                  }
+                >
+                  {item.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 text-sm">
+                {item.type === 'service' && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Service Provider:</span>
+                    <span>{item.employee}</span>
+                  </div>
+                )}
+                
+                {item.completed_date && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Completed:</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {format(parseISO(item.completed_date), 'MMMM d, h:mm a')}
+                    </span>
+                  </div>
+                )}
+                
+                {item.notes && (
+                  <div className="pt-2">
+                    <span className="text-muted-foreground block">Notes:</span>
+                    <p className="italic mt-1">{item.notes}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
-}
+};
+
+export default ServiceHistory;

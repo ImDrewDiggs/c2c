@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import PricingDisplay from "@/components/subscription/PricingDisplay";
 import SingleFamilyPlans, { ServiceTier } from "@/components/subscription/SingleFamilyPlans";
 import MultiFamilyPlans, { CommunityTier, ServiceType } from "@/components/subscription/MultiFamilyPlans";
-import { useAuth, useToast, useNavigate } from "@/hooks";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 const singleFamilyTiers: ServiceTier[] = [
@@ -308,7 +310,7 @@ const Subscription = () => {
           .from('service_plans')
           .insert({
             name: selectedCommunityService,
-            price: tier[selectedCommunityService],
+            price: tier[`${selectedCommunityService}Price`], // Using the appropriate price based on service type
             frequency: 'monthly',
             description: `Monthly ${selectedCommunityService} service`
           })
@@ -334,6 +336,7 @@ const Subscription = () => {
         
         if (subError) throw subError;
         
+        // Now create the customer_subscriptions link
         const { error: linkError } = await supabase
           .from('customer_subscriptions')
           .insert({

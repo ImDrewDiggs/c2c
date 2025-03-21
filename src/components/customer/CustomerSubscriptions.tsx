@@ -1,138 +1,126 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Calendar, Clock, CheckCircle2, AlertCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { CustomerSubscriptionRow } from "@/lib/supabase-types";
 
 interface CustomerSubscriptionsProps {
   userId: string;
 }
 
-interface Subscription {
-  id: string;
-  start_date: string;
-  next_service_date: string | null;
-  status: string;
-  created_at: string;
-  service_plan: {
-    id: string;
-    name: string;
-    price: number;
-    frequency: string;
-    description: string | null;
-  } | null;
-}
-
-export default function CustomerSubscriptions({ userId }: CustomerSubscriptionsProps) {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+const CustomerSubscriptions = ({ userId }: CustomerSubscriptionsProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    async function fetchSubscriptions() {
-      try {
-        // First get the customer's subscription linkages
-        const { data: customerSubs, error: linkError } = await supabase
-          .from('customer_subscriptions')
-          .select('subscription_id')
-          .eq('customer_id', userId);
-
-        if (linkError) throw linkError;
-        
-        if (!customerSubs || customerSubs.length === 0) {
-          setSubscriptions([]);
-          setLoading(false);
-          return;
-        }
-
-        // Get the subscription IDs
-        const subscriptionIds = customerSubs.map(cs => cs.subscription_id);
-        
-        // Get the full subscription details with service plan info
-        const { data, error } = await supabase
-          .from('subscriptions')
-          .select(`
-            id, 
-            start_date, 
-            next_service_date, 
-            status, 
-            created_at,
-            service_plans:plan_id (
-              id, 
-              name, 
-              price, 
-              frequency, 
-              description
-            )
-          `)
-          .in('id', subscriptionIds);
-
-        if (error) throw error;
-
-        // Transform the data to match our expected format
-        const formattedSubscriptions = data.map(sub => ({
-          ...sub,
-          service_plan: sub.service_plans
-        }));
-
-        setSubscriptions(formattedSubscriptions);
-      } catch (error) {
-        console.error('Error fetching subscriptions:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load subscription data."
-        });
-      } finally {
-        setLoading(false);
+  // Get subscriptions for the customer
+  const { data: subscriptions, isLoading, error } = useQuery({
+    queryKey: ['customerSubscriptions', userId],
+    queryFn: async () => {
+      // First get the customer-subscription links
+      const { data: customerSubs, error: customerSubsError } = await supabase
+        .from('customer_subscriptions')
+        .select('*')
+        .eq('customer_id', userId);
+      
+      if (customerSubsError) throw customerSubsError;
+      
+      if (!customerSubs || customerSubs.length === 0) {
+        return [];
       }
-    }
+      
+      // Then get the actual subscription details
+      const subscriptionIds = customerSubs.map(sub => sub.subscription_id);
+      
+      const { data: subscriptionData, error: subsError } = await supabase
+        .from('subscriptions')
+        .select(`
+          *,
+          service_plans:plan_id (
+            name,
+            price,
+            description,
+            frequency
+          )
+        `)
+        .in('id', subscriptionIds);
+      
+      if (subsError) throw subsError;
+      
+      return subscriptionData || [];
+    },
+    enabled: !!userId,
+  });
 
-    if (userId) {
-      fetchSubscriptions();
-    }
-  }, [userId, toast]);
+  const handleNavigateToPlans = () => {
+    navigate("/subscription");
+  };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-500">{status}</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">{status}</Badge>;
-      case 'overdue':
-        return <Badge variant="destructive">{status}</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const handleCancelSubscription = async (subscriptionId: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ status: 'cancelled' })
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Subscription Cancelled",
+        description: "Your subscription has been cancelled successfully.",
+      });
+
+      // Refresh data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to cancel subscription. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (subscriptions.length === 0) {
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Error loading subscriptions. Please try again later.</p>
+      </div>
+    );
+  }
+
+  if (!subscriptions || subscriptions.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>No Subscriptions Found</CardTitle>
-          <CardDescription>
-            You don't have any active subscriptions yet.
-          </CardDescription>
+          <CardDescription>You don't have any active subscriptions.</CardDescription>
         </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Subscribe to our service to start enjoying trash valet benefits.</p>
+        </CardContent>
         <CardFooter>
-          <Button onClick={() => navigate("/subscription")}>
-            Browse Available Plans
-          </Button>
+          <Button onClick={handleNavigateToPlans}>Browse Plans</Button>
         </CardFooter>
       </Card>
     );
@@ -140,60 +128,68 @@ export default function CustomerSubscriptions({ userId }: CustomerSubscriptionsP
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {subscriptions.map((subscription) => (
-          <Card key={subscription.id} className="overflow-hidden">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <CardTitle>{subscription.service_plan?.name || "Standard Plan"}</CardTitle>
-                {getStatusBadge(subscription.status || "active")}
+      {subscriptions.map((subscription) => (
+        <Card key={subscription.id}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{subscription.service_plans?.name || "Subscription Plan"}</CardTitle>
+                <CardDescription>Started on {new Date(subscription.start_date).toLocaleDateString()}</CardDescription>
               </div>
-              <CardDescription>
-                ${subscription.service_plan?.price || 0} / {subscription.service_plan?.frequency || "month"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center">
-                <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  Started: {format(new Date(subscription.start_date), "MMM d, yyyy")}
-                </span>
+              <Badge 
+                variant={subscription.status === 'active' ? "default" : 
+                  subscription.status === 'cancelled' ? "destructive" : "outline"}
+              >
+                {subscription.status}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Plan Price:</span>
+                <span className="text-lg">${subscription.service_plans?.price.toFixed(2)}/{subscription.service_plans?.frequency}</span>
               </div>
-              {subscription.next_service_date && (
-                <div className="flex items-center">
-                  <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    Next service: {format(new Date(subscription.next_service_date), "MMM d, yyyy")}
-                  </span>
-                </div>
-              )}
-              {subscription.service_plan?.description && (
-                <p className="text-sm text-muted-foreground">{subscription.service_plan.description}</p>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-between border-t bg-muted/50 px-6 py-3">
-              <Button variant="outline" size="sm">
-                View Details
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Next Service Date:</span>
+                <span>{subscription.next_service_date ? new Date(subscription.next_service_date).toLocaleDateString() : "Not scheduled"}</span>
+              </div>
+              <Separator />
+              <div>
+                <h4 className="text-sm font-medium mb-2">Plan Details</h4>
+                <p className="text-muted-foreground text-sm">{subscription.service_plans?.description || "No description available."}</p>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <div className="flex gap-2 w-full">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => navigate("/schedule")}
+              >
+                Schedule Pickup
               </Button>
-              {subscription.status === 'active' ? (
-                <Button variant="destructive" size="sm">
-                  Cancel
-                </Button>
-              ) : (
-                <Button variant="default" size="sm">
-                  Reactivate
+              {subscription.status === "active" && (
+                <Button 
+                  variant="destructive" 
+                  className="flex-1"
+                  onClick={() => handleCancelSubscription(subscription.id)}
+                  disabled={loading}
+                >
+                  {loading ? "Processing..." : "Cancel Plan"}
                 </Button>
               )}
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
       
       <div className="flex justify-center">
-        <Button onClick={() => navigate("/subscription")}>
-          Add New Subscription
-        </Button>
+        <Button onClick={handleNavigateToPlans}>Browse Additional Plans</Button>
       </div>
     </div>
   );
-}
+};
+
+export default CustomerSubscriptions;

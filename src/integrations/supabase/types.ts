@@ -178,6 +178,38 @@ export type Database = {
           },
         ]
       }
+      customer_subscriptions: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_subscriptions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_locations: {
         Row: {
           employee_id: string | null
@@ -569,6 +601,36 @@ export type Database = {
           level?: string
           message?: string
           source?: string
+        }
+        Relationships: []
+      }
+      work_sessions: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          is_active: boolean | null
+          total_hours: number | null
+        }
+        Insert: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          is_active?: boolean | null
+          total_hours?: number | null
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          is_active?: boolean | null
+          total_hours?: number | null
         }
         Relationships: []
       }
