@@ -33,6 +33,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<number>(0);
 
+  // Mock data for the charts
   const mockRevenueData = [
     { name: "Mon", amount: 1200 },
     { name: "Tue", amount: 900 },
@@ -60,6 +61,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     },
   ];
 
+  // Query for dashboard stats
   const { data: stats } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => ({
@@ -73,111 +75,131 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     }),
   });
 
+  // Query for houses data
   const { data: houses = [] } = useQuery<House[]>({
     queryKey: ["houses"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('houses')
-        .select('*') as { data: HouseRow[] | null, error: any };
-      
-      if (error) throw error;
-      
-      return data?.map(house => ({
-        id: house.id,
-        address: house.address,
-        latitude: house.latitude,
-        longitude: house.longitude,
-        created_at: house.created_at
-      })) || [];
+      try {
+        const { data, error } = await supabase
+          .from('houses')
+          .select('*') as { data: HouseRow[] | null, error: any };
+        
+        if (error) throw error;
+        
+        return data?.map(house => ({
+          id: house.id,
+          address: house.address,
+          latitude: house.latitude,
+          longitude: house.longitude,
+          created_at: house.created_at
+        })) || [];
+      } catch (error) {
+        console.error("Error fetching houses:", error);
+        return [];
+      }
     },
   });
 
+  // Query for assignments data
   const { data: assignments = [] } = useQuery<Assignment[]>({
     queryKey: ["assignments"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('*') as { data: AssignmentRow[] | null, error: any };
-      
-      if (error) throw error;
-      
-      return data?.map(assignment => ({
-        id: assignment.id,
-        house_id: assignment.house_id,
-        employee_id: assignment.employee_id,
-        status: assignment.status,
-        assigned_date: assignment.assigned_date,
-        completed_at: assignment.completed_at,
-        created_at: assignment.created_at
-      })) || [];
+      try {
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*') as { data: AssignmentRow[] | null, error: any };
+        
+        if (error) throw error;
+        
+        return data?.map(assignment => ({
+          id: assignment.id,
+          house_id: assignment.house_id,
+          employee_id: assignment.employee_id,
+          status: assignment.status,
+          assigned_date: assignment.assigned_date,
+          completed_at: assignment.completed_at,
+          created_at: assignment.created_at,
+          house: undefined // This will be populated from the houses array if needed
+        })) || [];
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+        return [];
+      }
     },
   });
 
+  // Set up real-time listener for employee locations
   useEffect(() => {
-    const channel = supabase
-      .channel('employee-locations')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'employee_locations'
-        },
-        async (payload) => {
-          console.log("Real-time location update received:", payload);
-          
-          const { data: locations, error } = await supabase
-            .from('employee_locations')
-            .select('*') as { data: EmployeeLocationRow[] | null, error: any };
-          
-          if (!error && locations) {
-            const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
-              id: loc.id,
-              employee_id: loc.employee_id,
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-              timestamp: loc.timestamp,
-              is_online: loc.is_online,
-              last_seen_at: loc.last_seen_at
-            }));
+    try {
+      const channel = supabase
+        .channel('employee-locations')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'employee_locations'
+          },
+          async (payload) => {
+            console.log("Real-time location update received:", payload);
             
-            setEmployeeLocations(mappedLocations);
-            setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
+            const { data: locations, error } = await supabase
+              .from('employee_locations')
+              .select('*') as { data: EmployeeLocationRow[] | null, error: any };
+            
+            if (!error && locations) {
+              const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
+                id: loc.id,
+                employee_id: loc.employee_id,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                timestamp: loc.timestamp,
+                is_online: loc.is_online,
+                last_seen_at: loc.last_seen_at
+              }));
+              
+              setEmployeeLocations(mappedLocations);
+              setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
+            }
           }
+        )
+        .subscribe();
+
+      // Fetch employee locations initially
+      const fetchEmployeeLocations = async () => {
+        const { data: locations, error } = await supabase
+          .from('employee_locations')
+          .select('*') as { data: EmployeeLocationRow[] | null, error: any };
+        
+        if (!error && locations) {
+          console.log("Initial employee locations loaded:", locations);
+          
+          const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
+            id: loc.id,
+            employee_id: loc.employee_id,
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+            timestamp: loc.timestamp,
+            is_online: loc.is_online,
+            last_seen_at: loc.last_seen_at
+          }));
+          
+          setEmployeeLocations(mappedLocations);
+          setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
         }
-      )
-      .subscribe();
+      };
 
-    const fetchEmployeeLocations = async () => {
-      const { data: locations, error } = await supabase
-        .from('employee_locations')
-        .select('*') as { data: EmployeeLocationRow[] | null, error: any };
-      
-      if (!error && locations) {
-        console.log("Initial employee locations loaded:", locations);
-        
-        const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
-          id: loc.id,
-          employee_id: loc.employee_id,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          timestamp: loc.timestamp,
-          is_online: loc.is_online,
-          last_seen_at: loc.last_seen_at
-        }));
-        
-        setEmployeeLocations(mappedLocations);
-        setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
-      }
-    };
+      fetchEmployeeLocations();
 
-    fetchEmployeeLocations();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (error) {
+      console.error("Error setting up real-time listener:", error);
+    }
   }, []);
 
+  // Get user location
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -189,6 +211,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
         },
         (error) => {
           console.error("Error getting location:", error);
+          // Fall back to New York coordinates
           setCurrentLocation({
             latitude: 40.7128,
             longitude: -74.0060,
@@ -198,6 +221,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     }
   }, []);
 
+  // Prepare the dashboard data object to pass to children
   const dashboardData: AdminDashboardData = {
     stats: stats || { 
       dailyPickups: 0, 
@@ -217,5 +241,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     mockPickups
   };
 
-  return <>{children(dashboardData)}</>;
+  // Render children with the dashboard data
+  return (
+    <>
+      {typeof children === 'function' ? children(dashboardData) : children}
+    </>
+  );
 }
