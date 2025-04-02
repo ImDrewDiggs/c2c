@@ -11,7 +11,6 @@ import { JobAssignments } from "@/components/employee/JobAssignments";
 import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { HouseRow, AssignmentRow } from "@/lib/supabase-types";
 import { Assignment, House, Location } from "@/types/map";
 
 export default function EmployeeDashboard() {

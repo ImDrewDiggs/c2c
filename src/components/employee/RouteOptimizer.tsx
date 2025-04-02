@@ -55,30 +55,6 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
         setEstimatedTime(`${minutes} min`);
         setLoading(false);
       }, 1500);
-      
-      // In a real implementation with the Mapbox API:
-      /*
-      const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${start};${end}?steps=true&geometries=geojson&access_token=${MAPBOX_ACCESS_TOKEN}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const data = await response.json();
-      setRoute(data);
-      
-      // Extract estimated time and distance
-      if (data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
-        const durationMinutes = Math.round(route.duration / 60);
-        const distanceMiles = (route.distance * 0.000621371).toFixed(1);
-        
-        setEstimatedTime(`${durationMinutes} min`);
-        setEstimatedDistance(`${distanceMiles} miles`);
-      }
-      */
     } catch (error) {
       console.error('Error calculating route:', error);
       toast({
