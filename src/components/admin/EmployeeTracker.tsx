@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, RefreshCw, Clock, Search, Filter } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { MapPin, RefreshCw, Clock, Search } from "lucide-react";
+import { supabase } from "@/lib/supabase";  // Fixed import path
 import { EmployeeLocation, Location } from "@/types/map";
 import Map from "@/components/Map/Map";
 

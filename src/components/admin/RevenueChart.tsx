@@ -1,39 +1,58 @@
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { Card } from "@/components/ui/card";
-
-interface RevenueData {
-  name: string;
-  amount: number;
-}
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface RevenueChartProps {
-  data: RevenueData[];
+  data: { name: string; amount: number }[];
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
   return (
-    <Card className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Weekly Revenue</h3>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="amount" fill="#22c55e" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+    <Card>
+      <CardContent className="p-0">
+        <div className="h-[200px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{
+                top: 10,
+                right: 10,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#84cc16" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#84cc16" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="name" />
+              <YAxis 
+                tickFormatter={(value) => `$${value}`}
+                width={45}
+              />
+              <Tooltip 
+                formatter={(value) => [`$${value}`, "Revenue"]}
+                contentStyle={{
+                  backgroundColor: 'rgba(24, 24, 27, 0.8)',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  color: 'white'
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="amount" 
+                stroke="#84cc16" 
+                fillOpacity={1} 
+                fill="url(#colorRevenue)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
     </Card>
   );
 }

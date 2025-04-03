@@ -1,9 +1,9 @@
 
+import { Card } from "@/components/ui/card";
 import { House, Assignment, EmployeeLocation, Location } from "@/types/map";
 import { RevenueChart } from "@/components/admin/RevenueChart";
-import { PickupsTable } from "@/components/admin/PickupsTable";
+import { PickupsList } from "@/components/admin/PickupsList";
 import { OperationsMap } from "@/components/admin/OperationsMap";
-import { useEffect } from "react";
 
 interface OperationsContentProps {
   houses: House[];
@@ -14,37 +14,31 @@ interface OperationsContentProps {
   pickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[];
 }
 
-export function OperationsContent({ 
-  houses, 
-  assignments, 
-  currentLocation, 
+export function OperationsContent({
+  houses,
+  assignments,
+  currentLocation,
   employeeLocations,
   revenueData,
-  pickups
+  pickups,
 }: OperationsContentProps) {
-  // Log component rendering for debugging purposes
-  useEffect(() => {
-    console.log('[OperationsContent] Rendering with data:', {
-      housesCount: houses.length,
-      assignmentsCount: assignments.length,
-      hasCurrentLocation: !!currentLocation,
-      employeeLocationsCount: employeeLocations.length
-    });
-  }, [houses, assignments, currentLocation, employeeLocations]);
-
   return (
-    <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PickupsTable pickups={pickups} />
-        <RevenueChart data={revenueData} />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
+        <Card className="p-6">
+          <h3 className="text-xl font-semibold mb-4">Revenue Overview</h3>
+          <RevenueChart data={revenueData} />
+        </Card>
+        
+        <PickupsList pickups={pickups} />
       </div>
-
+      
       <OperationsMap
         houses={houses}
         assignments={assignments}
         currentLocation={currentLocation}
         employeeLocations={employeeLocations}
       />
-    </>
+    </div>
   );
 }

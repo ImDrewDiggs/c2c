@@ -16,11 +16,11 @@ export interface Assignment {
   id: string;
   house_id: string;
   employee_id: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  assigned_date: string | null;
-  completed_at: string | null;
-  created_at: string | null;
-  house?: House; // Add this to support the joined house data
+  status: string;
+  assigned_date: string;
+  completed_at: string;
+  created_at: string;
+  house?: House;
 }
 
 export interface EmployeeLocation {
@@ -28,7 +28,7 @@ export interface EmployeeLocation {
   employee_id: string;
   latitude: number;
   longitude: number;
-  timestamp: string | null;
+  timestamp: string;
   is_online: boolean;
-  last_seen_at: string | null;
+  last_seen_at: string;
 }

@@ -151,7 +151,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     },
   });
 
-  // Set up real-time listener for employee locations
+  // Fetch employee locations and set up real-time listener
   useEffect(() => {
     const fetchEmployeeLocations = async () => {
       try {

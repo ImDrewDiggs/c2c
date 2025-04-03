@@ -1,11 +1,11 @@
 
-import { Session, User } from '@supabase/supabase-js';
-import { UserRole, UserData } from '@/lib/supabase';
+import { User } from "@supabase/supabase-js";
+import { UserData, UserRole } from "@/lib/supabase";
 
 export interface AuthContextType {
   user: User | null;
   userData: UserData | null;
-  signIn: (email: string, password: string, role: UserRole) => Promise<void>;
+  signIn: (email: string, password: string, role: UserRole) => Promise<string | void>;
   signOut: () => Promise<void>;
   loading: boolean;
   isSuperAdmin: boolean;
