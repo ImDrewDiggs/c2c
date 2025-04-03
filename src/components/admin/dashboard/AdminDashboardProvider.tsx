@@ -1,15 +1,12 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, createContext, useContext } from "react";
 import { supabase } from "@/lib/supabase";
 import { House, Assignment, EmployeeLocation } from "@/types/map";
 import { EmployeeLocationRow, HouseRow, AssignmentRow } from "@/lib/supabase-types";
 
-interface AdminDashboardProviderProps {
-  children: (props: AdminDashboardData) => ReactNode;
-}
-
-export interface AdminDashboardData {
+// Create a context for the dashboard data
+interface AdminDashboardContextValue {
   stats: {
     dailyPickups: number;
     weeklyPickups: number;
@@ -26,6 +23,22 @@ export interface AdminDashboardData {
   activeEmployees: number;
   mockRevenueData: { name: string; amount: number }[];
   mockPickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[];
+}
+
+// Create the context with a default value
+const AdminDashboardContext = createContext<AdminDashboardContextValue | undefined>(undefined);
+
+// Hook to use the dashboard context
+export function useAdminDashboard() {
+  const context = useContext(AdminDashboardContext);
+  if (context === undefined) {
+    throw new Error("useAdminDashboard must be used within an AdminDashboardProvider");
+  }
+  return context;
+}
+
+interface AdminDashboardProviderProps {
+  children: ReactNode;
 }
 
 export function AdminDashboardProvider({ children }: AdminDashboardProviderProps) {
@@ -221,8 +234,8 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     }
   }, []);
 
-  // Prepare the dashboard data object to pass to children
-  const dashboardData: AdminDashboardData = {
+  // Prepare the dashboard data object to pass to context
+  const dashboardData: AdminDashboardContextValue = {
     stats: stats || { 
       dailyPickups: 0, 
       weeklyPickups: 0,
@@ -241,10 +254,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     mockPickups
   };
 
-  // Render children with the dashboard data
+  // Provide the context value to children
   return (
-    <>
-      {typeof children === 'function' ? children(dashboardData) : children}
-    </>
+    <AdminDashboardContext.Provider value={dashboardData}>
+      {children}
+    </AdminDashboardContext.Provider>
   );
 }
