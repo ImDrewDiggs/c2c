@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { House, Assignment, EmployeeLocation } from "@/types/map";
 import { EmployeeLocationRow, HouseRow, AssignmentRow } from "@/lib/supabase-types";
 
-// Create a context for the dashboard data
+// Define the dashboard context value type
 interface AdminDashboardContextValue {
   stats: {
     dailyPickups: number;
@@ -25,7 +25,7 @@ interface AdminDashboardContextValue {
   mockPickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[];
 }
 
-// Create the context with a default value
+// Create context with default undefined value
 const AdminDashboardContext = createContext<AdminDashboardContextValue | undefined>(undefined);
 
 // Hook to use the dashboard context
@@ -37,10 +37,12 @@ export function useAdminDashboard() {
   return context;
 }
 
+// Props for the provider component
 interface AdminDashboardProviderProps {
   children: ReactNode;
 }
 
+// Dashboard Provider Component
 export function AdminDashboardProvider({ children }: AdminDashboardProviderProps) {
   const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
@@ -151,43 +153,8 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
 
   // Set up real-time listener for employee locations
   useEffect(() => {
-    try {
-      const channel = supabase
-        .channel('employee-locations')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'employee_locations'
-          },
-          async (payload) => {
-            console.log("Real-time location update received:", payload);
-            
-            const { data: locations, error } = await supabase
-              .from('employee_locations')
-              .select('*') as { data: EmployeeLocationRow[] | null, error: any };
-            
-            if (!error && locations) {
-              const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
-                id: loc.id,
-                employee_id: loc.employee_id,
-                latitude: loc.latitude,
-                longitude: loc.longitude,
-                timestamp: loc.timestamp,
-                is_online: loc.is_online,
-                last_seen_at: loc.last_seen_at
-              }));
-              
-              setEmployeeLocations(mappedLocations);
-              setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
-            }
-          }
-        )
-        .subscribe();
-
-      // Fetch employee locations initially
-      const fetchEmployeeLocations = async () => {
+    const fetchEmployeeLocations = async () => {
+      try {
         const { data: locations, error } = await supabase
           .from('employee_locations')
           .select('*') as { data: EmployeeLocationRow[] | null, error: any };
@@ -208,9 +175,30 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
           setEmployeeLocations(mappedLocations);
           setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
         }
-      };
+      } catch (error) {
+        console.error("Error fetching employee locations:", error);
+      }
+    };
 
-      fetchEmployeeLocations();
+    fetchEmployeeLocations();
+
+    // Set up the real-time subscription
+    try {
+      const channel = supabase
+        .channel('employee-locations')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'employee_locations'
+          },
+          async (payload) => {
+            console.log("Real-time location update received:", payload);
+            fetchEmployeeLocations();
+          }
+        )
+        .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
@@ -244,7 +232,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
 
   // Prepare the dashboard data object to pass to context
   const dashboardData: AdminDashboardContextValue = {
-    stats: stats,
+    stats,
     houses,
     assignments,
     currentLocation,
