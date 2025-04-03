@@ -56,6 +56,7 @@ function AdminDashboardContent() {
 }
 
 export default function AdminDashboard() {
+  // Hard-coded admin email for verification
   const ADMIN_EMAIL = 'diggs844037@yahoo.com';
 
   return (

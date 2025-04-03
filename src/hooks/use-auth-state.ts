@@ -2,7 +2,6 @@
 import { useAuthSession } from './use-auth-session';
 import { useAuthActions } from './use-auth-actions';
 import { useUserProfile } from './use-user-profile';
-import { useAdminProfile } from './use-admin-profile';
 
 export function useAuthState() {
   const { user, loading: sessionLoading } = useAuthSession();

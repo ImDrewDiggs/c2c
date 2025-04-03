@@ -75,7 +75,15 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
   ];
 
   // Query for dashboard stats
-  const { data: stats } = useQuery({
+  const { data: stats = {
+    dailyPickups: 24,
+    weeklyPickups: 168,
+    monthlyPickups: 720,
+    activeEmployees: 8,
+    pendingPickups: 15,
+    completedPickups: 9,
+    todayRevenue: 2400,
+  }} = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => ({
       dailyPickups: 24,
@@ -236,15 +244,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
 
   // Prepare the dashboard data object to pass to context
   const dashboardData: AdminDashboardContextValue = {
-    stats: stats || { 
-      dailyPickups: 0, 
-      weeklyPickups: 0,
-      monthlyPickups: 0,
-      activeEmployees: 0,
-      pendingPickups: 0, 
-      completedPickups: 0,
-      todayRevenue: 0 
-    },
+    stats: stats,
     houses,
     assignments,
     currentLocation,
