@@ -9,7 +9,7 @@ export function useUserProfile() {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { toast } = useToast();
   
-  // Use centralized admin email from AuthService
+  // Use the static property from AuthService
   const ADMIN_EMAIL = AuthService.ADMIN_EMAIL;
 
   async function fetchUserData(userId: string) {

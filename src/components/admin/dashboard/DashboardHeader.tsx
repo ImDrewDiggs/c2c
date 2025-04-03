@@ -1,5 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthService } from "@/services/AuthService";
 
 interface DashboardHeaderProps {
   isSuperAdmin: boolean;
@@ -7,7 +8,8 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ isSuperAdmin }: DashboardHeaderProps) {
   const { user } = useAuth();
-  const ADMIN_EMAIL = 'diggs844037@yahoo.com';
+  // Use the static property from AuthService
+  const ADMIN_EMAIL = AuthService.ADMIN_EMAIL;
   
   // Determine admin status both from the prop and by checking email directly
   const isAdmin = isSuperAdmin || (user?.email === ADMIN_EMAIL);

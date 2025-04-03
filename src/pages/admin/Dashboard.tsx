@@ -10,6 +10,7 @@ import { DashboardHeader } from "@/components/admin/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/admin/dashboard/DashboardTabs";
 import { OperationsContent } from "@/components/admin/dashboard/OperationsContent";
 import { AdminDashboardProvider, useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
+import { AuthService } from "@/services/AuthService";
 
 // Wrapper component that consumes the dashboard context
 function AdminDashboardContent() {
@@ -56,11 +57,9 @@ function AdminDashboardContent() {
 }
 
 export default function AdminDashboard() {
-  // Hard-coded admin email for verification
-  const ADMIN_EMAIL = 'diggs844037@yahoo.com';
-
+  // Use the static property from AuthService instead of hardcoding
   return (
-    <AdminAccessCheck adminEmail={ADMIN_EMAIL}>
+    <AdminAccessCheck>
       <AdminDashboardProvider>
         <AdminDashboardContent />
       </AdminDashboardProvider>

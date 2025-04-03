@@ -3,25 +3,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ReactNode, useEffect } from "react";
+import { AuthService } from "@/services/AuthService";
 
 interface AdminAccessCheckProps {
   children: ReactNode;
-  adminEmail: string;
+  adminEmail?: string; // Make this optional
 }
 
 export function AdminAccessCheck({ children, adminEmail }: AdminAccessCheckProps) {
   const { user, userData, isSuperAdmin, loading: authLoading } = useAuth();
+  // Use provided adminEmail or fall back to the static property
+  const adminEmailToCheck = adminEmail || AuthService.ADMIN_EMAIL;
   
   // Log key information for debugging
   useEffect(() => {
     console.log('[AdminAccessCheck] Checking admin access:', {
       userEmail: user?.email,
-      adminEmail: adminEmail,
+      adminEmail: adminEmailToCheck,
       hasUserData: !!userData,
       isSuperAdmin: isSuperAdmin,
       loading: authLoading
     });
-  }, [user, userData, isSuperAdmin, authLoading, adminEmail]);
+  }, [user, userData, isSuperAdmin, authLoading, adminEmailToCheck]);
 
   if (authLoading) {
     return (
@@ -33,7 +36,7 @@ export function AdminAccessCheck({ children, adminEmail }: AdminAccessCheckProps
   }
 
   // First priority check: Is this the admin email?
-  if (user?.email === adminEmail) {
+  if (user?.email === adminEmailToCheck) {
     console.log('[AdminAccessCheck] Admin access granted based on email match');
     return <>{children}</>;
   }

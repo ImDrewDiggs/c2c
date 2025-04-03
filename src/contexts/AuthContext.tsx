@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContextType } from '@/types/auth';
@@ -22,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
+  // Use the static property from AuthService
   const { ADMIN_EMAIL } = AuthService;
   const [initialCheckDone, setInitialCheckDone] = useState(false);
   

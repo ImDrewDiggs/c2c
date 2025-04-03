@@ -3,9 +3,12 @@ import { supabase } from "@/lib/supabase";
 import { UserData } from "@/lib/supabase";
 
 // Centralized admin email reference
-export const ADMIN_EMAIL = 'diggs844037@yahoo.com';
+const ADMIN_EMAIL = 'diggs844037@yahoo.com';
 
 export class AuthService {
+  // Make ADMIN_EMAIL accessible as a static property
+  static ADMIN_EMAIL = ADMIN_EMAIL;
+
   /**
    * Check if a user is an admin based on their email
    */
