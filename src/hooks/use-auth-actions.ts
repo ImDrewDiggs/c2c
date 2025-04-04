@@ -18,6 +18,9 @@ export function useAuthActions() {
       // Special case for admin email - bypass role checking
       const isAdmin = AuthService.isAdminEmail(email);
       
+      // Clear any existing session first to prevent conflicts
+      await supabase.auth.signOut();
+      
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,

@@ -22,9 +22,10 @@ export function useAuthSession() {
           userEmail: session?.user?.email || 'No user in session'
         });
         
-        setUser(session?.user ?? null);
-        
         if (session?.user) {
+          console.log('[DIAGNOSTIC][AuthSession] User found in session, setting user state');
+          setUser(session.user);
+          
           console.log('[DIAGNOSTIC][AuthSession] User found in session, will fetch profile:', session.user.id);
           // Attempt to fetch the user profile, but don't block auth on success
           await fetchUserData(session.user.id).catch(err => {
@@ -32,14 +33,14 @@ export function useAuthSession() {
           });
         } else {
           console.log('[DIAGNOSTIC][AuthSession] No user in session during initial check');
+          setUser(null);
         }
         
         setLoading(false);
+        setSessionChecked(true);
       } catch (error) {
         console.error('[DIAGNOSTIC][AuthSession] Error checking session:', error);
         setLoading(false);
-      } finally {
-        console.log('[DIAGNOSTIC][AuthSession] Session check completed, sessionChecked set to true');
         setSessionChecked(true);
       }
     };
@@ -51,7 +52,7 @@ export function useAuthSession() {
   useEffect(() => {
     if (!sessionChecked) {
       console.log('[DIAGNOSTIC][AuthSession] Skipping auth change listener setup - session not checked yet');
-      return;
+      return () => {};
     }
     
     console.log('[DIAGNOSTIC][AuthSession] Setting up auth state change listener');
@@ -73,11 +74,9 @@ export function useAuthSession() {
       if (session?.user) {
         console.log('[DIAGNOSTIC][AuthSession] Auth state changed with user, setting user state');
         setUser(session.user);
-        console.log('[DIAGNOSTIC][AuthSession] Fetching profile after auth state change');
-        // Attempt to fetch the user profile, but don't block auth on success
-        await fetchUserData(session.user.id).catch(err => {
-          console.warn('[DIAGNOSTIC][AuthSession] Profile fetch error after auth change, continuing anyway:', err.message);
-        });
+        
+        // Don't fetch profile data here to avoid potential infinite loop
+        // Only fetch when explicitly needed
       } else {
         console.log('[DIAGNOSTIC][AuthSession] No user in session after auth state change');
         setUser(null);
