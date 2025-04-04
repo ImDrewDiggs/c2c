@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -41,8 +40,8 @@ export function QuickLinks() {
     {
       label: "Manage Employees",
       icon: Users,
-      action: () => setAddEmployeeOpen(true),
-      path: null,
+      action: null,
+      path: "/admin/employees",
       description: "Add, edit and manage employee accounts"
     },
     {

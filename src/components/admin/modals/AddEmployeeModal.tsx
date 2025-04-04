@@ -20,7 +20,12 @@ const formSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().min(6, "Please enter a valid phone number"),
-  role: z.string().min(1, "Please select a role")
+  address: z.string().min(5, "Please enter a valid address"),
+  driversLicense: z.string().optional(),
+  payRate: z.string().regex(/^\d+(\.\d{1,2})?$/, "Please enter a valid pay rate"),
+  jobTitle: z.enum(["Driver", "Can Courier", "Can Cleaner", "Supervisor", "Trainee"], {
+    required_error: "Please select a job title",
+  }),
 });
 
 export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeModalProps) {
@@ -33,7 +38,10 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
       fullName: "",
       email: "",
       phone: "",
-      role: "Driver"
+      address: "",
+      driversLicense: "",
+      payRate: "",
+      jobTitle: "Driver"
     },
   });
 
@@ -49,6 +57,10 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
             full_name: values.fullName, 
             email: values.email,
             phone: values.phone,
+            address: values.address,
+            drivers_license: values.driversLicense,
+            pay_rate: values.payRate,
+            job_title: values.jobTitle,
             role: 'employee'
           }
         ]);
@@ -134,18 +146,62 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
             
             <FormField
               control={form.control}
-              name="role"
+              name="address"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
-                  <FormLabel className="text-right">Role</FormLabel>
+                  <FormLabel className="text-right">Address</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="col-span-3" />
+                  </FormControl>
+                  <FormMessage className="col-span-3 col-start-2" />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="driversLicense"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel className="text-right">Driver's License</FormLabel>
+                  <FormControl>
+                    <Input {...field} className="col-span-3" />
+                  </FormControl>
+                  <FormMessage className="col-span-3 col-start-2" />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="payRate"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel className="text-right">Pay Rate ($)</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="text" className="col-span-3" />
+                  </FormControl>
+                  <FormMessage className="col-span-3 col-start-2" />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="jobTitle"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel className="text-right">Job Title</FormLabel>
                   <FormControl>
                     <select
                       {...field}
                       className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="Driver">Driver</option>
+                      <option value="Can Courier">Can Courier</option>
+                      <option value="Can Cleaner">Can Cleaner</option>
                       <option value="Supervisor">Supervisor</option>
-                      <option value="Manager">Manager</option>
+                      <option value="Trainee">Trainee</option>
                     </select>
                   </FormControl>
                   <FormMessage className="col-span-3 col-start-2" />
