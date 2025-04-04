@@ -18,9 +18,13 @@ import {
   Phone,
   Search
 } from "lucide-react";
+import { AddEmployeeModal } from "@/components/admin/modals/AddEmployeeModal";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminEmployees() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
+  const { toast } = useToast();
   
   // Mock data - would be replaced with actual data from Supabase
   const employees = [
@@ -37,6 +41,13 @@ export default function AdminEmployees() {
       employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddSuccess = () => {
+    toast({
+      title: "Employee Added",
+      description: "The employee has been added successfully. Refresh to see updates.",
+    });
+  };
   
   return (
     <AdminPageLayout 
@@ -55,7 +66,7 @@ export default function AdminEmployees() {
             />
           </div>
           
-          <Button>
+          <Button onClick={() => setAddEmployeeOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Add Employee
           </Button>
@@ -93,7 +104,12 @@ export default function AdminEmployees() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost">Edit</Button>
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        toast({
+                          title: "Edit Employee",
+                          description: `Editing ${employee.name}. This functionality is coming soon.`,
+                        });
+                      }}>Edit</Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -108,6 +124,12 @@ export default function AdminEmployees() {
           </Table>
         </div>
       </div>
+
+      <AddEmployeeModal 
+        open={addEmployeeOpen} 
+        onOpenChange={setAddEmployeeOpen}
+        onSuccess={handleAddSuccess}
+      />
     </AdminPageLayout>
   );
 }
