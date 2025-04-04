@@ -3,10 +3,8 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { Select } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -61,8 +59,8 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
         description: `${values.fullName} has been added successfully.`,
       });
       
-      onOpenChange(false);
       form.reset();
+      onOpenChange(false);
       
       if (onSuccess) {
         onSuccess();
@@ -78,9 +76,6 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
     }
   };
 
-  // Use useForm's handleSubmit to validate before our handleSubmit
-  const onSubmit = form.handleSubmit(handleSubmit);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -89,7 +84,7 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={onSubmit} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
               name="fullName"
