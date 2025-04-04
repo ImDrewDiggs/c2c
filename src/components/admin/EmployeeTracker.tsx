@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, RefreshCw, Clock, Search } from "lucide-react";
-import { supabase } from "@/lib/supabase";  // Fixed import path
+import { MapPin, RefreshCw, Clock, Search, AlertTriangle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { EmployeeLocation, Location } from "@/types/map";
 import Map from "@/components/Map/Map";
+import { useToast } from "@/hooks/use-toast";
 
 interface EmployeeData {
   id: string;
@@ -37,41 +38,84 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Validate location data
+  const validateLocation = (location: EmployeeLocation): boolean => {
+    // Check for valid latitude and longitude values
+    if (!location || 
+        typeof location.latitude !== 'number' || 
+        typeof location.longitude !== 'number' ||
+        isNaN(location.latitude) || 
+        isNaN(location.longitude) ||
+        location.latitude < -90 || 
+        location.latitude > 90 || 
+        location.longitude < -180 || 
+        location.longitude > 180) {
+      return false;
+    }
+    return true;
+  };
 
   // Fetch employee profiles to map to locations
   useEffect(() => {
     async function fetchEmployeeData() {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'employee');
-      
-      if (error) {
-        console.error('Error fetching employee profiles:', error);
-        return;
-      }
+      setError(null);
+      try {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('role', 'employee');
+        
+        if (error) {
+          console.error('Error fetching employee profiles:', error);
+          setError('Failed to fetch employee profiles');
+          toast({
+            variant: "destructive",
+            title: "Error fetching employee data",
+            description: error.message,
+          });
+          return;
+        }
 
-      if (profiles) {
-        const employeeData: EmployeeData[] = employeeLocations.map(location => {
-          const profile = profiles.find(p => p.id === location.employee_id);
+        if (profiles) {
+          // Filter out invalid location data
+          const validEmployeeLocations = employeeLocations.filter(validateLocation);
           
-          return {
-            id: location.employee_id,
-            name: profile?.full_name || `Employee ID: ${location.employee_id.substring(0, 8)}...`,
-            startTime: new Date(location.timestamp || new Date()).toLocaleTimeString(),
-            status: location.is_online ? 'active' : 'inactive',
-            lastActive: new Date(location.last_seen_at || new Date()).toLocaleString(),
-            location: location
-          };
-        });
+          if (validEmployeeLocations.length < employeeLocations.length) {
+            console.warn(`Filtered out ${employeeLocations.length - validEmployeeLocations.length} invalid location records`);
+          }
+          
+          const employeeData: EmployeeData[] = validEmployeeLocations.map(location => {
+            const profile = profiles.find(p => p.id === location.employee_id);
+            
+            return {
+              id: location.employee_id,
+              name: profile?.full_name || `Employee ID: ${location.employee_id.substring(0, 8)}...`,
+              startTime: new Date(location.timestamp || new Date()).toLocaleTimeString(),
+              status: location.is_online ? 'active' : 'inactive',
+              lastActive: new Date(location.last_seen_at || new Date()).toLocaleString(),
+              location: location
+            };
+          });
 
-        setEmployees(employeeData);
-        setFilteredEmployees(employeeData);
+          setEmployees(employeeData);
+          setFilteredEmployees(employeeData);
+        }
+      } catch (err) {
+        console.error('Unexpected error during employee data fetch:', err);
+        setError('An unexpected error occurred while fetching employee data');
+        toast({
+          variant: "destructive",
+          title: "Data fetch error",
+          description: "Failed to load employee tracking data. Please try again later.",
+        });
       }
     }
 
     fetchEmployeeData();
-  }, [employeeLocations]);
+  }, [employeeLocations, toast]);
 
   // Filter employees based on search and status filter
   useEffect(() => {
@@ -96,13 +140,15 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
 
   const handleRefresh = () => {
     setRefreshing(true);
+    // Clear any existing error
+    setError(null);
     setTimeout(() => setRefreshing(false), 1000);
   };
 
   // Filter locations to only show selected employee if one is selected
   const filteredLocations = selectedEmployee
-    ? employeeLocations.filter(loc => loc.employee_id === selectedEmployee)
-    : employeeLocations;
+    ? employeeLocations.filter(loc => validateLocation(loc) && loc.employee_id === selectedEmployee)
+    : employeeLocations.filter(validateLocation);
 
   return (
     <div className="space-y-6">
@@ -119,6 +165,13 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
             Refresh
           </Button>
         </div>
+
+        {error && (
+          <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4 flex items-center">
+            <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <div className="relative flex-1">
@@ -220,12 +273,19 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
             : 'Employee Locations'}
         </h3>
         <div className="h-[400px]">
-          <Map
-            houses={[]}
-            assignments={[]}
-            currentLocation={currentLocation}
-            employeeLocations={filteredLocations}
-          />
+          {!currentLocation ? (
+            <div className="h-full flex items-center justify-center text-muted-foreground">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              <span>Unable to access your current location</span>
+            </div>
+          ) : (
+            <Map
+              houses={[]}
+              assignments={[]}
+              currentLocation={currentLocation}
+              employeeLocations={filteredLocations}
+            />
+          )}
         </div>
 
         <div className="mt-4 text-sm text-muted-foreground">

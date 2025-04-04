@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,10 +30,24 @@ export function QuickLinks() {
   const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
   
   const handleQuickAction = (action: string) => {
-    toast({
-      title: "Action Triggered",
-      description: `You triggered the "${action}" action. This functionality is coming soon.`,
-    });
+    try {
+      // Validate action string to prevent potential XSS or other issues
+      if (!action || typeof action !== 'string' || action.length > 100) {
+        throw new Error('Invalid action provided');
+      }
+      
+      toast({
+        title: "Action Triggered",
+        description: `You triggered the "${action}" action. This functionality is coming soon.`,
+      });
+    } catch (error) {
+      console.error("Error in quick action:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while performing this action.",
+      });
+    }
   };
 
   // Main actions with their functionality
@@ -142,33 +157,44 @@ export function QuickLinks() {
   ];
 
   const renderButton = (action: any, index: number) => {
+    // Validate input action
+    if (!action || typeof action.label !== 'string') {
+      console.error("Invalid action object", action);
+      return null;
+    }
+    
     const ButtonContent = (
       <>
-        <action.icon className="h-5 w-5" />
+        {action.icon ? <action.icon className="h-5 w-5" /> : null}
         <span className={action.path ? "" : "text-sm leading-tight"}>{action.label}</span>
         <span className="text-xs text-muted-foreground line-clamp-1">{action.description}</span>
       </>
     );
 
-    if (action.path) {
-      return (
-        <Link to={action.path} key={index}>
-          <Button variant="outline" className="w-full h-24 flex flex-col gap-1">
+    try {
+      if (action.path) {
+        return (
+          <Link to={action.path} key={index}>
+            <Button variant="outline" className="w-full h-24 flex flex-col gap-1">
+              {ButtonContent}
+            </Button>
+          </Link>
+        );
+      } else {
+        return (
+          <Button 
+            key={index} 
+            variant="outline" 
+            className="w-full h-24 flex flex-col gap-1"
+            onClick={action.action}
+          >
             {ButtonContent}
           </Button>
-        </Link>
-      );
-    } else {
-      return (
-        <Button 
-          key={index} 
-          variant="outline" 
-          className="w-full h-24 flex flex-col gap-1"
-          onClick={action.action}
-        >
-          {ButtonContent}
-        </Button>
-      );
+        );
+      }
+    } catch (error) {
+      console.error(`Error rendering button for ${action.label}:`, error);
+      return null;
     }
   };
 
