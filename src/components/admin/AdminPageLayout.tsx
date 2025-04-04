@@ -55,7 +55,12 @@ export function AdminPageLayout({ children, title, description }: AdminPageLayou
         </div>
         
         <Card className="p-6">
-          <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <ErrorBoundary 
+            FallbackComponent={ErrorFallback}
+            onError={(error) => {
+              console.error("Error in AdminPageLayout:", error);
+            }}
+          >
             {children}
           </ErrorBoundary>
         </Card>
