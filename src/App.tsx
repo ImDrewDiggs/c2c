@@ -21,6 +21,22 @@ import NotFound from "./pages/NotFound";
 import FAQ from "./pages/FAQ";
 import ContactUs from "./pages/ContactUs";
 
+// Admin Pages
+import AdminEmployees from "./pages/admin/Employees";
+import AdminCustomers from "./pages/admin/Customers";
+import AdminPricing from "./pages/admin/Pricing";
+import AdminSchedules from "./pages/admin/Schedules";
+import AdminSettings from "./pages/admin/Settings";
+import AdminReports from "./pages/admin/Reports";
+import AdminProperties from "./pages/admin/Properties";
+import AdminServiceLogs from "./pages/admin/ServiceLogs";
+import AdminGpsTracking from "./pages/admin/GpsTracking";
+import AdminFleet from "./pages/admin/Fleet";
+import AdminAnalytics from "./pages/admin/Analytics";
+import AdminNotifications from "./pages/admin/Notifications";
+import AdminKnowledgeBase from "./pages/admin/KnowledgeBase";
+import AdminSupportTickets from "./pages/admin/SupportTickets";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -45,6 +61,23 @@ const App = () => (
             <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            
+            {/* Admin Quick Action Routes */}
+            <Route path="/admin/employees" element={<AdminEmployees />} />
+            <Route path="/admin/customers" element={<AdminCustomers />} />
+            <Route path="/admin/pricing" element={<AdminPricing />} />
+            <Route path="/admin/schedules" element={<AdminSchedules />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/properties" element={<AdminProperties />} />
+            <Route path="/admin/service-logs" element={<AdminServiceLogs />} />
+            <Route path="/admin/gps-tracking" element={<AdminGpsTracking />} />
+            <Route path="/admin/fleet" element={<AdminFleet />} />
+            <Route path="/admin/advanced-analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
+            <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
+            <Route path="/admin/support-tickets" element={<AdminSupportTickets />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
