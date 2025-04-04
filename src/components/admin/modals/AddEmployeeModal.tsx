@@ -38,9 +38,10 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-
     try {
+      setIsSubmitting(true);
+      console.log("Submitting employee data:", values);
+
       const { data, error } = await supabase
         .from('profiles')
         .insert([
@@ -52,7 +53,10 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
           }
         ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
       toast({
         title: "Employee Added",
@@ -66,10 +70,11 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
         onSuccess();
       }
     } catch (error: any) {
+      console.error("Error adding employee:", error);
       toast({
         variant: "destructive",
         title: "Failed to add employee",
-        description: error.message,
+        description: error.message || "An error occurred while adding the employee",
       });
     } finally {
       setIsSubmitting(false);

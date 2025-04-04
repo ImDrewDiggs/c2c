@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ export default function AdminLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, loading } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +29,10 @@ export default function AdminLogin() {
     
     setIsSubmitting(true);
     try {
-      await signIn(email, password, 'admin');
+      const role = await signIn(email, password, 'admin');
+      console.log("Login successful with role:", role);
+      
+      // Let the auth context handle the navigation
     } catch (error: any) {
       console.error("Login error:", error);
       // Toast is already handled in the signIn function
