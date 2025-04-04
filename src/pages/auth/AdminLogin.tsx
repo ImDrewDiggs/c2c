@@ -18,6 +18,7 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!email || !password) {
       toast({
         variant: "destructive",
@@ -28,14 +29,16 @@ export default function AdminLogin() {
     }
     
     setIsSubmitting(true);
+    
     try {
+      // Call signIn and store the returned role
       const role = await signIn(email, password, 'admin');
       console.log("Login successful with role:", role);
       
-      // Let the auth context handle the navigation
+      // The navigation will be handled by the AuthContext
     } catch (error: any) {
       console.error("Login error:", error);
-      // Toast is already handled in the signIn function
+      // Toast error is already handled in the signIn function
     } finally {
       setIsSubmitting(false);
     }
