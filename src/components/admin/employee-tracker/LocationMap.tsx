@@ -15,15 +15,13 @@ export function LocationMap({
   selectedEmployee
 }: LocationMapProps) {
   // Filter locations to only show selected employee if one is selected
-  const filteredLocations = selectedEmployee
-    ? employeeLocations.filter(loc => validateLocation(loc) && loc.employee_id === selectedEmployee.employee_id)
-    : employeeLocations.filter(validateLocation);
+  const filteredLocations = employeeLocations.filter(validateLocation);
 
   return (
     <>
       <h3 className="text-xl font-semibold mb-4">
         {selectedEmployee 
-          ? `Tracking: ${selectedEmployee.employee_name || 'Employee'}`
+          ? `Tracking: Employee ${selectedEmployee.employee_id.substring(0, 8)}...`
           : 'Employee Locations'}
       </h3>
       <div className="h-[400px]">

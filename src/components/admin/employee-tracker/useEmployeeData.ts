@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { EmployeeLocation } from "@/types/map";
 import { EmployeeData } from "./types";
 import { useToast } from "@/hooks/use-toast";
+import { AlertTriangle } from "lucide-react";
 
 export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
   const [employees, setEmployees] = useState<EmployeeData[]>([]);

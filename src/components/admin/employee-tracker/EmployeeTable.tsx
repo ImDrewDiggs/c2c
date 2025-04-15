@@ -3,12 +3,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { EmployeeData } from "./types";
-import { EmployeeLocation } from "@/types/map";
 
 interface EmployeeTableProps {
   employees: EmployeeData[];
   selectedEmployeeId: string | undefined;
-  onSelect: (employee: EmployeeLocation | null) => void;
+  onSelect: (employee: EmployeeData | null) => void;
 }
 
 export function EmployeeTable({ employees, selectedEmployeeId, onSelect }: EmployeeTableProps) {
@@ -46,7 +45,7 @@ export function EmployeeTable({ employees, selectedEmployeeId, onSelect }: Emplo
                   if (selectedEmployeeId === employee.id) {
                     onSelect(null);
                   } else {
-                    onSelect(employee.location);
+                    onSelect(employee);
                   }
                 }}
               >
