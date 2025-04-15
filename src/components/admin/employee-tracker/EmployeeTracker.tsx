@@ -7,6 +7,7 @@ import { LocationMap } from "./LocationMap";
 import { useEmployeeData } from "./useEmployeeData";
 import { EmployeeLocation, Location } from "@/types/map";
 import { AlertTriangle } from "lucide-react";
+import { EmployeeData } from "./types";
 
 interface EmployeeTrackerProps {
   employeeLocations: EmployeeLocation[];
