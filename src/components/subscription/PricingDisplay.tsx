@@ -12,7 +12,7 @@ const PricingDisplay = ({ total, discount, subscriptionType }: PricingDisplayPro
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass mb-8 p-6"
+      className="glass mb-8 p-6 sticky top-0 z-50 w-full"
     >
       <h2 className="text-2xl font-bold text-center mb-2">
         Selected Services Total
