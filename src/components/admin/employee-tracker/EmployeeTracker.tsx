@@ -7,14 +7,15 @@ import { LocationMap } from "./LocationMap";
 import { useEmployeeData } from "./useEmployeeData";
 import { EmployeeLocation, Location } from "@/types/map";
 import { AlertTriangle } from "lucide-react";
-import { EmployeeData } from "./types";
 
 interface EmployeeTrackerProps {
   employeeLocations: EmployeeLocation[];
   currentLocation: Location | null;
 }
 
-export function EmployeeTracker({ employeeLocations, currentLocation }: EmployeeTrackerProps) {
+export function EmployeeTracker({ employeeLocations = [], currentLocation = null }: EmployeeTrackerProps) {
+  console.log("Original EmployeeTracker component rendering with:", { employeeLocations });
+  
   const { 
     filteredEmployees, 
     setSearchTerm, 

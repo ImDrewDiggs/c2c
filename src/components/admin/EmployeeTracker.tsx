@@ -4,6 +4,7 @@ import { EmployeeTracker as OriginalEmployeeTracker } from './employee-tracker/E
 import { ErrorBoundary } from 'react-error-boundary';
 import { Card } from '@/components/ui/card';
 import { Location } from '@/types/map';
+import { EmployeeLocation } from '@/types/map';
 
 // Create a fallback component for the error boundary
 function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
@@ -26,11 +27,13 @@ function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetEr
 
 // Create a wrapper component with error boundary
 interface EmployeeTrackerProps {
-  employeeLocations?: any[];
+  employeeLocations?: EmployeeLocation[];
   currentLocation?: Location | null;
 }
 
-export function EmployeeTracker({ employeeLocations, currentLocation }: EmployeeTrackerProps) {
+export function EmployeeTracker({ employeeLocations = [], currentLocation = null }: EmployeeTrackerProps) {
+  console.log("EmployeeTracker wrapper rendering with:", { employeeLocations, currentLocation });
+  
   return (
     <ErrorBoundary 
       FallbackComponent={MapErrorFallback}
