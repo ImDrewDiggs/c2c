@@ -1,3 +1,3 @@
 
 // Re-export from the refactored location to maintain compatibility
-export { EmployeeTracker } from "./employee-tracker/EmployeeTracker";
+export { EmployeeTracker } from "./EmployeeTracker";
