@@ -6,6 +6,7 @@ import { EmployeeTable } from "./EmployeeTable";
 import { LocationMap } from "./LocationMap";
 import { useEmployeeData } from "./useEmployeeData";
 import { EmployeeLocation, Location } from "@/types/map";
+import { AlertTriangle } from "lucide-react";
 
 interface EmployeeTrackerProps {
   employeeLocations: EmployeeLocation[];
@@ -18,7 +19,8 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
     setSearchTerm, 
     setStatusFilter, 
     searchTerm, 
-    statusFilter 
+    statusFilter,
+    error
   } = useEmployeeData(employeeLocations);
 
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeLocation | null>(null);
@@ -31,6 +33,13 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
             <CardTitle>Employee Tracking</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="bg-destructive/10 text-destructive p-4 rounded-md flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+            
             <EmployeeFilters 
               searchTerm={searchTerm}
               statusFilter={statusFilter}

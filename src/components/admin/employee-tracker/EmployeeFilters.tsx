@@ -1,40 +1,21 @@
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { EmployeeData } from "./types";
 
 interface EmployeeFiltersProps {
-  employees: EmployeeData[];
-  onFilterChange: (filtered: EmployeeData[]) => void;
+  searchTerm: string;
+  statusFilter: "all" | "active" | "inactive";
+  onSearchChange: (value: string) => void;
+  onStatusFilterChange: (value: "all" | "active" | "inactive") => void;
 }
 
-export function EmployeeFilters({ employees, onFilterChange }: EmployeeFiltersProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-
-  // Filter employees based on search and status filter
-  useEffect(() => {
-    let filtered = employees;
-    
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(emp => 
-        emp.name.toLowerCase().includes(query) || 
-        emp.id.toLowerCase().includes(query)
-      );
-    }
-    
-    // Apply status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(emp => emp.status === statusFilter);
-    }
-    
-    onFilterChange(filtered);
-  }, [searchQuery, statusFilter, employees, onFilterChange]);
-
+export function EmployeeFilters({ 
+  searchTerm, 
+  statusFilter, 
+  onSearchChange, 
+  onStatusFilterChange 
+}: EmployeeFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-4">
       <div className="relative flex-1">
@@ -42,8 +23,8 @@ export function EmployeeFilters({ employees, onFilterChange }: EmployeeFiltersPr
         <Input
           placeholder="Search employees..."
           className="pl-8"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
           aria-label="Search employees"
         />
       </div>
@@ -52,14 +33,14 @@ export function EmployeeFilters({ employees, onFilterChange }: EmployeeFiltersPr
         <Button 
           variant={statusFilter === "all" ? "default" : "outline"} 
           size="sm"
-          onClick={() => setStatusFilter("all")}
+          onClick={() => onStatusFilterChange("all")}
         >
           All
         </Button>
         <Button 
           variant={statusFilter === "active" ? "default" : "outline"} 
           size="sm"
-          onClick={() => setStatusFilter("active")}
+          onClick={() => onStatusFilterChange("active")}
           className={statusFilter === "active" ? "bg-green-600 hover:bg-green-700" : ""}
         >
           Active
@@ -67,7 +48,7 @@ export function EmployeeFilters({ employees, onFilterChange }: EmployeeFiltersPr
         <Button 
           variant={statusFilter === "inactive" ? "default" : "outline"} 
           size="sm"
-          onClick={() => setStatusFilter("inactive")}
+          onClick={() => onStatusFilterChange("inactive")}
           className={statusFilter === "inactive" ? "bg-gray-500 hover:bg-gray-600" : ""}
         >
           Inactive

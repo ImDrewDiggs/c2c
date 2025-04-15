@@ -6,26 +6,24 @@ import { Location, EmployeeLocation } from "@/types/map";
 interface LocationMapProps {
   employeeLocations: EmployeeLocation[];
   currentLocation: Location | null;
-  selectedEmployee: string | null;
-  employeeName?: string;
+  selectedEmployee: EmployeeLocation | null;
 }
 
 export function LocationMap({ 
   employeeLocations, 
   currentLocation, 
-  selectedEmployee,
-  employeeName
+  selectedEmployee
 }: LocationMapProps) {
   // Filter locations to only show selected employee if one is selected
   const filteredLocations = selectedEmployee
-    ? employeeLocations.filter(loc => validateLocation(loc) && loc.employee_id === selectedEmployee)
+    ? employeeLocations.filter(loc => validateLocation(loc) && loc.employee_id === selectedEmployee.employee_id)
     : employeeLocations.filter(validateLocation);
 
   return (
     <>
       <h3 className="text-xl font-semibold mb-4">
         {selectedEmployee 
-          ? `Tracking: ${employeeName || 'Employee'}`
+          ? `Tracking: ${selectedEmployee.employee_name || 'Employee'}`
           : 'Employee Locations'}
       </h3>
       <div className="h-[400px]">

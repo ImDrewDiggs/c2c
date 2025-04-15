@@ -7,7 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 
 export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
   const [employees, setEmployees] = useState<EmployeeData[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<EmployeeData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const { toast } = useToast();
 
   // Fetch employee profiles to map to locations
@@ -53,6 +56,7 @@ export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
           });
 
           setEmployees(employeeData);
+          setFilteredEmployees(employeeData);
         }
       } catch (err) {
         console.error('Unexpected error during employee data fetch:', err);
@@ -68,7 +72,36 @@ export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
     fetchEmployeeData();
   }, [employeeLocations, toast]);
 
-  return { employees, error };
+  // Filter employees based on search and status
+  useEffect(() => {
+    let filtered = employees;
+    
+    // Apply search filter
+    if (searchTerm) {
+      const query = searchTerm.toLowerCase();
+      filtered = filtered.filter(emp => 
+        emp.name.toLowerCase().includes(query) || 
+        emp.id.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(emp => emp.status === statusFilter);
+    }
+    
+    setFilteredEmployees(filtered);
+  }, [searchTerm, statusFilter, employees]);
+
+  return { 
+    employees, 
+    filteredEmployees, 
+    searchTerm, 
+    statusFilter, 
+    setSearchTerm, 
+    setStatusFilter, 
+    error 
+  };
 }
 
 // Validate location data

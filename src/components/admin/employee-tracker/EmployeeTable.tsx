@@ -3,14 +3,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { EmployeeData } from "./types";
+import { EmployeeLocation } from "@/types/map";
 
 interface EmployeeTableProps {
   employees: EmployeeData[];
-  selectedEmployee: string | null;
-  onSelectEmployee: (id: string | null) => void;
+  selectedEmployeeId: string | undefined;
+  onSelect: (employee: EmployeeLocation | null) => void;
 }
 
-export function EmployeeTable({ employees, selectedEmployee, onSelectEmployee }: EmployeeTableProps) {
+export function EmployeeTable({ employees, selectedEmployeeId, onSelect }: EmployeeTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -24,7 +25,7 @@ export function EmployeeTable({ employees, selectedEmployee, onSelectEmployee }:
       </TableHeader>
       <TableBody>
         {employees.map((employee) => (
-          <TableRow key={employee.id} className={selectedEmployee === employee.id ? 'bg-accent/20' : ''}>
+          <TableRow key={employee.id} className={selectedEmployeeId === employee.id ? 'bg-accent/20' : ''}>
             <TableCell className="font-medium">{employee.name}</TableCell>
             <TableCell>{employee.startTime}</TableCell>
             <TableCell>
@@ -42,15 +43,15 @@ export function EmployeeTable({ employees, selectedEmployee, onSelectEmployee }:
                 variant="ghost" 
                 size="sm" 
                 onClick={() => {
-                  if (selectedEmployee === employee.id) {
-                    onSelectEmployee(null);
+                  if (selectedEmployeeId === employee.id) {
+                    onSelect(null);
                   } else {
-                    onSelectEmployee(employee.id);
+                    onSelect(employee.location);
                   }
                 }}
               >
                 <MapPin className="h-4 w-4 mr-2" />
-                {selectedEmployee === employee.id ? 'Show All' : 'Track'}
+                {selectedEmployeeId === employee.id ? 'Show All' : 'Track'}
               </Button>
             </TableCell>
           </TableRow>
