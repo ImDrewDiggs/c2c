@@ -247,7 +247,7 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
       {/* Employee location markers */}
       {employeeLocations.map((employee) => (
         <Marker
-          key={employee.id}
+          key={employee.employee_id} // Changed from employee.id to employee.employee_id
           position={[employee.latitude, employee.longitude]}
           icon={employee.is_online ? activeEmployeeIcon : employeeIcon}
         >
