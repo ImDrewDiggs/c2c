@@ -1,3 +1,3 @@
 
-// Re-export from the refactored location to maintain compatibility
-export { EmployeeTracker } from "./EmployeeTracker";
+// Re-export the component from the correct location
+export { EmployeeTracker } from "./employee-tracker/EmployeeTracker";

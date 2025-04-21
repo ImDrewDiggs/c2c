@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
 import { useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
 import { useState, useEffect } from "react";
-import { Loader2, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
