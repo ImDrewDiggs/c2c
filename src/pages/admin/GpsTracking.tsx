@@ -62,6 +62,10 @@ function GpsTrackingContent() {
   }
   
   const { employeeLocations, currentLocation } = dashboardContext;
+  console.log("GpsTrackingContent rendering with:", { 
+    employeeCount: employeeLocations?.length || 0,
+    hasCurrentLocation: !!currentLocation
+  });
   
   return (
     <div className="h-[600px]">

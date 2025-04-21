@@ -1,3 +1,3 @@
 
-// Re-export the component from the correct location
-export { EmployeeTracker } from "./employee-tracker/EmployeeTracker";
+// Make sure we're exporting from the wrapper component, not the original implementation
+export { EmployeeTracker } from "./EmployeeTracker";

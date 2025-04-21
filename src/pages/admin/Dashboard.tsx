@@ -17,6 +17,8 @@ function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   const dashboardData = useAdminDashboard();
   
+  console.log("AdminDashboardContent rendering with dashboard data:", dashboardData?.employeeLocations?.length || 0, "employees");
+  
   return (
     <div className="container mx-auto p-6 space-y-6">
       <DashboardHeader isSuperAdmin={isSuperAdmin} />
@@ -45,7 +47,7 @@ function AdminDashboardContent() {
         }
         employeesContent={
           <EmployeeTracker 
-            employeeLocations={dashboardData.employeeLocations} 
+            employeeLocations={dashboardData.employeeLocations || []} 
             currentLocation={dashboardData.currentLocation}
           />
         }
