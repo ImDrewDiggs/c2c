@@ -17,7 +17,12 @@ function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   const dashboardData = useAdminDashboard();
   
-  console.log("AdminDashboardContent rendering with dashboard data:", dashboardData?.employeeLocations?.length || 0, "employees");
+  // Ensure we have valid data before passing to components
+  const safeEmployeeLocations = Array.isArray(dashboardData?.employeeLocations) 
+    ? dashboardData.employeeLocations 
+    : [];
+  
+  console.log("AdminDashboardContent rendering with dashboard data:", safeEmployeeLocations.length, "employees");
   
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -25,11 +30,11 @@ function AdminDashboardContent() {
 
       <StatsOverview 
         stats={{
-          dailyPickups: dashboardData.stats.dailyPickups,
-          pendingPickups: dashboardData.stats.pendingPickups,
-          todayRevenue: dashboardData.stats.todayRevenue,
+          dailyPickups: dashboardData?.stats?.dailyPickups ?? 0,
+          pendingPickups: dashboardData?.stats?.pendingPickups ?? 0,
+          todayRevenue: dashboardData?.stats?.todayRevenue ?? 0,
         }}
-        activeEmployeesCount={dashboardData.activeEmployees}
+        activeEmployeesCount={dashboardData?.activeEmployees ?? 0}
       />
 
       <QuickLinks />
@@ -37,18 +42,18 @@ function AdminDashboardContent() {
       <DashboardTabs
         operationsContent={
           <OperationsContent
-            houses={dashboardData.houses}
-            assignments={dashboardData.assignments}
-            currentLocation={dashboardData.currentLocation}
-            employeeLocations={dashboardData.employeeLocations}
-            revenueData={dashboardData.mockRevenueData}
-            pickups={dashboardData.mockPickups}
+            houses={dashboardData?.houses ?? []}
+            assignments={dashboardData?.assignments ?? []}
+            currentLocation={dashboardData?.currentLocation ?? null}
+            employeeLocations={safeEmployeeLocations}
+            revenueData={dashboardData?.mockRevenueData ?? []}
+            pickups={dashboardData?.mockPickups ?? []}
           />
         }
         employeesContent={
           <EmployeeTracker 
-            employeeLocations={dashboardData.employeeLocations || []} 
-            currentLocation={dashboardData.currentLocation}
+            employeeLocations={safeEmployeeLocations} 
+            currentLocation={dashboardData?.currentLocation ?? null}
           />
         }
         analyticsContent={<AnalyticsDashboard />}
@@ -59,7 +64,6 @@ function AdminDashboardContent() {
 }
 
 export default function AdminDashboard() {
-  // Use the static property from AuthService instead of hardcoding
   return (
     <AdminAccessCheck>
       <AdminDashboardProvider>

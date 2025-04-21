@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { EmployeeTracker as OriginalEmployeeTracker } from './employee-tracker/EmployeeTracker';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Card } from '@/components/ui/card';
 import { Location, EmployeeLocation } from '@/types/map';
+import { InternalEmployeeTracker } from './employee-tracker/InternalEmployeeTracker';
 
 // Create a fallback component for the error boundary
 function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
@@ -41,7 +41,7 @@ export function EmployeeTracker({ employeeLocations = [], currentLocation = null
         console.log("Map error boundary reset");
       }}
     >
-      <OriginalEmployeeTracker 
+      <InternalEmployeeTracker 
         employeeLocations={safeEmployeeLocations} 
         currentLocation={currentLocation} 
       />
