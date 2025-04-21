@@ -20,7 +20,7 @@ function GpsTrackingContent() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000); // Increased from 500ms to 1000ms for more reliability
+    }, 1500); // Increased from 1000ms to 1500ms for more reliability
     
     return () => clearTimeout(timer);
   }, []);
@@ -61,11 +61,7 @@ function GpsTrackingContent() {
     );
   }
   
-  const { employeeLocations, currentLocation } = dashboardContext;
-  console.log("GpsTrackingContent rendering with:", { 
-    employeeCount: employeeLocations?.length || 0,
-    hasCurrentLocation: !!currentLocation
-  });
+  const { employeeLocations = [], currentLocation } = dashboardContext;
   
   return (
     <div className="h-[600px]">
@@ -75,10 +71,20 @@ function GpsTrackingContent() {
           <span className="ml-2">Loading employee location data...</span>
         </div>
       ) : (
-        <EmployeeTracker 
-          employeeLocations={employeeLocations || []} 
-          currentLocation={currentLocation || null}
-        />
+        <ErrorBoundary
+          FallbackComponent={({ error }) => (
+            <div className="h-full flex flex-col items-center justify-center text-destructive">
+              <AlertTriangle className="h-8 w-8 mb-2" />
+              <p className="font-semibold mb-2">Map error: {error.message}</p>
+              <p className="text-sm">Please try refreshing the page</p>
+            </div>
+          )}
+        >
+          <EmployeeTracker 
+            employeeLocations={employeeLocations || []} 
+            currentLocation={currentLocation || null}
+          />
+        </ErrorBoundary>
       )}
     </div>
   );

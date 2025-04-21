@@ -13,8 +13,9 @@ interface EmployeeTrackerProps {
   currentLocation: Location | null;
 }
 
-export function EmployeeTracker({ employeeLocations = [], currentLocation = null }: EmployeeTrackerProps) {
-  console.log("Original EmployeeTracker component rendering with:", { employeeLocations });
+export function EmployeeTracker({ employeeLocations, currentLocation }: EmployeeTrackerProps) {
+  // Ensure employeeLocations is an array even if it's passed as null or undefined
+  const safeEmployeeLocations = Array.isArray(employeeLocations) ? employeeLocations : [];
   
   const { 
     filteredEmployees, 
@@ -23,7 +24,7 @@ export function EmployeeTracker({ employeeLocations = [], currentLocation = null
     searchTerm, 
     statusFilter,
     error
-  } = useEmployeeData(employeeLocations);
+  } = useEmployeeData(safeEmployeeLocations);
 
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeLocation | null>(null);
 
@@ -71,7 +72,7 @@ export function EmployeeTracker({ employeeLocations = [], currentLocation = null
       <Card className="lg:col-span-2">
         <CardContent className="pt-6">
           <LocationMap 
-            employeeLocations={employeeLocations.filter(loc => 
+            employeeLocations={safeEmployeeLocations.filter(loc => 
               // Show all if no selection, or only the selected one
               !selectedEmployee || loc.employee_id === selectedEmployee.employee_id
             )}

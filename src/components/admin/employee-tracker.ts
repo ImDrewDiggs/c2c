@@ -1,3 +1,3 @@
 
-// Make sure we're exporting from the wrapper component, not the original implementation
+// Just export the wrapper component directly
 export { EmployeeTracker } from "./EmployeeTracker";

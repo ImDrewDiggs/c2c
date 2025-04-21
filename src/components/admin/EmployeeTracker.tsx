@@ -31,18 +31,18 @@ interface EmployeeTrackerProps {
 }
 
 export function EmployeeTracker({ employeeLocations = [], currentLocation = null }: EmployeeTrackerProps) {
-  console.log("EmployeeTracker wrapper rendering with:", { employeeLocations, currentLocation });
+  // Add defensive handling to ensure components get the right props
+  const safeEmployeeLocations = Array.isArray(employeeLocations) ? employeeLocations : [];
   
   return (
     <ErrorBoundary 
       FallbackComponent={MapErrorFallback}
       onReset={() => {
-        // Reset any state that might have caused the error
         console.log("Map error boundary reset");
       }}
     >
       <OriginalEmployeeTracker 
-        employeeLocations={employeeLocations} 
+        employeeLocations={safeEmployeeLocations} 
         currentLocation={currentLocation} 
       />
     </ErrorBoundary>
