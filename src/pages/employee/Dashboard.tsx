@@ -1,202 +1,276 @@
 
-import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { CalendarIcon, CheckCircle, Clock, MapPin, Truck, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import TimeTracker from "@/components/employee/TimeTracker";
-import { JobAssignments } from "@/components/employee/JobAssignments";
-import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { Assignment, House, Location } from "@/types/map";
+import { useAuth } from "@/contexts/AuthContext";
+import Map from "@/components/Map/Map";
 
 export default function EmployeeDashboard() {
-  const { user, userData } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("time-tracker");
-  const [loading, setLoading] = useState(true);
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
-
-  // Fetch current employee location
-  useEffect(() => {
-    if (user?.id) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Set a default location if geolocation fails
-          setCurrentLocation({ latitude: 40.7128, longitude: -74.0060 }); // Default to NYC
-        }
-      );
-    }
-  }, [user?.id]);
-
-  // Fetch employee's assignments
-  const { data: assignments = [] } = useQuery({
-    queryKey: ['employeeAssignments', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      const { data: assignmentsData, error } = await supabase
-        .from('assignments')
-        .select(`
-          *,
-          house:houses(*)
-        `)
-        .eq('employee_id', user.id);
-        
-      if (error) throw error;
-      
-      return assignmentsData.map(assignment => ({
-        id: assignment.id,
-        house_id: assignment.house_id,
-        employee_id: assignment.employee_id,
-        status: assignment.status,
-        assigned_date: assignment.assigned_date,
-        completed_at: assignment.completed_at,
-        house: assignment.house as House
-      })) as Assignment[];
+  const [activeTask, setActiveTask] = useState<number | null>(null);
+  
+  // Mock data for employee dashboard
+  const tasks = [
+    { 
+      id: 1, 
+      address: "123 Main St", 
+      customerName: "John Smith", 
+      scheduledTime: "09:00 AM", 
+      status: "pending",
+      location: { latitude: 37.7749, longitude: -122.4194 } 
     },
-    enabled: !!user?.id,
-  });
-
-  useEffect(() => {
-    // Check if the user is authenticated and has the employee role
-    if (!user || userData?.role !== 'employee') {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "Please log in as an employee to access this dashboard.",
-      });
-      navigate("/employee/login");
-    } else {
-      setLoading(false);
+    { 
+      id: 2, 
+      address: "456 Market St", 
+      customerName: "Jane Doe", 
+      scheduledTime: "10:30 AM", 
+      status: "pending",
+      location: { latitude: 37.7833, longitude: -122.4167 } 
+    },
+    { 
+      id: 3, 
+      address: "789 Mission St", 
+      customerName: "Springfield Mall", 
+      scheduledTime: "01:45 PM", 
+      status: "pending",
+      location: { latitude: 37.7850, longitude: -122.4200 } 
     }
-  }, [user, userData, navigate, toast]);
-
-  const handleViewRoute = (assignment: Assignment) => {
-    setSelectedAssignment(assignment);
-    setActiveTab("route-optimizer");
-  };
-
-  const handleCloseRoute = () => {
-    setSelectedAssignment(null);
-  };
-
-  const handleMarkComplete = async (assignment: Assignment) => {
-    if (!user?.id) return;
-    
-    try {
-      const { error } = await supabase
-        .from('assignments')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', assignment.id);
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Job Completed",
-        description: "The job has been marked as completed successfully."
-      });
-      
-      // Refresh assignments
-      // Note: In a real app with React Query, we would invalidate the query instead
-    } catch (error) {
-      console.error('Error marking job as complete:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update job status. Please try again."
-      });
+  ];
+  
+  const completedTasks = [
+    { 
+      id: 101, 
+      address: "101 Valencia St", 
+      customerName: "Mike Wilson", 
+      completedTime: "Yesterday, 03:15 PM", 
+      status: "completed" 
+    },
+    { 
+      id: 102, 
+      address: "202 Folsom St", 
+      customerName: "Sarah Brown", 
+      completedTime: "Yesterday, 04:30 PM", 
+      status: "completed" 
     }
+  ];
+  
+  const startTask = (taskId: number) => {
+    setActiveTask(taskId);
+    toast({
+      title: "Task Started",
+      description: `You've started the pickup at task #${taskId}.`,
+    });
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
+  
+  const completeTask = (taskId: number) => {
+    setActiveTask(null);
+    toast({
+      title: "Task Completed",
+      description: `You've successfully completed task #${taskId}.`,
+    });
+  };
+  
   return (
-    <div className="container mx-auto py-10 px-4 md:px-6">
-      <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Employee Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome, {userData?.full_name || user?.email?.split('@')[0] || 'Employee'}!
-          </p>
+          <h1 className="text-2xl font-semibold">Employee Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back, {user?.name || 'Employee'}!</p>
         </div>
-
+        
+        <div>
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+            On Duty
+          </Badge>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Manage your tasks and track your time</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Today's Assignments
+            </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-4">
-            <Button
-              onClick={() => setActiveTab("time-tracker")}
-              variant={activeTab === "time-tracker" ? "default" : "outline"}
-            >
-              Time Tracker
-            </Button>
-            <Button
-              onClick={() => setActiveTab("job-assignments")}
-              variant={activeTab === "job-assignments" ? "default" : "outline"}
-            >
-              Job Assignments
-            </Button>
-            <Button
-              onClick={() => setActiveTab("route-optimizer")}
-              variant={activeTab === "route-optimizer" ? "default" : "outline"}
-            >
-              Route Optimizer
-            </Button>
+          <CardContent>
+            <div className="text-2xl font-bold">{tasks.length}</div>
           </CardContent>
         </Card>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="time-tracker">Time Tracker</TabsTrigger>
-            <TabsTrigger value="job-assignments">Job Assignments</TabsTrigger>
-            <TabsTrigger value="route-optimizer">Route Optimizer</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="time-tracker">
-            <TimeTracker />
-          </TabsContent>
-
-          <TabsContent value="job-assignments">
-            <JobAssignments 
-              assignments={assignments} 
-              onViewRoute={handleViewRoute} 
-              onMarkComplete={handleMarkComplete} 
-            />
-          </TabsContent>
-
-          <TabsContent value="route-optimizer">
-            <RouteOptimizer 
-              selectedAssignment={selectedAssignment}
-              currentLocation={currentLocation}
-              onClose={handleCloseRoute}
-            />
-          </TabsContent>
-        </Tabs>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Completed Today
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Next Pickup
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{tasks[0]?.scheduledTime}</div>
+          </CardContent>
+        </Card>
       </div>
+      
+      <Tabs defaultValue="tasks" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="tasks" className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            Tasks
+          </TabsTrigger>
+          <TabsTrigger value="map" className="flex items-center gap-1">
+            <MapPin className="h-4 w-4" />
+            Map
+          </TabsTrigger>
+          <TabsTrigger value="schedule" className="flex items-center gap-1">
+            <CalendarIcon className="h-4 w-4" />
+            Schedule
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tasks" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Today's Pickups</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {tasks.length > 0 ? (
+                <div className="space-y-4">
+                  {tasks.map((task) => (
+                    <Card key={task.id} className={`p-4 ${activeTask === task.id ? 'border-2 border-primary' : ''}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{task.address}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Customer: {task.customerName}
+                          </p>
+                          <p className="text-sm">
+                            Scheduled: {task.scheduledTime}
+                          </p>
+                        </div>
+                        <div>
+                          {activeTask === task.id ? (
+                            <Button onClick={() => completeTask(task.id)} className="bg-green-500 hover:bg-green-600">
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Complete
+                            </Button>
+                          ) : (
+                            <Button onClick={() => startTask(task.id)}>
+                              <Truck className="mr-2 h-4 w-4" />
+                              Start
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No tasks scheduled for today.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Completed Pickups</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {completedTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {completedTasks.map((task) => (
+                    <Card key={task.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{task.address}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Customer: {task.customerName}
+                          </p>
+                          <p className="text-sm">
+                            Completed: {task.completedTime}
+                          </p>
+                        </div>
+                        <Badge className="bg-green-600">Completed</Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No completed tasks.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="map">
+          <Card className="p-6">
+            <CardHeader>
+              <CardTitle className="text-lg">Route Map</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[500px]">
+                <Map 
+                  houses={tasks.map((task, index) => ({
+                    id: `h${task.id}`,
+                    address: task.address,
+                    location: task.location,
+                    customerName: task.customerName,
+                    serviceType: 'Residential'
+                  }))}
+                  assignments={[]}
+                  employeeLocations={[]}
+                  currentLocation={{ latitude: 37.7749, longitude: -122.4194 }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="schedule">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Weekly Schedule</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day, index) => (
+                  <div key={day} className="flex items-center justify-between p-4 border rounded-md">
+                    <div>
+                      <h4 className="font-medium">{day}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {index === 0 ? 'Today' : `${index} days ahead`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{3 + Math.floor(Math.random() * 5)} pickups</p>
+                      <p className="text-sm text-muted-foreground">
+                        Starting at 8:30 AM
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

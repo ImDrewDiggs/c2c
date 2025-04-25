@@ -4,26 +4,26 @@ export interface Location {
   longitude: number;
 }
 
-export interface House extends Location {
+export interface EmployeeLocation {
   id: string;
-  address: string;
+  name: string;
+  location: Location;
+  status: 'active' | 'inactive' | 'on_break';
+  lastUpdated: string;
 }
 
-export interface EmployeeLocation {
-  employee_id: string;
-  latitude: number;
-  longitude: number;
-  timestamp?: string;
-  is_online?: boolean;
-  last_seen_at?: string;
+export interface House {
+  id: string;
+  address: string;
+  location: Location;
+  customerName: string;
+  serviceType: string;
 }
 
 export interface Assignment {
   id: string;
-  house_id: string;
-  employee_id: string;
-  status: string;
-  assigned_date: string;
-  completed_at?: string;
-  house: House;
+  houseId: string;
+  employeeId: string;
+  scheduledTime: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'canceled';
 }

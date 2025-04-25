@@ -1,91 +1,110 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContextType } from '@/types/auth';
-import { useAuthState } from '@/hooks/use-auth-state';
-import { useRouteProtection } from '@/hooks/use-route-protection';
-import { UserRole } from '@/lib/supabase';
-import { AuthService } from '@/services/AuthService';
 
-// Define protected routes by role
-const roleBasedRoutes: Record<UserRole, string[]> = {
-  customer: ['/customer'],
-  employee: ['/employee'],
-  admin: ['/admin']
-};
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define public routes that should never trigger auth redirection
-const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'customer' | 'employee' | 'admin' | 'superadmin';
+  avatar?: string;
+}
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: User | null;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isEmployee: boolean;
+  isCustomer: boolean;
+  userData: any;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  // Use the static property from AuthService
-  const { ADMIN_EMAIL } = AuthService;
-  const [initialCheckDone, setInitialCheckDone] = useState(false);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   
-  console.log('[AuthContext] AuthProvider initialized, path:', location.pathname);
-
-  // Use our custom hooks
-  const {
-    user,
-    userData,
-    loading,
-    isSuperAdmin,
-    signIn,
-    signOut
-  } = useAuthState();
-
+  // Simulate loading user data
   useEffect(() => {
-    console.log('[AuthContext] AuthProvider useEffect - auth state update:', {
-      hasUser: !!user,
-      userEmail: user?.email,
-      hasUserData: !!userData,
-      userRole: userData?.role,
-      isSuperAdmin,
-      isLoading: loading,
-      initialCheckDone
-    });
+    // For demo purposes, we'll simulate a logged-in admin user
+    const mockUser: User = {
+      id: '1',
+      name: 'Admin User',
+      email: 'admin@example.com',
+      role: 'admin',
+      avatar: '/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png'
+    };
     
-    if (!loading && !initialCheckDone) {
-      setInitialCheckDone(true);
+    const timer = setTimeout(() => {
+      setUser(mockUser);
+      setIsAuthenticated(true);
+      setUserData({
+        preferences: {
+          notifications: true,
+          theme: 'light'
+        }
+      });
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const login = async (email: string, password: string) => {
+    try {
+      // Simulate authentication logic
+      console.log('Login with:', email, password);
+      
+      // Mock successful login
+      const mockUser: User = {
+        id: '1',
+        name: 'Admin User',
+        email: email,
+        role: 'admin',
+      };
+      
+      setUser(mockUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-  }, [user, userData, isSuperAdmin, loading, initialCheckDone]);
-
-  const { redirectBasedOnRole } = useRouteProtection(
-    loading,
-    user,
-    userData,
-    isSuperAdmin,
-    { publicRoutes, roleBasedRoutes, adminEmail: ADMIN_EMAIL }
-  );
-
-  // Wrap signIn to handle redirection after successful login
-  const handleSignIn = async (email: string, password: string, role: UserRole) => {
-    console.log('[AuthContext] handleSignIn called for email:', email, 'role:', role);
-    await signIn(email, password, role);
-    
-    // Special handling for admin email - always redirect to admin dashboard
-    if (email === ADMIN_EMAIL) {
-      console.log('[AuthContext] Admin login detected, redirecting to admin dashboard');
-      navigate('/admin/dashboard');
-      return;
-    }
-    
-    console.log('[AuthContext] Redirecting based on role:', role);
-    redirectBasedOnRole(role);
   };
-
+  
+  const logout = async () => {
+    try {
+      // Simulate logout logic
+      setUser(null);
+      setIsAuthenticated(false);
+      setUserData(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  };
+  
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const isSuperAdmin = user?.role === 'superadmin';
+  const isEmployee = user?.role === 'employee';
+  const isCustomer = user?.role === 'customer';
+  
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      userData, 
-      signIn: handleSignIn, 
-      signOut, 
-      loading,
-      isSuperAdmin
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        isAdmin,
+        isSuperAdmin,
+        isEmployee,
+        isCustomer,
+        userData,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -93,8 +112,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+  
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  
   return context;
 }
+
+export const AuthService = {
+  // Mock service methods for auth functionality that can be used outside of React components
+  checkAdminAccess: async () => {
+    return new Promise<boolean>((resolve) => {
+      // In a real app, this would make an API call to verify admin access
+      setTimeout(() => resolve(true), 500);
+    });
+  },
+  refreshToken: async () => {
+    // Mock token refresh
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, 300);
+    });
+  }
+};

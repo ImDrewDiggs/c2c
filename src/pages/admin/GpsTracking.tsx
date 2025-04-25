@@ -1,134 +1,134 @@
 
+import React from 'react';
 import { AdminPageLayout } from "@/components/admin/AdminPageLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Filter, Calendar } from "lucide-react";
 import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
-import { useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
-import { useState, useEffect } from "react";
-import { Loader2, AlertTriangle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 
-function GpsTrackingContent() {
-  const dashboardContext = useAdminDashboard();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  
-  // Add a small delay to ensure data is properly loaded
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500); // Increased from 1000ms to 1500ms for more reliability
-    
-    return () => clearTimeout(timer);
-  }, []);
+// Mock data for employee locations
+const mockEmployeeLocations = [
+  { 
+    id: "emp1", 
+    name: "Alex Johnson", 
+    location: { latitude: 37.7749, longitude: -122.4194 }, 
+    status: 'active' as const, 
+    lastUpdated: "2025-04-25T10:30:00Z" 
+  },
+  { 
+    id: "emp2", 
+    name: "Maria Garcia", 
+    location: { latitude: 37.7833, longitude: -122.4167 }, 
+    status: 'active' as const, 
+    lastUpdated: "2025-04-25T10:35:00Z" 
+  },
+  { 
+    id: "emp3", 
+    name: "Dave Miller", 
+    location: { latitude: 37.7850, longitude: -122.4200 }, 
+    status: 'on_break' as const, 
+    lastUpdated: "2025-04-25T10:15:00Z" 
+  },
+  { 
+    id: "emp4", 
+    name: "Chris Taylor", 
+    location: { latitude: 37.7700, longitude: -122.4220 }, 
+    status: 'active' as const, 
+    lastUpdated: "2025-04-25T10:32:00Z" 
+  },
+];
 
-  // Error handling for geolocation
-  useEffect(() => {
-    if (dashboardContext && !dashboardContext.currentLocation) {
-      navigator.permissions.query({ name: 'geolocation' as PermissionName }).then(result => {
-        if (result.state === 'denied') {
-          setError('Location access is blocked. Please enable location services in your browser settings.');
-          toast({
-            variant: "destructive",
-            title: "Location access denied",
-            description: "GPS tracking requires location permissions."
-          });
-        }
-      }).catch(err => {
-        console.error("Error checking location permissions:", err);
-      });
-    }
-  }, [dashboardContext, toast]);
-  
-  if (!dashboardContext) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
-        <p className="text-muted-foreground">Dashboard context not available</p>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center text-destructive">
-        <AlertTriangle className="h-8 w-8 mb-2" />
-        <p>{error}</p>
-      </div>
-    );
-  }
-  
-  const { employeeLocations = [], currentLocation } = dashboardContext;
-  
+function MapErrorFallback({ error }: { error: Error }) {
   return (
-    <div className="h-[600px]">
-      {isLoading ? (
-        <div className="h-full flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading employee location data...</span>
-        </div>
-      ) : (
-        <ErrorBoundary
-          FallbackComponent={({ error }) => (
-            <div className="h-full flex flex-col items-center justify-center text-destructive">
-              <AlertTriangle className="h-8 w-8 mb-2" />
-              <p className="font-semibold mb-2">Map error: {error.message}</p>
-              <p className="text-sm">Please try refreshing the page</p>
-            </div>
-          )}
-        >
-          <EmployeeTracker 
-            employeeLocations={employeeLocations} 
-            currentLocation={currentLocation}
-          />
-        </ErrorBoundary>
-      )}
+    <div className="p-6 bg-red-50 border border-red-200 rounded-md">
+      <h2 className="text-lg font-semibold text-red-800 mb-2">Something went wrong with the map:</h2>
+      <pre className="text-sm bg-white p-3 rounded border border-red-100 overflow-auto">
+        {error.message}
+      </pre>
     </div>
   );
 }
 
 export default function AdminGpsTracking() {
-  const { user, userData, isSuperAdmin, loading } = useAuth();
-
-  // Authorization check - only admins should access GPS tracking
-  if (!loading && (!userData || (userData.role !== 'admin' && !isSuperAdmin))) {
-    return <Navigate to="/admin/login" replace />;
-  }
-
   return (
     <AdminPageLayout 
       title="GPS Tracking" 
-      description="Real-Time Employee Location Tracking"
+      description="Real-time employee location tracking"
     >
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Employee Locations</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ErrorBoundary
-              fallbackRender={({ error }) => (
-                <div className="p-6 text-center">
-                  <div className="flex flex-col items-center text-destructive mb-4">
-                    <AlertTriangle className="h-10 w-10 mb-2" />
-                    <h3 className="font-semibold">Error Loading GPS Tracking</h3>
-                  </div>
-                  <p className="text-muted-foreground mb-2">
-                    There was an error loading the GPS tracking data.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Error details: {error.message}
-                  </p>
-                </div>
-              )}
-            >
-              <GpsTrackingContent />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search employees..."
+              className="pl-8"
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <Button variant="outline">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+            <Button variant="outline">
+              <Calendar className="mr-2 h-4 w-4" />
+              History
+            </Button>
+          </div>
+        </div>
+        
+        <Tabs defaultValue="map">
+          <TabsList>
+            <TabsTrigger value="map">Map View</TabsTrigger>
+            <TabsTrigger value="list">List View</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="map" className="pt-4">
+            <ErrorBoundary FallbackComponent={MapErrorFallback}>
+              <div className="h-[70vh]">
+                <EmployeeTracker 
+                  employeeLocations={mockEmployeeLocations}
+                  currentLocation={{ latitude: 37.7749, longitude: -122.4194 }}
+                />
+              </div>
             </ErrorBoundary>
-          </CardContent>
-        </Card>
+          </TabsContent>
+          
+          <TabsContent value="list" className="pt-4">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Employee Locations</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mockEmployeeLocations.map((employee) => (
+                  <Card key={employee.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{employee.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Last updated: {new Date(employee.lastUpdated).toLocaleTimeString()}
+                        </p>
+                        <p className="text-sm">
+                          Coordinates: {employee.location.latitude.toFixed(4)}, {employee.location.longitude.toFixed(4)}
+                        </p>
+                      </div>
+                      <div className={`px-2 py-1 rounded-full text-xs uppercase ${
+                        employee.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : employee.status === 'on_break'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {employee.status.replace('_', ' ')}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminPageLayout>
   );

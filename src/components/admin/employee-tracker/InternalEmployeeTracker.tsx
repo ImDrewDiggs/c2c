@@ -1,86 +1,30 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmployeeFilters } from "./EmployeeFilters";
-import { EmployeeTable } from "./EmployeeTable";
-import { LocationMap } from "./LocationMap";
-import { useEmployeeData } from "./useEmployeeData";
-import { EmployeeLocation, Location } from "@/types/map";
-import { AlertTriangle } from "lucide-react";
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Location, EmployeeLocation } from '@/types/map';
+import Map from '@/components/Map/Map';
 
 interface InternalEmployeeTrackerProps {
   employeeLocations: EmployeeLocation[];
   currentLocation: Location | null;
 }
 
-export function InternalEmployeeTracker({ employeeLocations, currentLocation }: InternalEmployeeTrackerProps) {
-  // Ensure employeeLocations is an array even if it's passed as null or undefined
-  const safeEmployeeLocations = Array.isArray(employeeLocations) ? employeeLocations : [];
-  
-  const { 
-    filteredEmployees, 
-    setSearchTerm, 
-    setStatusFilter, 
-    searchTerm, 
-    statusFilter,
-    error
-  } = useEmployeeData(safeEmployeeLocations);
-
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeLocation | null>(null);
-
+export function InternalEmployeeTracker({ 
+  employeeLocations, 
+  currentLocation 
+}: InternalEmployeeTrackerProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1 space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Employee Tracking</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive p-4 rounded-md flex items-center">
-                <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
-                <p>{error}</p>
-              </div>
-            )}
-            
-            <EmployeeFilters 
-              searchTerm={searchTerm}
-              statusFilter={statusFilter}
-              onSearchChange={setSearchTerm}
-              onStatusFilterChange={setStatusFilter}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <EmployeeTable 
-              employees={filteredEmployees} 
-              onSelect={(employee) => {
-                if (employee) {
-                  setSelectedEmployee(employee.location);
-                } else {
-                  setSelectedEmployee(null);
-                }
-              }}
-              selectedEmployeeId={selectedEmployee?.employee_id}
-            />
-          </CardContent>
-        </Card>
+    <Card className="p-6">
+      <h3 className="text-xl font-semibold mb-4">Employee Location Tracker</h3>
+      <div className="h-[600px]">
+        <Map
+          houses={[]}
+          assignments={[]}
+          currentLocation={currentLocation}
+          employeeLocations={employeeLocations}
+          focusEmployees={true}
+        />
       </div>
-
-      <Card className="lg:col-span-2">
-        <CardContent className="pt-6">
-          <LocationMap 
-            employeeLocations={safeEmployeeLocations.filter(loc => 
-              // Show all if no selection, or only the selected one
-              !selectedEmployee || loc.employee_id === selectedEmployee.employee_id
-            )}
-            currentLocation={currentLocation}
-            selectedEmployee={selectedEmployee}
-          />
-        </CardContent>
-      </Card>
-    </div>
+    </Card>
   );
 }

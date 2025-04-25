@@ -1,129 +1,124 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function EmployeeLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, loading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    setLoading(true);
+    setError('');
+    
+    try {
+      await login(email, password);
+      toast({
+        title: "Login successful",
+        description: "Welcome to the employee dashboard!",
+      });
+      navigate('/employee/dashboard');
+    } catch (err) {
+      setError('Invalid email or password. Please try again.');
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Please provide both email and password",
+        title: "Login failed",
+        description: "Invalid email or password. Please try again.",
       });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    try {
-      await signIn(email, password, 'employee');
-    } catch (error: any) {
-      console.error("Login error:", error);
-      // Toast is already handled in the signIn function
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
-
+  
+  // For demo purposes, let's create a function to auto-fill credentials
+  const autofill = () => {
+    setEmail('employee@example.com');
+    setPassword('password123');
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="card max-w-md w-full space-y-8">
-        <div>
-          <Link to="/" className="inline-flex items-center text-sm text-gray-400 hover:text-gray-300 mb-8">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <img
-              src="/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png"
-              alt="Can2Curb Logo"
-              className="mx-auto h-16 w-auto mb-6"
-            />
-            <h2 className="text-3xl font-bold text-white">Employee Login</h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Access your employee dashboard.
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.form
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          onSubmit={handleSubmit}
-          className="mt-8 space-y-6"
-        >
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="pl-10"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting || loading}
-                />
+    <div className="container flex items-center justify-center min-h-[80vh]">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center">Employee Login</CardTitle>
+          <CardDescription className="text-center">
+            Enter your employee credentials to access your dashboard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 text-red-800 p-3 rounded-md text-sm">
+                {error}
               </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="employee@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="pl-10"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting || loading}
-                />
-              </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-          </div>
-
-          <div>
-            <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
-              {(isSubmitting || loading) ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : "Sign in"}
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="remember" 
+                checked={remember}
+                onCheckedChange={(checked) => setRemember(checked as boolean)}
+              />
+              <Label htmlFor="remember" className="text-sm font-normal">
+                Remember me
+              </Label>
+            </div>
+            
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
             </Button>
-          </div>
-        </motion.form>
-      </div>
+            
+            <div className="text-center">
+              <Button 
+                type="button" 
+                variant="link" 
+                onClick={autofill} 
+                className="text-sm text-muted-foreground"
+              >
+                Fill with demo credentials
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
