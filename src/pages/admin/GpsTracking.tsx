@@ -13,27 +13,31 @@ import { ErrorBoundary } from "react-error-boundary";
 const mockEmployeeLocations = [
   { 
     id: "emp1", 
+    employee_id: "emp1", // Added employee_id 
     name: "Alex Johnson", 
     location: { latitude: 37.7749, longitude: -122.4194 }, 
     status: 'active' as const, 
     lastUpdated: "2025-04-25T10:30:00Z" 
   },
   { 
-    id: "emp2", 
+    id: "emp2",
+    employee_id: "emp2", // Added employee_id
     name: "Maria Garcia", 
     location: { latitude: 37.7833, longitude: -122.4167 }, 
     status: 'active' as const, 
     lastUpdated: "2025-04-25T10:35:00Z" 
   },
   { 
-    id: "emp3", 
+    id: "emp3",
+    employee_id: "emp3", // Added employee_id
     name: "Dave Miller", 
     location: { latitude: 37.7850, longitude: -122.4200 }, 
     status: 'on_break' as const, 
     lastUpdated: "2025-04-25T10:15:00Z" 
   },
   { 
-    id: "emp4", 
+    id: "emp4",
+    employee_id: "emp4", // Added employee_id
     name: "Chris Taylor", 
     location: { latitude: 37.7700, longitude: -122.4220 }, 
     status: 'active' as const, 

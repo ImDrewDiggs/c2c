@@ -58,7 +58,11 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
               employees={filteredEmployees} 
               onSelect={(employee) => {
                 if (employee) {
-                  setSelectedEmployee(employee);
+                  // Find the corresponding EmployeeLocation for this employee
+                  const matchingLocation = safeEmployeeLocations.find(loc => 
+                    loc.id === employee.id || loc.employee_id === employee.id
+                  );
+                  setSelectedEmployee(matchingLocation || null);
                 } else {
                   setSelectedEmployee(null);
                 }
