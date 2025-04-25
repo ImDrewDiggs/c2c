@@ -6,10 +6,16 @@ export interface Location {
 
 export interface EmployeeLocation {
   id: string;
+  employee_id: string; // Added this field
   name: string;
   location: Location;
   status: 'active' | 'inactive' | 'on_break';
   lastUpdated: string;
+  timestamp?: string; // Added this field
+  is_online?: boolean; // Added this field
+  last_seen_at?: string; // Added this field
+  latitude?: number; // Added directly for backward compatibility
+  longitude?: number; // Added directly for backward compatibility
 }
 
 export interface House {
@@ -18,6 +24,8 @@ export interface House {
   location: Location;
   customerName: string;
   serviceType: string;
+  latitude?: number; // Added directly for backward compatibility
+  longitude?: number; // Added directly for backward compatibility
 }
 
 export interface Assignment {
@@ -26,4 +34,7 @@ export interface Assignment {
   employeeId: string;
   scheduledTime: string;
   status: 'pending' | 'in_progress' | 'completed' | 'canceled';
+  assigned_date?: string; // Added this field
+  completed_at?: string; // Added this field
+  house?: House; // Added this field to reference the house details
 }

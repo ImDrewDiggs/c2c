@@ -58,12 +58,12 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
               employees={filteredEmployees} 
               onSelect={(employee) => {
                 if (employee) {
-                  setSelectedEmployee(employee.location);
+                  setSelectedEmployee(employee);
                 } else {
                   setSelectedEmployee(null);
                 }
               }}
-              selectedEmployeeId={selectedEmployee?.employee_id}
+              selectedEmployeeId={selectedEmployee?.id}
             />
           </CardContent>
         </Card>
@@ -74,7 +74,7 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
           <LocationMap 
             employeeLocations={safeEmployeeLocations.filter(loc => 
               // Show all if no selection, or only the selected one
-              !selectedEmployee || loc.employee_id === selectedEmployee.employee_id
+              !selectedEmployee || loc.id === selectedEmployee.id
             )}
             currentLocation={currentLocation}
             selectedEmployee={selectedEmployee}
