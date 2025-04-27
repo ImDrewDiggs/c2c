@@ -45,13 +45,27 @@ export function useAuthActions() {
       // Special handling for admin email
       if (isAdmin) {
         console.log('[AuthActions] Admin user login detected, checking profile');
-        const profile = await fetchUserData(signInData.user.id);
+        // First, mark as super admin - don't wait for profile fetch to complete
+        setIsSuperAdmin(true);
         
-        if (!profile) {
-          console.log('[AuthActions] No admin profile found, creating one');
-          await AuthService.ensureAdminProfile(signInData.user.id, email);
+        try {
+          const profile = await fetchUserData(signInData.user.id);
+          
+          if (!profile) {
+            console.log('[AuthActions] No admin profile found, creating one');
+            await AuthService.ensureAdminProfile(signInData.user.id, email);
+          }
+          
           // Even if profile creation fails, set admin status manually
-          setIsSuperAdmin(true);
+          setUserData({
+            id: signInData.user.id,
+            email: email,
+            role: 'admin',
+            full_name: 'Administrator'
+          });
+        } catch (profileError) {
+          console.error('[AuthActions] Error handling admin profile:', profileError);
+          // Continue with admin access even if profile handling fails
           setUserData({
             id: signInData.user.id,
             email: email,

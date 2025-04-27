@@ -42,18 +42,18 @@ export function AdminAccessCheck({ children, adminEmail }: AdminAccessCheckProps
   }
 
   // Second priority: Check userData and isSuperAdmin
-  if (!userData || (userData.role !== 'admin' && !isSuperAdmin)) {
-    console.log('[AdminAccessCheck] Access denied: Not an admin user');
-    return (
-      <div className="container mx-auto p-6">
-        <Card className="p-8 text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
-          <p>You do not have permission to access the admin dashboard.</p>
-        </Card>
-      </div>
-    );
+  if (isSuperAdmin || (userData?.role === 'admin')) {
+    console.log('[AdminAccessCheck] Access granted based on role or isSuperAdmin flag');
+    return <>{children}</>;
   }
 
-  console.log('[AdminAccessCheck] Access granted based on role or isSuperAdmin flag');
-  return <>{children}</>;
+  console.log('[AdminAccessCheck] Access denied: Not an admin user');
+  return (
+    <div className="container mx-auto p-6">
+      <Card className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
+        <p>You do not have permission to access the admin dashboard.</p>
+      </Card>
+    </div>
+  );
 }

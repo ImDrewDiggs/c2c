@@ -9,7 +9,7 @@ export function useAuthState() {
   const { userData, isSuperAdmin, ADMIN_EMAIL } = useUserProfile();
   
   // Determine if user is admin - directly by email or by profile status
-  const isAdminUser = user?.email === ADMIN_EMAIL || isSuperAdmin;
+  const isAdminUser = (user?.email === ADMIN_EMAIL) || isSuperAdmin;
   
   // Combine loading states
   const loading = sessionLoading || actionsLoading;
