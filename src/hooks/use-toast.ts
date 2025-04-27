@@ -1,11 +1,44 @@
-import * as React from "react";
-import { createToast, getToastStyle } from "@/components/ui/toast";
 
+import * as React from "react";
+import {
+  Toast,
+  ToastActionElement,
+  ToastProps
+} from "@/components/ui/toast";
+
+// Define the toast variant styles
 const TOAST_LIMIT = 20;
 const TOAST_REMOVE_DELAY = 1000000;
 
-type ToasterToast = ReturnType<typeof createToast>;
+// Define our toast types
+export type ToastT = {
+  id: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+} & ToastProps;
 
+// Create a toast function
+export const createToast = (props: Omit<ToastT, "id" | "open" | "onOpenChange">): ToastT => {
+  const id = genId();
+  return {
+    ...props,
+    id,
+    open: true,
+    onOpenChange: () => {},
+  };
+};
+
+// Generate unique IDs for toasts
+let count = 0;
+function genId() {
+  count = (count + 1) % Number.MAX_SAFE_INTEGER;
+  return count.toString();
+}
+
+// Action types for the toast reducer
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
@@ -13,23 +46,16 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const;
 
-let count = 0;
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER;
-  return count.toString();
-}
-
 type ActionType = typeof actionTypes;
 
 type Action =
   | {
       type: ActionType["ADD_TOAST"];
-      toast: ToasterToast;
+      toast: ToastT;
     }
   | {
       type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast>;
+      toast: Partial<ToastT>;
     }
   | {
       type: ActionType["DISMISS_TOAST"];
@@ -41,7 +67,7 @@ type Action =
     };
 
 interface State {
-  toasts: ToasterToast[];
+  toasts: ToastT[];
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
@@ -128,7 +154,7 @@ function dispatch(action: Action) {
   });
 }
 
-type Toast = Omit<ToasterToast, "id">;
+type Toast = Omit<ToastT, "id" | "open" | "onOpenChange">;
 
 function toast(props: Toast) {
   const id = genId();
