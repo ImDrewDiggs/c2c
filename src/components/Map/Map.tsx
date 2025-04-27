@@ -1,109 +1,308 @@
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { House, Assignment, EmployeeLocation, Location } from '@/types/map';
-import { MapPin, User } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { House, Location, Assignment, EmployeeLocation } from '@/types/map';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { EmployeeLocationRow } from '@/lib/supabase-types';
+
+// Fix Leaflet default marker icon issue
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom marker icons
+const employeeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const activeEmployeeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const adminIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const completedHouseIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const pendingHouseIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 interface MapProps {
   houses: House[];
   assignments: Assignment[];
   currentLocation: Location | null;
-  employeeLocations: EmployeeLocation[];
-  focusEmployees?: boolean;
+  employeeLocations?: EmployeeLocation[];
 }
 
-const Map = ({ 
-  houses, 
-  assignments, 
-  currentLocation, 
-  employeeLocations,
-  focusEmployees = false
-}: MapProps) => {
-  return (
-    <div className="relative w-full h-full bg-gray-100 rounded-lg overflow-hidden">
-      {/* Mock map display */}
-      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-        <div className="relative w-full h-full bg-[#EAEDEF] overflow-hidden">
-          {/* Grid lines for map */}
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'linear-gradient(to right, #DDD 1px, transparent 1px), linear-gradient(to bottom, #DDD 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
-          }}></div>
-          
-          {/* Streets */}
-          <div className="absolute top-1/4 left-0 w-full h-4 bg-gray-300"></div>
-          <div className="absolute top-2/4 left-0 w-full h-6 bg-gray-300"></div>
-          <div className="absolute top-3/4 left-0 w-full h-3 bg-gray-300"></div>
-          <div className="absolute top-0 left-1/4 h-full w-5 bg-gray-300"></div>
-          <div className="absolute top-0 left-2/3 h-full w-8 bg-gray-300"></div>
-          
-          {/* Houses */}
-          {houses.map((house, index) => (
-            <div 
-              key={index}
-              className="absolute w-4 h-4 bg-blue-500 rounded-sm"
-              style={{ 
-                top: `${10 + (index * 5)}%`, 
-                left: `${15 + (index * 10)}%` 
-              }}
-              title={`House at ${house.address}`}
-            ></div>
-          ))}
-          
-          {/* Employees */}
-          {employeeLocations.map((employee, index) => (
-            <div 
-              key={`employee-${index}`}
-              className="absolute flex flex-col items-center"
-              style={{ 
-                top: `${20 + (index * 15)}%`, 
-                left: `${30 + (index * 15)}%`,
-                zIndex: 10
-              }}
-            >
-              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white">
-                <User size={16} />
-              </div>
-              <div className="mt-1 px-2 py-1 bg-white rounded shadow text-xs">
-                {employee.name}
-              </div>
-            </div>
-          ))}
-          
-          {/* Current location */}
-          {currentLocation && (
-            <div 
-              className="absolute w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white"
-              style={{ 
-                top: '50%', 
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 20
-              }}
-            >
-              <MapPin size={14} />
-            </div>
-          )}
-          
-          {employeeLocations.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-gray-500">No employee location data available</p>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Map controls */}
-      <div className="absolute top-4 right-4 flex flex-col space-y-2">
-        <button className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center">
-          <span className="text-lg">+</span>
-        </button>
-        <button className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center">
-          <span className="text-lg">-</span>
-        </button>
-      </div>
-    </div>
-  );
-};
+// Auto-center map component
+function AutoCenter({ currentLocation }: { currentLocation: Location | null }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (currentLocation) {
+      map.setView([currentLocation.latitude, currentLocation.longitude], 13);
+    }
+  }, [currentLocation, map]);
+  
+  return null;
+}
 
-export default Map;
+// Real-time location tracking
+function LocationTracker() {
+  const map = useMap();
+  const { user, userData } = useAuth();
+  const watchId = useRef<number | null>(null);
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    // Only track location for employees and admins
+    if (userData?.role !== 'employee' && userData?.role !== 'admin') return;
+    
+    // Update location every 15 seconds
+    const updateInterval = setInterval(async () => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            
+            // Update Supabase with current location
+            if (userData?.role === 'employee') {
+              try {
+                const locationData = {
+                  employee_id: user.id,
+                  latitude: latitude,
+                  longitude: longitude,
+                  timestamp: new Date().toISOString(),
+                  is_online: true,
+                  last_seen_at: new Date().toISOString(),
+                };
+                
+                const { error } = await supabase
+                  .from('employee_locations')
+                  .upsert(locationData, {
+                    onConflict: 'employee_id'
+                  });
+                
+                if (error) {
+                  console.error('Error updating location:', error);
+                } else {
+                  console.log('Location updated successfully');
+                }
+              } catch (error) {
+                console.error('Error in location tracking:', error);
+              }
+            }
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+          },
+          { enableHighAccuracy: true }
+        );
+      }
+    }, 15000);
+    
+    return () => {
+      clearInterval(updateInterval);
+      if (watchId.current !== null) {
+        navigator.geolocation.clearWatch(watchId.current);
+      }
+    };
+  }, [user, userData]);
+  
+  return null;
+}
+
+export default function Map({ houses, assignments, currentLocation, employeeLocations = [] }: MapProps) {
+  const { user, userData } = useAuth();
+  const mapRef = useRef<L.Map | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Update employee location in real-time
+  const updateLocation = async (userId: string, location: Location) => {
+    if (!userId || !location) return;
+    
+    const locationData = {
+      employee_id: userId,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      timestamp: new Date().toISOString(),
+      is_online: true,
+      last_seen_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('employee_locations')
+      .upsert(locationData, {
+        onConflict: 'employee_id'
+      });
+
+    if (error) {
+      console.error('Error updating location:', error);
+    } else {
+      console.log('Location updated successfully');
+    }
+  };
+
+  useEffect(() => {
+    if (!user || !currentLocation || userData?.role !== 'employee') return;
+
+    const updateEmployeeLocation = async () => {
+      await updateLocation(user.id, currentLocation);
+    };
+
+    updateEmployeeLocation();
+    
+    // Set up interval to update location regularly
+    const intervalId = setInterval(() => {
+      if (user && currentLocation) {
+        updateEmployeeLocation();
+      }
+    }, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, [currentLocation, user, userData]);
+
+  if (!currentLocation) {
+    return <div>Loading map...</div>;
+  }
+
+  // Get assignment status for each house
+  const getHouseStatus = (houseId: string) => {
+    const assignment = assignments.find(a => a.house_id === houseId);
+    return assignment?.status || 'unassigned';
+  };
+
+  // Get assigned employee for each house
+  const getAssignedEmployee = (houseId: string) => {
+    const assignment = assignments.find(a => a.house_id === houseId);
+    return assignment?.employee_id || null;
+  };
+
+  return (
+    <MapContainer
+      center={[currentLocation.latitude, currentLocation.longitude]}
+      zoom={13}
+      style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
+      ref={mapRef}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      
+      {/* Current location marker */}
+      <Marker 
+        position={[currentLocation.latitude, currentLocation.longitude]}
+        icon={userData?.role === 'admin' ? adminIcon : activeEmployeeIcon}
+      >
+        <Popup>
+          <div className="text-sm">
+            <p className="font-semibold">
+              {userData?.role === 'admin' ? 'Admin Location' : 'Your Location'}
+            </p>
+            <p className="text-gray-600">
+              Last updated: {new Date().toLocaleTimeString()}
+            </p>
+          </div>
+        </Popup>
+      </Marker>
+
+      {/* Employee location markers */}
+      {employeeLocations.map((employee) => (
+        <Marker
+          key={employee.employee_id} // Changed from employee.id to employee.employee_id
+          position={[employee.latitude, employee.longitude]}
+          icon={employee.is_online ? activeEmployeeIcon : employeeIcon}
+        >
+          <Popup>
+            <div className="text-sm">
+              <p className="font-semibold">Employee ID: {employee.employee_id}</p>
+              <p className="text-xs text-gray-600">
+                Status: {employee.is_online ? 'Active' : 'Inactive'}
+              </p>
+              <p className="text-xs text-gray-600">
+                Last seen: {new Date(employee.last_seen_at || '').toLocaleString()}
+              </p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* House markers */}
+      {houses.map((house) => {
+        const status = getHouseStatus(house.id);
+        const icon = status === 'completed' ? completedHouseIcon : 
+                     status === 'pending' ? pendingHouseIcon : L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+        
+        return (
+          <Marker
+            key={house.id}
+            position={[house.latitude, house.longitude]}
+            icon={icon}
+          >
+            <Popup>
+              <div className="text-sm">
+                <p className="font-semibold">{house.address}</p>
+                <p className="text-gray-600">
+                  Status: <span className="capitalize">{status}</span>
+                </p>
+                {getAssignedEmployee(house.id) && (
+                  <p className="text-gray-600">
+                    Assigned to: Employee {getAssignedEmployee(house.id)}
+                  </p>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
+
+      <AutoCenter currentLocation={currentLocation} />
+      <LocationTracker />
+    </MapContainer>
+  );
+}

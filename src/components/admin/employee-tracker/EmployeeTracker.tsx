@@ -13,9 +13,8 @@ interface EmployeeTrackerProps {
   currentLocation: Location | null;
 }
 
-export function EmployeeTracker({ employeeLocations, currentLocation }: EmployeeTrackerProps) {
-  // Ensure employeeLocations is an array even if it's passed as null or undefined
-  const safeEmployeeLocations = Array.isArray(employeeLocations) ? employeeLocations : [];
+export function EmployeeTracker({ employeeLocations = [], currentLocation = null }: EmployeeTrackerProps) {
+  console.log("Original EmployeeTracker component rendering with:", { employeeLocations });
   
   const { 
     filteredEmployees, 
@@ -24,7 +23,7 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
     searchTerm, 
     statusFilter,
     error
-  } = useEmployeeData(safeEmployeeLocations);
+  } = useEmployeeData(employeeLocations);
 
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeLocation | null>(null);
 
@@ -58,16 +57,12 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
               employees={filteredEmployees} 
               onSelect={(employee) => {
                 if (employee) {
-                  // Find the corresponding EmployeeLocation for this employee
-                  const matchingLocation = safeEmployeeLocations.find(loc => 
-                    loc.id === employee.id || loc.employee_id === employee.id
-                  );
-                  setSelectedEmployee(matchingLocation || null);
+                  setSelectedEmployee(employee.location);
                 } else {
                   setSelectedEmployee(null);
                 }
               }}
-              selectedEmployeeId={selectedEmployee?.id}
+              selectedEmployeeId={selectedEmployee?.employee_id}
             />
           </CardContent>
         </Card>
@@ -76,9 +71,9 @@ export function EmployeeTracker({ employeeLocations, currentLocation }: Employee
       <Card className="lg:col-span-2">
         <CardContent className="pt-6">
           <LocationMap 
-            employeeLocations={safeEmployeeLocations.filter(loc => 
+            employeeLocations={employeeLocations.filter(loc => 
               // Show all if no selection, or only the selected one
-              !selectedEmployee || loc.id === selectedEmployee.id
+              !selectedEmployee || loc.employee_id === selectedEmployee.employee_id
             )}
             currentLocation={currentLocation}
             selectedEmployee={selectedEmployee}

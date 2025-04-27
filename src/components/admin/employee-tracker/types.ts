@@ -8,5 +8,4 @@ export interface EmployeeData {
   status: 'active' | 'inactive';
   lastActive: string;
   location: EmployeeLocation;
-  employee_id?: string; // Added for compatibility
 }

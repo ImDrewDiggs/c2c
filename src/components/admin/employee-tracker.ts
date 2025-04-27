@@ -1,3 +1,3 @@
 
-// Export the wrapper component directly
-export { EmployeeTracker } from "./EmployeeTracker";
+// Re-export the component from the correct location
+export { EmployeeTracker } from "./employee-tracker/EmployeeTracker";

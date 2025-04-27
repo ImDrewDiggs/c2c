@@ -42,7 +42,7 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
       // Note: In a real app, this should be done through a Supabase Edge Function
       // to protect your Mapbox API key
       const start = `${currentLocation.longitude},${currentLocation.latitude}`;
-      const end = `${selectedAssignment.house.location.longitude},${selectedAssignment.house.location.latitude}`;
+      const end = `${selectedAssignment.house.longitude},${selectedAssignment.house.latitude}`;
       
       // Simulate API response
       setTimeout(() => {
@@ -69,15 +69,15 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
   const openMapsApp = () => {
     if (!selectedAssignment?.house) return;
     
-    const { location, address } = selectedAssignment.house;
+    const { latitude, longitude, address } = selectedAssignment.house;
     const encodedAddress = encodeURIComponent(address);
     
     // Create a URL that will open in the device's default map app
-    let mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}&destination_place_id=${encodedAddress}`;
+    let mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${encodedAddress}`;
     
     // On iOS, Apple Maps can be used instead
     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      mapsUrl = `maps://maps.apple.com/?daddr=${location.latitude},${location.longitude}&q=${encodedAddress}`;
+      mapsUrl = `maps://maps.apple.com/?daddr=${latitude},${longitude}&q=${encodedAddress}`;
     }
     
     window.open(mapsUrl, '_blank');

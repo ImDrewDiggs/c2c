@@ -1,39 +1,29 @@
+
 export interface Location {
   latitude: number;
   longitude: number;
 }
 
-export interface EmployeeLocation {
+export interface House extends Location {
   id: string;
-  employee_id?: string;
-  name: string;
-  location: Location;
-  status: 'active' | 'inactive' | 'on_break';
-  lastUpdated: string;
+  address: string;
+}
+
+export interface EmployeeLocation {
+  employee_id: string;
+  latitude: number;
+  longitude: number;
   timestamp?: string;
   is_online?: boolean;
   last_seen_at?: string;
-  latitude?: number; 
-  longitude?: number;
-}
-
-export interface House {
-  id: string;
-  address: string;
-  location: Location;
-  customerName: string;
-  serviceType: string;
-  latitude?: number;
-  longitude?: number;
 }
 
 export interface Assignment {
   id: string;
-  houseId: string;
-  employeeId: string;
-  scheduledTime: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'canceled';
-  assigned_date?: string;
+  house_id: string;
+  employee_id: string;
+  status: string;
+  assigned_date: string;
   completed_at?: string;
-  house?: House;
+  house: House;
 }

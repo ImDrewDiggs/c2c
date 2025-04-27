@@ -21,7 +21,7 @@ export function LocationMap({
     <>
       <h3 className="text-xl font-semibold mb-4">
         {selectedEmployee 
-          ? `Tracking: Employee ${selectedEmployee.id.substring(0, 8)}...`
+          ? `Tracking: Employee ${selectedEmployee.employee_id.substring(0, 8)}...`
           : 'Employee Locations'}
       </h3>
       <div className="h-[400px]">
@@ -54,20 +54,16 @@ export function LocationMap({
 
 // Validate location data
 function validateLocation(location: EmployeeLocation): boolean {
-  // Check if location has direct latitude/longitude or nested in location object
-  const lat = location.latitude ?? location.location?.latitude;
-  const lng = location.longitude ?? location.location?.longitude;
-  
   // Check for valid latitude and longitude values
   if (!location || 
-      typeof lat !== 'number' || 
-      typeof lng !== 'number' ||
-      isNaN(lat) || 
-      isNaN(lng) ||
-      lat < -90 || 
-      lat > 90 || 
-      lng < -180 || 
-      lng > 180) {
+      typeof location.latitude !== 'number' || 
+      typeof location.longitude !== 'number' ||
+      isNaN(location.latitude) || 
+      isNaN(location.longitude) ||
+      location.latitude < -90 || 
+      location.latitude > 90 || 
+      location.longitude < -180 || 
+      location.longitude > 180) {
     return false;
   }
   return true;

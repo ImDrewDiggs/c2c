@@ -1,9 +1,9 @@
 
-import { EmployeeLocation, Location } from "@/types/map";
+// Export all components except EmployeeTracker to avoid circular dependencies
+export { EmployeeFilters } from './EmployeeFilters';
+export { EmployeeTable } from './EmployeeTable';
+export { LocationMap } from './LocationMap';
+export { useEmployeeData } from './useEmployeeData';
 
-export interface EmployeeTrackerProps {
-  employeeLocations?: EmployeeLocation[];
-  currentLocation?: Location | null;
-}
-
-export { InternalEmployeeTracker } from "./InternalEmployeeTracker";
+// Export types if needed
+export type { EmployeeData } from './types';

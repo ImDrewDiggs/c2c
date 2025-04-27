@@ -43,14 +43,14 @@ export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
           }
           
           const employeeData: EmployeeData[] = validEmployeeLocations.map(location => {
-            const profile = profiles.find(p => p.id === location.id || p.id === location.employee_id);
+            const profile = profiles.find(p => p.id === location.employee_id);
             
             return {
-              id: location.id || location.employee_id,
-              name: profile?.full_name || `Employee ID: ${(location.id || location.employee_id).substring(0, 8)}...`,
-              startTime: new Date(location.timestamp || location.lastUpdated || new Date()).toLocaleTimeString(),
-              status: location.is_online || location.status === 'active' ? 'active' : 'inactive',
-              lastActive: new Date(location.last_seen_at || location.lastUpdated || new Date()).toLocaleString(),
+              id: location.employee_id,
+              name: profile?.full_name || `Employee ID: ${location.employee_id.substring(0, 8)}...`,
+              startTime: new Date(location.timestamp || new Date()).toLocaleTimeString(),
+              status: location.is_online ? 'active' : 'inactive',
+              lastActive: new Date(location.last_seen_at || new Date()).toLocaleString(),
               location: location
             };
           });
@@ -106,20 +106,16 @@ export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
 
 // Validate location data
 function validateLocation(location: EmployeeLocation): boolean {
-  // Extract latitude and longitude from either direct properties or nested location object
-  const lat = location.latitude ?? location.location?.latitude;
-  const lng = location.longitude ?? location.location?.longitude;
-  
   // Check for valid latitude and longitude values
   if (!location || 
-      typeof lat !== 'number' || 
-      typeof lng !== 'number' ||
-      isNaN(lat) || 
-      isNaN(lng) ||
-      lat < -90 || 
-      lat > 90 || 
-      lng < -180 || 
-      lng > 180) {
+      typeof location.latitude !== 'number' || 
+      typeof location.longitude !== 'number' ||
+      isNaN(location.latitude) || 
+      isNaN(location.longitude) ||
+      location.latitude < -90 || 
+      location.latitude > 90 || 
+      location.longitude < -180 || 
+      location.longitude > 180) {
     return false;
   }
   return true;
