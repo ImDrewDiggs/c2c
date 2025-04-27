@@ -38,7 +38,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
         navigate("/");
       }
     }
-  }, [user, userData, isSuperAdmin, loading, navigate]);
+  }, [user, userData, isSuperAdmin, loading, navigate, toast]);
 
   // Show nothing while checking authentication
   if (loading) {

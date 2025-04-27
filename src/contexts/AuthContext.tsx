@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContextType } from '@/types/auth';
@@ -77,15 +78,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     redirectBasedOnRole(role);
   };
 
+  // Provide the authentication context value
+  const authContextValue: AuthContextType = {
+    user, 
+    userData, 
+    signIn: handleSignIn, 
+    signOut, 
+    loading,
+    isSuperAdmin
+  };
+
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      userData, 
-      signIn: handleSignIn, 
-      signOut, 
-      loading,
-      isSuperAdmin
-    }}>
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
