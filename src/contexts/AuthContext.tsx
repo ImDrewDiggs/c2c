@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -17,12 +17,21 @@ const roleBasedRoutes: Record<UserRole, string[]> = {
 // Define public routes that should never trigger auth redirection
 const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with defaultValue to avoid null checks
+const defaultValue: AuthContextType = {
+  user: null,
+  userData: null,
+  signIn: async () => '',
+  signOut: async () => {},
+  loading: true,
+  isSuperAdmin: false
+};
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+const AuthContext = createContext<AuthContextType>(defaultValue);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  // Use the static property from AuthService
   const { ADMIN_EMAIL } = AuthService;
   const [initialCheckDone, setInitialCheckDone] = useState(false);
   
@@ -71,14 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (email === ADMIN_EMAIL) {
       console.log('[AuthContext] Admin login detected, redirecting to admin dashboard');
       navigate('/admin/dashboard');
-      return;
+      return '';
     }
     
     console.log('[AuthContext] Redirecting based on role:', role);
     redirectBasedOnRole(role);
+    return role;
   };
 
-  // Provide the authentication context value
+  // Create a stable context value object that doesn't change on every render
   const authContextValue: AuthContextType = {
     user, 
     userData, 
@@ -97,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
