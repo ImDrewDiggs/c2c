@@ -108,5 +108,4 @@ const App = () => {
   );
 };
 
-// Use React.memo to prevent unnecessary re-renders
-export default React.memo(App);
+export default App;

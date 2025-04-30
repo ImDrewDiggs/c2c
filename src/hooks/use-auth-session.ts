@@ -15,31 +15,26 @@ export function useAuthSession() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        console.log('[DIAGNOSTIC][AuthSession] Starting initial session check');
+        console.log('[AuthSession] Starting initial session check');
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('[DIAGNOSTIC][AuthSession] Initial session check result:', {
-          hasSession: !!session,
-          userEmail: session?.user?.email || 'No user in session'
-        });
         
         if (session?.user) {
-          console.log('[DIAGNOSTIC][AuthSession] User found in session, setting user state');
+          console.log('[AuthSession] User found in session:', session.user.email);
           setUser(session.user);
           
-          console.log('[DIAGNOSTIC][AuthSession] User found in session, will fetch profile:', session.user.id);
-          // Attempt to fetch the user profile, but don't block auth on success
-          await fetchUserData(session.user.id).catch(err => {
-            console.warn('[DIAGNOSTIC][AuthSession] Profile fetch error, continuing anyway:', err.message);
+          // Fetch user profile but don't block on it
+          fetchUserData(session.user.id).catch(err => {
+            console.warn('[AuthSession] Profile fetch error, continuing anyway:', err.message);
           });
         } else {
-          console.log('[DIAGNOSTIC][AuthSession] No user in session during initial check');
+          console.log('[AuthSession] No user in session during initial check');
           setUser(null);
         }
         
         setLoading(false);
         setSessionChecked(true);
       } catch (error) {
-        console.error('[DIAGNOSTIC][AuthSession] Error checking session:', error);
+        console.error('[AuthSession] Error checking session:', error);
         setLoading(false);
         setSessionChecked(true);
       }
@@ -48,54 +43,38 @@ export function useAuthSession() {
     checkSession();
   }, []);
 
-  // Auth state change listener
+  // Auth state change listener - only set up after initial session check
   useEffect(() => {
     if (!sessionChecked) {
-      console.log('[DIAGNOSTIC][AuthSession] Skipping auth change listener setup - session not checked yet');
-      return () => {};
+      return undefined;
     }
     
-    console.log('[DIAGNOSTIC][AuthSession] Setting up auth state change listener');
+    console.log('[AuthSession] Setting up auth state change listener');
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[DIAGNOSTIC][AuthSession] Auth state changed:', {
-        event,
-        userEmail: session?.user?.email || 'No user',
-        hasSession: !!session
-      });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[AuthSession] Auth state changed:', { event, userEmail: session?.user?.email });
       
       if (event === 'SIGNED_OUT') {
-        console.log('[DIAGNOSTIC][AuthSession] SIGNED_OUT event received, clearing user state');
+        console.log('[AuthSession] SIGNED_OUT event received, clearing user state');
         setUser(null);
         setLoading(false);
         return;
       }
       
       if (session?.user) {
-        console.log('[DIAGNOSTIC][AuthSession] Auth state changed with user, setting user state');
         setUser(session.user);
-        
-        // Don't fetch profile data here to avoid potential infinite loop
-        // Only fetch when explicitly needed
       } else {
-        console.log('[DIAGNOSTIC][AuthSession] No user in session after auth state change');
         setUser(null);
       }
       
       setLoading(false);
     });
 
-    console.log('[DIAGNOSTIC][AuthSession] Auth state change listener setup complete');
-
     return () => {
-      console.log('[DIAGNOSTIC][AuthSession] Unsubscribing from auth state change');
+      console.log('[AuthSession] Unsubscribing from auth state change');
       subscription.unsubscribe();
     };
   }, [sessionChecked]);
 
-  return {
-    user,
-    loading,
-    sessionChecked
-  };
+  return { user, loading, sessionChecked };
 }

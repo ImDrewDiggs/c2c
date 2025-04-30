@@ -30,13 +30,17 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
           description: "You must be logged in to view this page",
         });
         navigate("/admin/login");
-      } else if (!isSuperAdmin && (!userData || userData.role !== "admin")) {
+        return;
+      }
+      
+      if (!isSuperAdmin && (!userData || userData.role !== "admin")) {
         toast({
           variant: "destructive",
           title: "Access Denied",
           description: "You do not have admin privileges",
         });
         navigate("/");
+        return;
       }
     }
   }, [user, userData, isSuperAdmin, loading, navigate, toast]);

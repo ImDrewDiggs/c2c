@@ -17,7 +17,7 @@ const roleBasedRoutes: Record<UserRole, string[]> = {
 // Define public routes that should never trigger auth redirection
 const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
 
-// Create context with defaultValue to avoid null checks
+// Create context with defaultValue
 const defaultValue: AuthContextType = {
   user: null,
   userData: null,
@@ -47,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut
   } = useAuthState();
 
+  // Log auth state changes for debugging
   useEffect(() => {
     console.log('[AuthContext] AuthProvider useEffect - auth state update:', {
       hasUser: !!user,
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, userData, isSuperAdmin, loading, initialCheckDone]);
 
+  // Wait to initialize route protection until after initial auth check to prevent redirect loops
   const { redirectBasedOnRole } = useRouteProtection(
     loading,
     user,
@@ -93,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Create a stable context value object that doesn't change on every render
+  // Create a stable context value object to prevent unnecessary re-renders
   const authContextValue: AuthContextType = {
     user, 
     userData, 

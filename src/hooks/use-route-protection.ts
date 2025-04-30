@@ -17,27 +17,13 @@ export function useRouteProtection(
   const { toast } = useToast();
   const { publicRoutes, roleBasedRoutes, adminEmail } = options;
 
-  // Log current route protection state
-  useEffect(() => {
-    console.log('[DIAGNOSTIC][RouteProtection] Route protection state:', {
-      currentPath: location.pathname,
-      isLoading: loading,
-      hasUser: !!user,
-      userEmail: user?.email,
-      userDataExists: !!userData,
-      userRole: userData?.role || 'none',
-      isSuperAdmin,
-      isAdminEmail: user?.email === adminEmail
-    });
-  }, [location.pathname, loading, user, userData, isSuperAdmin, adminEmail]);
-
   // Function to redirect based on user role
   function redirectBasedOnRole(role: UserRole) {
-    console.log('[DIAGNOSTIC][RouteProtection] Redirecting based on role:', role);
+    console.log('[RouteProtection] Redirecting based on role:', role);
     
     // Special case for admin email
     if (user?.email === adminEmail) {
-      console.log('[DIAGNOSTIC][RouteProtection] Redirecting admin user to /admin/dashboard regardless of role');
+      console.log('[RouteProtection] Redirecting admin user to /admin/dashboard');
       navigate('/admin/dashboard');
       return;
     }
@@ -50,7 +36,6 @@ export function useRouteProtection(
         navigate('/employee/dashboard');
         break;
       case 'admin':
-        console.log('[DIAGNOSTIC][RouteProtection] Redirecting admin to /admin/dashboard');
         navigate('/admin/dashboard');
         break;
       default:
@@ -60,56 +45,40 @@ export function useRouteProtection(
 
   // Route protection logic
   useEffect(() => {
+    // Skip protection checks if still loading auth state
     if (loading) {
-      console.log('[DIAGNOSTIC][RouteProtection] Still loading, skipping route protection');
       return;
     }
     
     const currentPath = location.pathname;
-    console.log('[DIAGNOSTIC][RouteProtection] Checking route protection for:', currentPath);
     
-    // Special case for admin email - always allow access to admin paths
-    if (user?.email === adminEmail && currentPath.startsWith('/admin')) {
-      console.log('[DIAGNOSTIC][RouteProtection] Admin email detected, allowing access to admin path');
-      return;
-    }
-    
-    // Check if the current path is a public route
+    // Handle public routes - always allow access
     const isPublicRoute = publicRoutes.some(route => 
       currentPath === route || currentPath.startsWith(route + '/')
     );
     
     if (isPublicRoute) {
-      console.log('[DIAGNOSTIC][RouteProtection] Current path is a public route, allowing access');
       return;
     }
     
     // Handle authenticated users
     if (user) {
-      console.log('[DIAGNOSTIC][RouteProtection] Authenticated user accessing route:', {
-        route: currentPath,
-        userRole: userData?.role || 'unknown',
-        isAdmin: (userData?.role === 'admin' || isSuperAdmin || user.email === adminEmail)
-      });
-      
-      // Special bypass for admin email
+      // Special bypass for admin email on admin routes
       if (user.email === adminEmail && currentPath.startsWith('/admin')) {
-        console.log('[DIAGNOSTIC][RouteProtection] Admin email access to admin route - allowing');
         return;
       }
       
-      // For customer and employee paths, be more lenient
+      // Allow customer routes for customers
       if (currentPath.startsWith('/customer') && (!userData || userData.role === 'customer')) {
-        console.log('[DIAGNOSTIC][RouteProtection] Customer accessing customer route - allowing');
         return;
       }
       
+      // Allow employee routes for employees
       if (currentPath.startsWith('/employee') && (!userData || userData.role === 'employee')) {
-        console.log('[DIAGNOSTIC][RouteProtection] Employee accessing employee route - allowing');
         return;
       }
       
-      // For other users, check proper role access
+      // For users with profiles, check proper role access
       if (userData) {
         // Check if the user is trying to access a route they don't have permission for
         const isProtectedRoute = Object.entries(roleBasedRoutes).some(
@@ -120,7 +89,6 @@ export function useRouteProtection(
         );
         
         if (isProtectedRoute) {
-          console.log('[DIAGNOSTIC][RouteProtection] Unauthorized access attempt:', currentPath, 'by user with role:', userData.role);
           toast({
             variant: "destructive",
             title: "Access Denied",
@@ -129,43 +97,16 @@ export function useRouteProtection(
           
           // Redirect based on user role
           redirectBasedOnRole(userData.role);
-        } else {
-          console.log('[DIAGNOSTIC][RouteProtection] User has permission for this route');
         }
       } 
-      // If user exists but no userData and not admin email, be lenient for customer and employee routes
-      else if (user.email !== adminEmail) {
-        // Allow access to matching route by guessing the role based on path
-        if (currentPath.startsWith('/customer')) {
-          console.log('[DIAGNOSTIC][RouteProtection] No profile but accessing customer route - assuming customer role');
-          return;
-        }
-        
-        if (currentPath.startsWith('/employee')) {
-          console.log('[DIAGNOSTIC][RouteProtection] No profile but accessing employee route - assuming employee role');
-          return;
-        }
-        
-        console.log('[DIAGNOSTIC][RouteProtection] Authenticated user without profile, redirecting to login');
-        toast({
-          variant: "destructive",
-          title: "Profile Required",
-          description: "Your profile could not be loaded. Please login again.",
-        });
-        navigate('/customer/login');
-      }
     } 
-    // Handle unauthenticated users
+    // Handle unauthenticated users trying to access protected routes
     else {
-      console.log('[DIAGNOSTIC][RouteProtection] Unauthenticated user accessing route:', currentPath);
-      
-      // Check if the user is trying to access a protected route when not logged in
       const isAnyProtectedRoute = Object.values(roleBasedRoutes).flat().some(route => 
         currentPath.startsWith(route)
       );
       
       if (isAnyProtectedRoute) {
-        console.log('[DIAGNOSTIC][RouteProtection] Redirecting unauthenticated user from protected route to login');
         toast({
           variant: "destructive",
           title: "Authentication Required",

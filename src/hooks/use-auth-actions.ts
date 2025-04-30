@@ -39,7 +39,7 @@ export function useAuthActions() {
       console.log('[AuthActions] User signed in successfully:', {
         id: signInData.user.id,
         email: signInData.user.email,
-        isAdmin: AuthService.isAdminEmail(email)
+        isAdmin: AuthService.isAdminEmail(email || '')
       });
       
       // Special handling for admin email
@@ -56,7 +56,7 @@ export function useAuthActions() {
             await AuthService.ensureAdminProfile(signInData.user.id, email);
           }
           
-          // Even if profile creation fails, set admin status manually
+          // Set admin user data
           setUserData({
             id: signInData.user.id,
             email: email,
@@ -85,7 +85,7 @@ export function useAuthActions() {
       // For non-admin users, handle profile checking
       console.log('[AuthActions] Creating default user data for non-admin');
       
-      // Create a default profile in memory even if database profile creation fails
+      // Create a default profile in memory
       const defaultUserData: UserData = {
         id: signInData.user.id,
         email: email,
