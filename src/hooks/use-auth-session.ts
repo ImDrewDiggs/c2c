@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useUserProfile } from './use-user-profile';
@@ -9,12 +9,16 @@ export function useAuthSession() {
   const [loading, setLoading] = useState(true);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [sessionCheckError, setSessionCheckError] = useState<Error | null>(null);
+  const initialSessionCheckComplete = useRef(false);
 
   const { fetchUserData } = useUserProfile();
 
   // Initial session check
   useEffect(() => {
     let isMounted = true;
+    
+    // Skip if we've already done the initial check
+    if (initialSessionCheckComplete.current) return;
     
     const checkSession = async () => {
       try {
@@ -48,6 +52,7 @@ export function useAuthSession() {
         if (isMounted) {
           setLoading(false);
           setSessionChecked(true);
+          initialSessionCheckComplete.current = true;
         }
       }
     };

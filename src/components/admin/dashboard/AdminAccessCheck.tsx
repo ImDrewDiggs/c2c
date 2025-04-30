@@ -1,5 +1,5 @@
 
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,15 +13,17 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   const { user, userData, isSuperAdmin, loading } = useAuth();
   const [accessChecked, setAccessChecked] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const accessCheckAttempted = useRef(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     // Prevent redundant access checks
-    if (accessChecked) return;
+    if (accessChecked || accessCheckAttempted.current) return;
     
     // Only check after loading is complete
     if (!loading) {
+      accessCheckAttempted.current = true;
       console.log("[AdminAccessCheck] Checking admin access:", {
         hasUser: !!user,
         hasUserData: !!userData,
@@ -60,7 +62,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   // Add a timeout to prevent indefinite loading state
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (checkingAccess) {
+      if (checkingAccess && accessCheckAttempted.current) {
         console.log("[AdminAccessCheck] Access check timed out, assuming failure");
         setCheckingAccess(false);
         navigate("/admin/login");

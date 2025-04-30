@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase, UserData } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from './use-user-profile';
@@ -7,11 +7,18 @@ import { AuthService } from '@/services/AuthService';
 
 export function useAuthActions() {
   const [loading, setLoading] = useState(false);
+  const pendingOperation = useRef<boolean>(false);
   const { toast } = useToast();
   const { fetchUserData, setUserData, setIsSuperAdmin } = useUserProfile();
 
   const signIn = async (email: string, password: string, role: UserData['role']) => {
+    if (pendingOperation.current) {
+      console.log('[AuthActions] Operation already in progress, ignoring duplicate request');
+      return role;
+    }
+
     try {
+      pendingOperation.current = true;
       setLoading(true);
       console.log(`[AuthActions] Attempting to sign in as ${role} with email: ${email}`);
       
@@ -135,11 +142,20 @@ export function useAuthActions() {
       throw error;
     } finally {
       setLoading(false);
+      // Add a small delay before allowing new operations to prevent rapid re-attempts
+      setTimeout(() => {
+        pendingOperation.current = false;
+      }, 500);
     }
   };
 
   const signOut = async () => {
+    if (pendingOperation.current) {
+      return;
+    }
+
     try {
+      pendingOperation.current = true;
       console.log('[AuthActions] Starting sign out process');
       setLoading(true);
       
@@ -163,6 +179,10 @@ export function useAuthActions() {
       });
     } finally {
       setLoading(false);
+      // Add a small delay before allowing new operations
+      setTimeout(() => {
+        pendingOperation.current = false;
+      }, 500);
     }
   };
 

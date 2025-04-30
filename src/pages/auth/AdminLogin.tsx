@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,23 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginAttempted, setLoginAttempted] = useState(false);
   const { signIn, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Prevent repeated login attempts
+  useEffect(() => {
+    return () => setLoginAttempted(false);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (loginAttempted) {
+      console.log("[AdminLogin] Login already in progress, ignoring duplicate attempt");
+      return;
+    }
     
     if (!email || !password) {
       toast({
@@ -29,6 +40,7 @@ export default function AdminLogin() {
     }
     
     setIsSubmitting(true);
+    setLoginAttempted(true);
     
     try {
       console.log("[AdminLogin] Attempting sign in with email:", email);
@@ -40,15 +52,6 @@ export default function AdminLogin() {
         title: "Success",
         description: "Login successful. Redirecting to dashboard...",
       });
-      
-      // The navigation will be handled by the AuthContext
-      // but we'll add a fallback navigation here in case the context navigation fails
-      setTimeout(() => {
-        if (window.location.pathname === '/admin/login') {
-          console.log("[AdminLogin] Fallback navigation to dashboard");
-          navigate('/admin/dashboard');
-        }
-      }, 2000);
     } catch (error: any) {
       console.error("[AdminLogin] Login error:", error);
       toast({
@@ -57,6 +60,7 @@ export default function AdminLogin() {
         description: error.message || "An error occurred during login",
       });
       setIsSubmitting(false);
+      setLoginAttempted(false);
     }
   };
 
@@ -139,7 +143,7 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || loginAttempted}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
