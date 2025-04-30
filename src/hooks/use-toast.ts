@@ -8,7 +8,7 @@ import {
 
 // Define the toast variant styles
 const TOAST_LIMIT = 20;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 5000; // More reasonable timeout for most use cases
 
 // Define our toast types
 export type ToastT = {

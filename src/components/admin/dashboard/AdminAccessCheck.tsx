@@ -19,6 +19,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
       console.log("[AdminAccessCheck] Checking admin access:", {
         hasUser: !!user,
         hasUserData: !!userData,
+        userRole: userData?.role,
         isSuperAdmin,
       });
 
@@ -40,7 +41,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
     }
   }, [user, userData, isSuperAdmin, loading, navigate, toast]);
 
-  // Show nothing while checking authentication
+  // Show loading state while checking authentication
   if (loading) {
     return <div className="p-8 text-center">Verifying access...</div>;
   }

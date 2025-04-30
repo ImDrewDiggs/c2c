@@ -72,20 +72,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   // Wrap signIn to handle redirection after successful login
-  const handleSignIn = async (email: string, password: string, role: UserRole) => {
+  const handleSignIn = async (email: string, password: string, role: UserRole): Promise<string> => {
     console.log('[AuthContext] handleSignIn called for email:', email, 'role:', role);
-    await signIn(email, password, role);
-    
-    // Special handling for admin email - always redirect to admin dashboard
-    if (email === ADMIN_EMAIL) {
-      console.log('[AuthContext] Admin login detected, redirecting to admin dashboard');
-      navigate('/admin/dashboard');
+    try {
+      await signIn(email, password, role);
+      
+      // Special handling for admin email - always redirect to admin dashboard
+      if (email === ADMIN_EMAIL) {
+        console.log('[AuthContext] Admin login detected, redirecting to admin dashboard');
+        navigate('/admin/dashboard');
+        return 'admin';
+      }
+      
+      console.log('[AuthContext] Redirecting based on role:', role);
+      redirectBasedOnRole(role);
+      return role;
+    } catch (error) {
+      console.error('[AuthContext] Login error:', error);
       return '';
     }
-    
-    console.log('[AuthContext] Redirecting based on role:', role);
-    redirectBasedOnRole(role);
-    return role;
   };
 
   // Create a stable context value object that doesn't change on every render
