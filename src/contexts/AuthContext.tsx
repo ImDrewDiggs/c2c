@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContextType } from '@/types/auth';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -18,21 +18,11 @@ const roleBasedRoutes: Record<UserRole, string[]> = {
 const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
 
 // Create context with defaultValue
-const defaultValue: AuthContextType = {
-  user: null,
-  userData: null,
-  signIn: async () => '',
-  signOut: async () => {},
-  loading: true,
-  isSuperAdmin: false
-};
-
-const AuthContext = createContext<AuthContextType>(defaultValue);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { ADMIN_EMAIL } = AuthService;
   const [initialCheckDone, setInitialCheckDone] = useState(false);
   
   console.log('[AuthContext] AuthProvider initialized, path:', location.pathname);
@@ -44,7 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     isSuperAdmin,
     signIn,
-    signOut
+    signOut,
+    ADMIN_EMAIL
   } = useAuthState();
 
   // Log auth state changes for debugging
@@ -96,14 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Create a stable context value object to prevent unnecessary re-renders
-  const authContextValue: AuthContextType = {
+  const authContextValue = useMemo<AuthContextType>(() => ({
     user, 
     userData, 
     signIn: handleSignIn, 
     signOut, 
     loading,
     isSuperAdmin
-  };
+  }), [user, userData, signIn, signOut, loading, isSuperAdmin, handleSignIn]);
 
   return (
     <AuthContext.Provider value={authContextValue}>

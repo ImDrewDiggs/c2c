@@ -41,7 +41,7 @@ export function useAuthSession() {
     };
     
     checkSession();
-  }, []);
+  }, [fetchUserData]);
 
   // Auth state change listener - only set up after initial session check
   useEffect(() => {
