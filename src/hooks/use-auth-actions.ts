@@ -132,7 +132,6 @@ export function useAuthActions() {
         title: "Error",
         description: error.message || "An error occurred during login",
       });
-      await signOut();
       throw error;
     } finally {
       setLoading(false);
@@ -143,8 +142,14 @@ export function useAuthActions() {
     try {
       console.log('[AuthActions] Starting sign out process');
       setLoading(true);
+      
+      // Clear user data first to prevent flashing of unauthorized content
+      setUserData(null);
+      setIsSuperAdmin(false);
+      
       await supabase.auth.signOut();
       console.log('[AuthActions] Supabase auth.signOut() completed');
+      
       toast({
         title: "Success",
         description: "Successfully logged out",
@@ -157,10 +162,7 @@ export function useAuthActions() {
         description: "Error signing out",
       });
     } finally {
-      console.log('[AuthActions] Clearing user state after signOut');
       setLoading(false);
-      setUserData(null);
-      setIsSuperAdmin(false);
     }
   };
 

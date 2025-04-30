@@ -6,6 +6,7 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { useRouteProtection } from '@/hooks/use-route-protection';
 import { UserRole } from '@/lib/supabase';
 import { AuthService } from '@/services/AuthService';
+import { useToast } from '@/hooks/use-toast';
 
 // Define protected routes by role
 const roleBasedRoutes: Record<UserRole, string[]> = {
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [initialCheckDone, setInitialCheckDone] = useState(false);
+  const { toast } = useToast();
   
   console.log('[AuthContext] AuthProvider initialized, path:', location.pathname);
 
@@ -47,13 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userRole: userData?.role,
       isSuperAdmin,
       isLoading: loading,
-      initialCheckDone
+      initialCheckDone,
+      currentPath: location.pathname
     });
     
     if (!loading && !initialCheckDone) {
       setInitialCheckDone(true);
     }
-  }, [user, userData, isSuperAdmin, loading, initialCheckDone]);
+  }, [user, userData, isSuperAdmin, loading, initialCheckDone, location.pathname]);
 
   // Wait to initialize route protection until after initial auth check to prevent redirect loops
   const { redirectBasedOnRole } = useRouteProtection(
@@ -68,20 +71,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSignIn = async (email: string, password: string, role: UserRole): Promise<string> => {
     console.log('[AuthContext] handleSignIn called for email:', email, 'role:', role);
     try {
-      await signIn(email, password, role);
+      const resultRole = await signIn(email, password, role);
       
       // Special handling for admin email - always redirect to admin dashboard
-      if (email === ADMIN_EMAIL) {
+      if (email === ADMIN_EMAIL || role === 'admin') {
         console.log('[AuthContext] Admin login detected, redirecting to admin dashboard');
-        navigate('/admin/dashboard');
+        // Use setTimeout to ensure state updates have propagated before navigation
+        setTimeout(() => {
+          navigate('/admin/dashboard', { replace: true });
+        }, 500);
         return 'admin';
       }
       
       console.log('[AuthContext] Redirecting based on role:', role);
-      redirectBasedOnRole(role);
-      return role;
-    } catch (error) {
+      // Use timeout to ensure state updates have propagated
+      setTimeout(() => {
+        redirectBasedOnRole(role);
+      }, 500);
+      return resultRole;
+    } catch (error: any) {
       console.error('[AuthContext] Login error:', error);
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: error.message || "An unexpected error occurred during login"
+      });
       return '';
     }
   };
@@ -94,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut, 
     loading,
     isSuperAdmin
-  }), [user, userData, signIn, signOut, loading, isSuperAdmin, handleSignIn]);
+  }), [user, userData, handleSignIn, signOut, loading, isSuperAdmin]);
 
   return (
     <AuthContext.Provider value={authContextValue}>

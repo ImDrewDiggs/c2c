@@ -8,17 +8,26 @@ export function useAuthSession() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [sessionCheckError, setSessionCheckError] = useState<Error | null>(null);
 
   const { fetchUserData } = useUserProfile();
 
   // Initial session check
   useEffect(() => {
+    let isMounted = true;
+    
     const checkSession = async () => {
       try {
         console.log('[AuthSession] Starting initial session check');
-        const { data: { session } } = await supabase.auth.getSession();
+        setLoading(true);
         
-        if (session?.user) {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (session?.user && isMounted) {
           console.log('[AuthSession] User found in session:', session.user.email);
           setUser(session.user);
           
@@ -26,21 +35,28 @@ export function useAuthSession() {
           fetchUserData(session.user.id).catch(err => {
             console.warn('[AuthSession] Profile fetch error, continuing anyway:', err.message);
           });
-        } else {
+        } else if (isMounted) {
           console.log('[AuthSession] No user in session during initial check');
           setUser(null);
         }
-        
-        setLoading(false);
-        setSessionChecked(true);
       } catch (error) {
         console.error('[AuthSession] Error checking session:', error);
-        setLoading(false);
-        setSessionChecked(true);
+        if (isMounted) {
+          setSessionCheckError(error instanceof Error ? error : new Error('Failed to check session'));
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setSessionChecked(true);
+        }
       }
     };
     
     checkSession();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [fetchUserData]);
 
   // Auth state change listener - only set up after initial session check
@@ -63,6 +79,13 @@ export function useAuthSession() {
       
       if (session?.user) {
         setUser(session.user);
+        // Don't fetch profile data here to avoid potential deadlocks
+        // Use setTimeout to defer any additional operations
+        setTimeout(() => {
+          fetchUserData(session.user.id).catch(err => {
+            console.warn('[AuthSession] Profile fetch after state change error:', err.message);
+          });
+        }, 0);
       } else {
         setUser(null);
       }
@@ -74,7 +97,12 @@ export function useAuthSession() {
       console.log('[AuthSession] Unsubscribing from auth state change');
       subscription.unsubscribe();
     };
-  }, [sessionChecked]);
+  }, [sessionChecked, fetchUserData]);
 
-  return { user, loading, sessionChecked };
+  return { 
+    user, 
+    loading, 
+    sessionChecked,
+    error: sessionCheckError 
+  };
 }

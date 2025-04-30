@@ -12,10 +12,14 @@ interface AdminAccessCheckProps {
 export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   const { user, userData, isSuperAdmin, loading } = useAuth();
   const [accessChecked, setAccessChecked] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    // Prevent redundant access checks
+    if (accessChecked) return;
+    
     // Only check after loading is complete
     if (!loading) {
       console.log("[AdminAccessCheck] Checking admin access:", {
@@ -49,25 +53,36 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
       
       // Access check completed successfully
       setAccessChecked(true);
+      setCheckingAccess(false);
     }
-  }, [user, userData, isSuperAdmin, loading, navigate, toast]);
+  }, [user, userData, isSuperAdmin, loading, navigate, toast, accessChecked]);
+
+  // Add a timeout to prevent indefinite loading state
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (checkingAccess) {
+        console.log("[AdminAccessCheck] Access check timed out, assuming failure");
+        setCheckingAccess(false);
+        navigate("/admin/login");
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Could not verify your credentials. Please log in again.",
+        });
+      }
+    }, 5000); // 5 second timeout
+    
+    return () => clearTimeout(timeoutId);
+  }, [checkingAccess, navigate, toast]);
 
   // Show loading state while checking authentication
-  if (loading) {
+  if (loading || checkingAccess) {
     return (
       <div className="flex flex-col items-center justify-center p-8 h-[calc(100vh-64px)]">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-muted-foreground">Verifying access...</p>
-      </div>
-    );
-  }
-  
-  // If not loading but access check hasn't completed, show a brief loading screen
-  if (!accessChecked) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 h-[calc(100vh-64px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-muted-foreground">Preparing dashboard...</p>
+        <p className="text-muted-foreground">
+          {loading ? "Verifying access..." : "Preparing dashboard..."}
+        </p>
       </div>
     );
   }

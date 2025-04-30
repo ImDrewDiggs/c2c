@@ -12,7 +12,7 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, loading } = useAuth();
+  const { signIn, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,18 +31,37 @@ export default function AdminLogin() {
     setIsSubmitting(true);
     
     try {
-      // Call signIn and store the returned role
+      console.log("[AdminLogin] Attempting sign in with email:", email);
       const role = await signIn(email, password, 'admin');
-      console.log("Login successful with role:", role);
+      console.log("[AdminLogin] Sign in successful with role:", role);
+      
+      // Show successful login toast
+      toast({
+        title: "Success",
+        description: "Login successful. Redirecting to dashboard...",
+      });
       
       // The navigation will be handled by the AuthContext
+      // but we'll add a fallback navigation here in case the context navigation fails
+      setTimeout(() => {
+        if (window.location.pathname === '/admin/login') {
+          console.log("[AdminLogin] Fallback navigation to dashboard");
+          navigate('/admin/dashboard');
+        }
+      }, 2000);
     } catch (error: any) {
-      console.error("Login error:", error);
-      // Toast error is already handled in the signIn function
-    } finally {
+      console.error("[AdminLogin] Login error:", error);
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "An error occurred during login",
+      });
       setIsSubmitting(false);
     }
   };
+
+  // Combined loading state
+  const isLoading = isSubmitting || authLoading;
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -93,7 +112,7 @@ export default function AdminLogin() {
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting || loading}
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -113,15 +132,15 @@ export default function AdminLogin() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting || loading}
+                  disabled={isLoading}
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
-              {(isSubmitting || loading) ? (
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
