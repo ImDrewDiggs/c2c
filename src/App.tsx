@@ -55,8 +55,8 @@ const App = () => {
   }), []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <div className="min-h-screen bg-background">
             <Navbar />
@@ -103,8 +103,8 @@ const App = () => {
             <Toaster />
           </div>
         </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
