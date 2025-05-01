@@ -31,7 +31,7 @@ export function OperationsContent({
   const safePickups = Array.isArray(pickups) ? pickups : [];
 
   return (
-    <ScrollArea className="h-full">
+    <div className="h-full w-full overflow-y-auto pb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <Card className="p-6">
@@ -49,6 +49,6 @@ export function OperationsContent({
           employeeLocations={safeEmployeeLocations}
         />
       </div>
-    </ScrollArea>
+    </div>
   );
 }

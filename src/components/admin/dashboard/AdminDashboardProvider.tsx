@@ -25,8 +25,25 @@ interface AdminDashboardContextValue {
   mockPickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[];
 }
 
-// Create context with default undefined value
-const AdminDashboardContext = createContext<AdminDashboardContextValue | undefined>(undefined);
+// Create context with a proper initial value
+const AdminDashboardContext = createContext<AdminDashboardContextValue>({
+  stats: {
+    dailyPickups: 0,
+    weeklyPickups: 0,
+    monthlyPickups: 0,
+    activeEmployees: 0,
+    pendingPickups: 0,
+    completedPickups: 0,
+    todayRevenue: 0,
+  },
+  houses: [],
+  assignments: [],
+  currentLocation: null,
+  employeeLocations: [],
+  activeEmployees: 0,
+  mockRevenueData: [],
+  mockPickups: [],
+});
 
 // Hook to use the dashboard context
 export function useAdminDashboard() {
@@ -187,7 +204,6 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
   useEffect(() => {
     fetchEmployeeLocations();
 
-    // Set up the real-time subscription safely
     let channel;
     try {
       channel = supabase
@@ -217,34 +233,51 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     };
   }, [fetchEmployeeLocations]);
 
-  // Get user location
+  // Get user location - safely with proper error handling
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      const successCallback = (position: GeolocationPosition) => {
-        setCurrentLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      };
-      
-      const errorCallback = (error: GeolocationPositionError) => {
-        console.error("Error getting location:", error);
-        // Fall back to New York coordinates
+    // Use a lightweight function for geolocation to avoid React rendering issues
+    const getLocation = () => {
+      if ("geolocation" in navigator) {
+        try {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setCurrentLocation({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
+            },
+            (error) => {
+              console.error("Geolocation error:", error);
+              // Fall back to New York coordinates
+              setCurrentLocation({
+                latitude: 40.7128,
+                longitude: -74.0060,
+              });
+            },
+            { 
+              enableHighAccuracy: false,
+              timeout: 5000,
+              maximumAge: 10000
+            }
+          );
+        } catch (error) {
+          console.error("Error requesting geolocation:", error);
+          // Fallback for any other errors
+          setCurrentLocation({
+            latitude: 40.7128,
+            longitude: -74.0060,
+          });
+        }
+      } else {
+        // Fallback if geolocation is not available
         setCurrentLocation({
           latitude: 40.7128,
           longitude: -74.0060,
         });
-      };
-      
-      // Use getCurrentPosition instead of watchPosition to avoid scroll issues
-      navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-    } else {
-      // Fallback if geolocation is not available
-      setCurrentLocation({
-        latitude: 40.7128,
-        longitude: -74.0060,
-      });
-    }
+      }
+    };
+
+    getLocation();
   }, []);
 
   // Prepare the dashboard data object to pass to context
