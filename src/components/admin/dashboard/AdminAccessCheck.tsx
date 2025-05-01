@@ -17,6 +17,14 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Clear checking state if taking too long
+  useEffect(() => {
+    if (!loading && user && (isSuperAdmin || (userData && userData.role === "admin"))) {
+      setCheckingAccess(false);
+      setAccessChecked(true);
+    }
+  }, [loading, user, userData, isSuperAdmin]);
+
   useEffect(() => {
     // Prevent redundant access checks
     if (accessChecked || accessCheckAttempted.current) return;
@@ -38,7 +46,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
           title: "Access Denied",
           description: "You must be logged in to view this page",
         });
-        navigate("/admin/login");
+        navigate("/admin/login", { replace: true });
         return;
       }
       
@@ -49,7 +57,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
           title: "Access Denied",
           description: "You do not have admin privileges",
         });
-        navigate("/");
+        navigate("/", { replace: true });
         return;
       }
       
@@ -65,7 +73,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
       if (checkingAccess && accessCheckAttempted.current) {
         console.log("[AdminAccessCheck] Access check timed out, assuming failure");
         setCheckingAccess(false);
-        navigate("/admin/login");
+        navigate("/admin/login", { replace: true });
         toast({
           variant: "destructive",
           title: "Authentication Error",

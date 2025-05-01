@@ -145,7 +145,7 @@ export function useAuthActions() {
       // Add a small delay before allowing new operations to prevent rapid re-attempts
       setTimeout(() => {
         pendingOperation.current = false;
-      }, 500);
+      }, 1000); // Increase to 1 second to prevent flickering
     }
   };
 
@@ -182,7 +182,7 @@ export function useAuthActions() {
       // Add a small delay before allowing new operations
       setTimeout(() => {
         pendingOperation.current = false;
-      }, 500);
+      }, 1000); // Increase to 1 second to prevent flickering
     }
   };
 

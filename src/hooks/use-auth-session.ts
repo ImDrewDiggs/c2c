@@ -10,6 +10,7 @@ export function useAuthSession() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [sessionCheckError, setSessionCheckError] = useState<Error | null>(null);
   const initialSessionCheckComplete = useRef(false);
+  const authChangeSubscription = useRef<{ unsubscribe: () => void } | null>(null);
 
   const { fetchUserData } = useUserProfile();
 
@@ -66,7 +67,7 @@ export function useAuthSession() {
 
   // Auth state change listener - only set up after initial session check
   useEffect(() => {
-    if (!sessionChecked) {
+    if (!sessionChecked || authChangeSubscription.current) {
       return undefined;
     }
     
@@ -90,7 +91,7 @@ export function useAuthSession() {
           fetchUserData(session.user.id).catch(err => {
             console.warn('[AuthSession] Profile fetch after state change error:', err.message);
           });
-        }, 0);
+        }, 100);
       } else {
         setUser(null);
       }
@@ -98,9 +99,14 @@ export function useAuthSession() {
       setLoading(false);
     });
 
+    authChangeSubscription.current = subscription;
+
     return () => {
       console.log('[AuthSession] Unsubscribing from auth state change');
-      subscription.unsubscribe();
+      if (authChangeSubscription.current) {
+        authChangeSubscription.current.unsubscribe();
+        authChangeSubscription.current = null;
+      }
     };
   }, [sessionChecked, fetchUserData]);
 

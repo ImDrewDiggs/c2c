@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [initialCheckDone, setInitialCheckDone] = useState(false);
+  const [redirectInProgress, setRedirectInProgress] = useState(false);
   const { toast } = useToast();
   
   console.log('[AuthContext] AuthProvider initialized, path:', location.pathname);
@@ -70,7 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Wrap signIn to handle redirection after successful login
   const handleSignIn = async (email: string, password: string, role: UserRole): Promise<string> => {
     console.log('[AuthContext] handleSignIn called for email:', email, 'role:', role);
+    
+    if (redirectInProgress) {
+      console.log('[AuthContext] Redirect already in progress, ignoring sign in request');
+      return '';
+    }
+    
     try {
+      setRedirectInProgress(true);
       const resultRole = await signIn(email, password, role);
       
       // Special handling for admin email - always redirect to admin dashboard
@@ -79,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Use setTimeout to ensure state updates have propagated before navigation
         setTimeout(() => {
           navigate('/admin/dashboard', { replace: true });
+          setRedirectInProgress(false);
         }, 500);
         return 'admin';
       }
@@ -87,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Use timeout to ensure state updates have propagated
       setTimeout(() => {
         redirectBasedOnRole(role);
+        setRedirectInProgress(false);
       }, 500);
       return resultRole;
     } catch (error: any) {
@@ -96,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Authentication Error",
         description: error.message || "An unexpected error occurred during login"
       });
+      setRedirectInProgress(false);
       return '';
     }
   };

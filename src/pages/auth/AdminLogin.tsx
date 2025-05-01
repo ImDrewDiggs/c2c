@@ -13,9 +13,16 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginAttempted, setLoginAttempted] = useState(false);
-  const { signIn, loading: authLoading } = useAuth();
+  const { signIn, loading: authLoading, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !authLoading && !isSubmitting) {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [user, authLoading, navigate, isSubmitting]);
 
   // Prevent repeated login attempts
   useEffect(() => {
@@ -52,6 +59,11 @@ export default function AdminLogin() {
         title: "Success",
         description: "Login successful. Redirecting to dashboard...",
       });
+
+      // Use setTimeout to ensure state updates have propagated before navigation
+      setTimeout(() => {
+        navigate("/admin/dashboard", { replace: true });
+      }, 500);
     } catch (error: any) {
       console.error("[AdminLogin] Login error:", error);
       toast({
@@ -59,8 +71,12 @@ export default function AdminLogin() {
         title: "Login Failed",
         description: error.message || "An error occurred during login",
       });
+    } finally {
       setIsSubmitting(false);
-      setLoginAttempted(false);
+      // Set a timeout before allowing another login attempt
+      setTimeout(() => {
+        setLoginAttempted(false);
+      }, 1500);
     }
   };
 
