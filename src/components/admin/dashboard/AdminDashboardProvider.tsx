@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, ReactNode, createContext, useContext } from "react";
+import { useState, useEffect, ReactNode, createContext, useContext, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { House, Assignment, EmployeeLocation } from "@/types/map";
 import { EmployeeLocationRow, HouseRow, AssignmentRow } from "@/lib/supabase-types";
@@ -151,40 +151,46 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     },
   });
 
+  // Safe fetch employee locations function
+  const fetchEmployeeLocations = useCallback(async () => {
+    try {
+      const { data: locations, error } = await supabase
+        .from('employee_locations')
+        .select('*') as { data: EmployeeLocationRow[] | null, error: any };
+      
+      if (!error && locations) {
+        console.log("Employee locations loaded:", locations.length);
+        
+        const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
+          id: loc.id,
+          employee_id: loc.employee_id,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          timestamp: loc.timestamp,
+          is_online: loc.is_online,
+          last_seen_at: loc.last_seen_at
+        }));
+        
+        setEmployeeLocations(mappedLocations);
+        setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
+      }
+    } catch (error) {
+      console.error("Error fetching employee locations:", error);
+      // Ensure we set a default value even on error
+      if (employeeLocations.length === 0) {
+        setEmployeeLocations([]);
+      }
+    }
+  }, [employeeLocations.length]);
+
   // Fetch employee locations and set up real-time listener
   useEffect(() => {
-    const fetchEmployeeLocations = async () => {
-      try {
-        const { data: locations, error } = await supabase
-          .from('employee_locations')
-          .select('*') as { data: EmployeeLocationRow[] | null, error: any };
-        
-        if (!error && locations) {
-          console.log("Initial employee locations loaded:", locations);
-          
-          const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
-            id: loc.id,
-            employee_id: loc.employee_id,
-            latitude: loc.latitude,
-            longitude: loc.longitude,
-            timestamp: loc.timestamp,
-            is_online: loc.is_online,
-            last_seen_at: loc.last_seen_at
-          }));
-          
-          setEmployeeLocations(mappedLocations);
-          setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
-        }
-      } catch (error) {
-        console.error("Error fetching employee locations:", error);
-      }
-    };
-
     fetchEmployeeLocations();
 
-    // Set up the real-time subscription
+    // Set up the real-time subscription safely
+    let channel;
     try {
-      const channel = supabase
+      channel = supabase
         .channel('employee-locations')
         .on(
           'postgres_changes',
@@ -193,40 +199,51 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
             schema: 'public',
             table: 'employee_locations'
           },
-          async (payload) => {
-            console.log("Real-time location update received:", payload);
+          async () => {
             fetchEmployeeLocations();
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     } catch (error) {
       console.error("Error setting up real-time listener:", error);
     }
-  }, []);
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel).catch(err => {
+          console.error("Error removing channel:", err);
+        });
+      }
+    };
+  }, [fetchEmployeeLocations]);
 
   // Get user location
   useEffect(() => {
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Fall back to New York coordinates
-          setCurrentLocation({
-            latitude: 40.7128,
-            longitude: -74.0060,
-          });
-        }
-      );
+      const successCallback = (position: GeolocationPosition) => {
+        setCurrentLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      };
+      
+      const errorCallback = (error: GeolocationPositionError) => {
+        console.error("Error getting location:", error);
+        // Fall back to New York coordinates
+        setCurrentLocation({
+          latitude: 40.7128,
+          longitude: -74.0060,
+        });
+      };
+      
+      // Use getCurrentPosition instead of watchPosition to avoid scroll issues
+      navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+    } else {
+      // Fallback if geolocation is not available
+      setCurrentLocation({
+        latitude: 40.7128,
+        longitude: -74.0060,
+      });
     }
   }, []);
 

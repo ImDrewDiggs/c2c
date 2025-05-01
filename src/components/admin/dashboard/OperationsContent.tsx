@@ -4,6 +4,7 @@ import { House, Assignment, EmployeeLocation, Location } from "@/types/map";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { PickupsList } from "@/components/admin/PickupsList";
 import { OperationsMap } from "@/components/admin/OperationsMap";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OperationsContentProps {
   houses: House[];
@@ -22,23 +23,32 @@ export function OperationsContent({
   revenueData,
   pickups,
 }: OperationsContentProps) {
+  // Ensure all data is valid before rendering
+  const safeHouses = Array.isArray(houses) ? houses : [];
+  const safeAssignments = Array.isArray(assignments) ? assignments : [];
+  const safeEmployeeLocations = Array.isArray(employeeLocations) ? employeeLocations : [];
+  const safeRevenueData = Array.isArray(revenueData) ? revenueData : [];
+  const safePickups = Array.isArray(pickups) ? pickups : [];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-6">
-        <Card className="p-6">
-          <h3 className="text-xl font-semibold mb-4">Revenue Overview</h3>
-          <RevenueChart data={revenueData} />
-        </Card>
+    <ScrollArea className="h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Revenue Overview</h3>
+            <RevenueChart data={safeRevenueData} />
+          </Card>
+          
+          <PickupsList pickups={safePickups} />
+        </div>
         
-        <PickupsList pickups={pickups} />
+        <OperationsMap
+          houses={safeHouses}
+          assignments={safeAssignments}
+          currentLocation={currentLocation}
+          employeeLocations={safeEmployeeLocations}
+        />
       </div>
-      
-      <OperationsMap
-        houses={houses}
-        assignments={assignments}
-        currentLocation={currentLocation}
-        employeeLocations={employeeLocations}
-      />
-    </div>
+    </ScrollArea>
   );
 }
