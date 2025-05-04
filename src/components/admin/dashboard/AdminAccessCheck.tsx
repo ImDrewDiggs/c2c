@@ -5,11 +5,22 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
+/**
+ * Props interface for AdminAccessCheck component
+ */
 interface AdminAccessCheckProps {
   children: ReactNode;
 }
 
+/**
+ * AdminAccessCheck - Component to verify admin access rights
+ * 
+ * This component ensures only admin users can access protected admin areas.
+ * It checks authentication status and user role before allowing access.
+ * If unauthorized access is detected, it redirects to the appropriate page.
+ */
 export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
+  // Get authentication data and navigation utilities
   const { user, userData, isSuperAdmin, loading } = useAuth();
   const [accessChecked, setAccessChecked] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -17,7 +28,10 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Clear checking state if taking too long
+  /**
+   * Clear checking state when authentication data is available
+   * Sets accessChecked to true if valid admin user is found
+   */
   useEffect(() => {
     if (!loading && user && (isSuperAdmin || (userData && userData.role === "admin"))) {
       setCheckingAccess(false);
@@ -25,6 +39,10 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
     }
   }, [loading, user, userData, isSuperAdmin]);
 
+  /**
+   * Main access check logic
+   * Runs after loading completes and redirects non-admin users
+   */
   useEffect(() => {
     // Prevent redundant access checks
     if (accessChecked || accessCheckAttempted.current) return;
@@ -67,7 +85,10 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
     }
   }, [user, userData, isSuperAdmin, loading, navigate, toast, accessChecked]);
 
-  // Add a timeout to prevent indefinite loading state
+  /**
+   * Timeout to prevent indefinite loading state
+   * Redirects to login page if check takes too long
+   */
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (checkingAccess && accessCheckAttempted.current) {
@@ -85,7 +106,9 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
     return () => clearTimeout(timeoutId);
   }, [checkingAccess, navigate, toast]);
 
-  // Show loading state while checking authentication
+  /**
+   * Show loading state while checking authentication
+   */
   if (loading || checkingAccess) {
     return (
       <div className="flex flex-col items-center justify-center p-8 h-[calc(100vh-64px)]">

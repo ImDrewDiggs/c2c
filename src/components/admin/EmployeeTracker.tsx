@@ -5,7 +5,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Card } from '@/components/ui/card';
 import { Location, EmployeeLocation } from '@/types/map';
 
-// Create a fallback component for the error boundary
+/**
+ * Error fallback component for the map
+ * Displays when an error occurs in the map component and provides a way to recover
+ */
 function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <Card className="p-6 bg-red-50 text-red-900">
@@ -24,12 +27,21 @@ function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetEr
   );
 }
 
-// Create a wrapper component with error boundary
+/**
+ * Props interface for EmployeeTracker component
+ */
 interface EmployeeTrackerProps {
-  employeeLocations?: EmployeeLocation[];
-  currentLocation?: Location | null;
+  employeeLocations?: EmployeeLocation[]; // Array of employee GPS positions
+  currentLocation?: Location | null;      // Current user's location
 }
 
+/**
+ * EmployeeTracker - Map-based interface for tracking employee locations
+ * 
+ * This is a wrapper component that adds error handling around the core
+ * employee tracking functionality. It ensures that map errors don't
+ * crash the entire application.
+ */
 export function EmployeeTracker({ employeeLocations = [], currentLocation = null }: EmployeeTrackerProps) {
   console.log("EmployeeTracker wrapper rendering with:", { employeeLocations, currentLocation });
   

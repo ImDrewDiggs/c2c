@@ -6,15 +6,23 @@ import { PickupsList } from "@/components/admin/PickupsList";
 import { OperationsMap } from "@/components/admin/OperationsMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+/**
+ * Props interface for the OperationsContent component
+ * Contains all the data needed to display operations information
+ */
 interface OperationsContentProps {
-  houses: House[];
-  assignments: Assignment[];
-  currentLocation: Location | null;
-  employeeLocations: EmployeeLocation[];
-  revenueData: { name: string; amount: number }[];
-  pickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[];
+  houses: House[];                 // List of client houses/locations
+  assignments: Assignment[];       // Employee task assignments
+  currentLocation: Location | null; // User's current location for map centering
+  employeeLocations: EmployeeLocation[]; // Real-time employee GPS positions
+  revenueData: { name: string; amount: number }[]; // Revenue chart data by day
+  pickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[]; // Today's scheduled pickups
 }
 
+/**
+ * OperationsContent - Displays the main operations dashboard view
+ * Shows revenue data, pickups list, and operations map in a responsive grid layout
+ */
 export function OperationsContent({
   houses,
   assignments,
@@ -33,6 +41,7 @@ export function OperationsContent({
   return (
     <div className="h-full w-full overflow-y-auto pb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left column: Revenue chart and pickups list */}
         <div className="space-y-6">
           <Card className="p-6">
             <h3 className="text-xl font-semibold mb-4">Revenue Overview</h3>
@@ -42,6 +51,7 @@ export function OperationsContent({
           <PickupsList pickups={safePickups} />
         </div>
         
+        {/* Right column: Operations map with employee and house locations */}
         <OperationsMap
           houses={safeHouses}
           assignments={safeAssignments}

@@ -15,7 +15,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-// Error fallback component
+/**
+ * Error fallback component for the dashboard
+ * Displays when an error occurs in the dashboard and provides a way to recover
+ */
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
   return (
     <div className="p-6 bg-destructive/10 rounded-md">
@@ -29,11 +32,17 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
   );
 }
 
-// Wrapper component that consumes the dashboard context
+/**
+ * AdminDashboardContent - Content component for the admin dashboard
+ * 
+ * Consumes the dashboard context and renders the dashboard UI elements.
+ * This component is wrapped by the AdminDashboardProvider for data access.
+ */
 function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   const dashboardData = useAdminDashboard();
   
+  // Show loading state if dashboard data isn't available yet
   if (!dashboardData) {
     return (
       <div className="flex items-center justify-center p-8 h-[calc(100vh-64px)]">
@@ -45,8 +54,10 @@ function AdminDashboardContent() {
   
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Dashboard header with title and actions */}
       <DashboardHeader isSuperAdmin={isSuperAdmin} />
 
+      {/* Key metrics overview */}
       <StatsOverview 
         stats={{
           dailyPickups: dashboardData.stats.dailyPickups,
@@ -56,8 +67,10 @@ function AdminDashboardContent() {
         activeEmployeesCount={dashboardData.activeEmployees}
       />
 
+      {/* Quick access links for common actions */}
       <QuickLinks />
 
+      {/* Tab navigation for different dashboard sections */}
       <DashboardTabs
         operationsContent={
           <OperationsContent
@@ -82,6 +95,12 @@ function AdminDashboardContent() {
   );
 }
 
+/**
+ * AdminDashboard - The main Admin Dashboard page component
+ * 
+ * Wraps the dashboard content with authentication checks,
+ * error boundaries, and the data provider context.
+ */
 export default function AdminDashboard() {
   return (
     <AdminAccessCheck>

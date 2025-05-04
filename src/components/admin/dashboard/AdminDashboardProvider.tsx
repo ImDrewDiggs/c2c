@@ -5,7 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { House, Assignment, EmployeeLocation } from "@/types/map";
 import { EmployeeLocationRow, HouseRow, AssignmentRow } from "@/lib/supabase-types";
 
-// Define the dashboard context value type
+/**
+ * Type definition for the admin dashboard context value
+ * Contains all data needed for the admin dashboard components
+ */
 interface AdminDashboardContextValue {
   stats: {
     dailyPickups: number;
@@ -25,7 +28,10 @@ interface AdminDashboardContextValue {
   mockPickups: { id: number; address: string; status: string; scheduledTime: string; assignedTo: string }[];
 }
 
-// Create context with a proper initial value
+/**
+ * Create context with a proper initial value to avoid undefined checks
+ * This provides a default state for the context before data is loaded
+ */
 const AdminDashboardContext = createContext<AdminDashboardContextValue>({
   stats: {
     dailyPickups: 0,
@@ -45,7 +51,10 @@ const AdminDashboardContext = createContext<AdminDashboardContextValue>({
   mockPickups: [],
 });
 
-// Hook to use the dashboard context
+/**
+ * Hook to use the dashboard context
+ * Throws an error if used outside of AdminDashboardProvider
+ */
 export function useAdminDashboard() {
   const context = useContext(AdminDashboardContext);
   if (context === undefined) {
@@ -54,18 +63,26 @@ export function useAdminDashboard() {
   return context;
 }
 
-// Props for the provider component
+/**
+ * Props for the provider component
+ */
 interface AdminDashboardProviderProps {
   children: ReactNode;
 }
 
-// Dashboard Provider Component
+/**
+ * Dashboard Provider Component
+ * Fetches data from Supabase and provides it via context to all dashboard components
+ */
 export function AdminDashboardProvider({ children }: AdminDashboardProviderProps) {
+  // State for storing data
   const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<number>(0);
 
-  // Mock data for the charts
+  /**
+   * Mock data for the charts - used for visualization without DB dependency
+   */
   const mockRevenueData = [
     { name: "Mon", amount: 1200 },
     { name: "Tue", amount: 900 },
@@ -76,6 +93,9 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     { name: "Sun", amount: 600 },
   ];
 
+  /**
+   * Mock data for pickup list - used for visualization without DB dependency
+   */
   const mockPickups = [
     {
       id: 1,
@@ -93,7 +113,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     },
   ];
 
-  // Query for dashboard stats
+  /**
+   * Query for dashboard stats
+   * Uses TanStack Query for data fetching with default values when data is loading
+   */
   const { data: stats = {
     dailyPickups: 24,
     weeklyPickups: 168,
@@ -115,7 +138,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     }),
   });
 
-  // Query for houses data
+  /**
+   * Query for houses data
+   * Fetches house data from Supabase and transforms it to match the House type
+   */
   const { data: houses = [] } = useQuery<House[]>({
     queryKey: ["houses"],
     queryFn: async () => {
@@ -140,7 +166,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     },
   });
 
-  // Query for assignments data
+  /**
+   * Query for assignments data
+   * Fetches assignment data from Supabase and transforms it to match the Assignment type
+   */
   const { data: assignments = [] } = useQuery<Assignment[]>({
     queryKey: ["assignments"],
     queryFn: async () => {
@@ -168,7 +197,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     },
   });
 
-  // Safe fetch employee locations function
+  /**
+   * Safe fetch employee locations function
+   * Fetches current employee locations from Supabase and handles errors
+   */
   const fetchEmployeeLocations = useCallback(async () => {
     try {
       const { data: locations, error } = await supabase
@@ -200,7 +232,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     }
   }, [employeeLocations.length]);
 
-  // Fetch employee locations and set up real-time listener
+  /**
+   * Fetch employee locations and set up real-time listener
+   * Uses Supabase realtime to update employee locations when they change
+   */
   useEffect(() => {
     fetchEmployeeLocations();
 
@@ -233,7 +268,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     };
   }, [fetchEmployeeLocations]);
 
-  // Get user location - safely with proper error handling
+  /**
+   * Get user location - safely with proper error handling
+   * Uses browser geolocation API with fallbacks for errors
+   */
   useEffect(() => {
     // Use a lightweight function for geolocation to avoid React rendering issues
     const getLocation = () => {
@@ -280,7 +318,10 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     getLocation();
   }, []);
 
-  // Prepare the dashboard data object to pass to context
+  /**
+   * Prepare the dashboard data object to pass to context
+   * Combines all data sources into a single context value
+   */
   const dashboardData: AdminDashboardContextValue = {
     stats,
     houses,
