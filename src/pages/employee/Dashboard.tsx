@@ -1,81 +1,30 @@
 
 import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import TimeTracker from "@/components/employee/TimeTracker";
-import { JobAssignments } from "@/components/employee/JobAssignments";
-import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { Assignment, House, Location } from "@/types/map";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEmployeeDashboard } from "@/hooks/useEmployeeDashboard";
+import { QuickActions } from "@/components/employee/dashboard/QuickActions";
+import { DashboardHeader } from "@/components/employee/dashboard/DashboardHeader";
+import { DashboardContent } from "@/components/employee/dashboard/DashboardContent";
+import { LoadingState } from "@/components/employee/dashboard/LoadingState";
 
 export default function EmployeeDashboard() {
   const { user, userData } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("time-tracker");
-  const [loading, setLoading] = useState(true);
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
-
-  // Fetch current employee location
-  useEffect(() => {
-    if (user?.id) {
-      // Use getCurrentPosition instead of watchPosition to avoid issues
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Set a default location if geolocation fails
-          setCurrentLocation({ latitude: 40.7128, longitude: -74.0060 }); // Default to NYC
-        }
-      );
-    }
-  }, [user?.id]);
-
-  // Fetch employee's assignments
-  const { data: assignments = [] } = useQuery({
-    queryKey: ['employeeAssignments', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      try {
-        const { data: assignmentsData, error } = await supabase
-          .from('assignments')
-          .select(`
-            *,
-            house:houses(*)
-          `)
-          .eq('employee_id', user.id);
-          
-        if (error) throw error;
-        
-        return assignmentsData.map(assignment => ({
-          id: assignment.id,
-          house_id: assignment.house_id,
-          employee_id: assignment.employee_id,
-          status: assignment.status,
-          assigned_date: assignment.assigned_date,
-          completed_at: assignment.completed_at,
-          house: assignment.house as House
-        })) as Assignment[];
-      } catch (error) {
-        console.error("Error fetching assignments:", error);
-        return [];
-      }
-    },
-    enabled: !!user?.id,
-  });
+  
+  // Use our custom hook to manage dashboard data and state
+  const {
+    assignments,
+    loading,
+    setLoading,
+    selectedAssignment,
+    setSelectedAssignment,
+    currentLocation
+  } = useEmployeeDashboard();
 
   useEffect(() => {
     // Check if the user is authenticated and has the employee role
@@ -89,121 +38,32 @@ export default function EmployeeDashboard() {
     } else {
       setLoading(false);
     }
-  }, [user, userData, navigate, toast]);
-
-  const handleViewRoute = (assignment: Assignment) => {
-    setSelectedAssignment(assignment);
-    setActiveTab("route-optimizer");
-  };
-
-  const handleCloseRoute = () => {
-    setSelectedAssignment(null);
-  };
-
-  const handleMarkComplete = async (assignment: Assignment) => {
-    if (!user?.id) return;
-    
-    try {
-      const { error } = await supabase
-        .from('assignments')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', assignment.id);
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Job Completed",
-        description: "The job has been marked as completed successfully."
-      });
-      
-      // Refresh assignments through React Query invalidation
-      // queryClient.invalidateQueries(['employeeAssignments', user.id]);
-    } catch (error) {
-      console.error('Error marking job as complete:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update job status. Please try again."
-      });
-    }
-  };
+  }, [user, userData, navigate, toast, setLoading]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
     <ScrollArea className="h-[calc(100vh-64px)]">
       <div className="container mx-auto py-10 px-4 md:px-6">
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Employee Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome, {userData?.full_name || user?.email?.split('@')[0] || 'Employee'}!
-            </p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Manage your tasks and track your time</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-4">
-              <Button
-                onClick={() => setActiveTab("time-tracker")}
-                variant={activeTab === "time-tracker" ? "default" : "outline"}
-              >
-                Time Tracker
-              </Button>
-              <Button
-                onClick={() => setActiveTab("job-assignments")}
-                variant={activeTab === "job-assignments" ? "default" : "outline"}
-              >
-                Job Assignments
-              </Button>
-              <Button
-                onClick={() => setActiveTab("route-optimizer")}
-                variant={activeTab === "route-optimizer" ? "default" : "outline"}
-              >
-                Route Optimizer
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 mb-8">
-              <TabsTrigger value="time-tracker">Time Tracker</TabsTrigger>
-              <TabsTrigger value="job-assignments">Job Assignments</TabsTrigger>
-              <TabsTrigger value="route-optimizer">Route Optimizer</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="time-tracker">
-              <TimeTracker />
-            </TabsContent>
-
-            <TabsContent value="job-assignments">
-              <JobAssignments 
-                assignments={assignments || []} 
-                onViewRoute={handleViewRoute} 
-                onMarkComplete={handleMarkComplete} 
-              />
-            </TabsContent>
-
-            <TabsContent value="route-optimizer">
-              <RouteOptimizer 
-                selectedAssignment={selectedAssignment}
-                currentLocation={currentLocation}
-                onClose={handleCloseRoute}
-              />
-            </TabsContent>
-          </Tabs>
+        {/* Dashboard Header */}
+        <DashboardHeader userData={userData} user={user} />
+        
+        <div className="space-y-6 mt-6">
+          {/* Quick Actions */}
+          <QuickActions activeTab={activeTab} setActiveTab={setActiveTab} />
+          
+          {/* Main Dashboard Content */}
+          <DashboardContent
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            assignments={assignments}
+            selectedAssignment={selectedAssignment}
+            setSelectedAssignment={setSelectedAssignment}
+            currentLocation={currentLocation}
+            userId={user?.id}
+          />
         </div>
       </div>
     </ScrollArea>
