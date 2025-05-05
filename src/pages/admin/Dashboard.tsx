@@ -10,7 +10,6 @@ import { DashboardHeader } from "@/components/admin/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/admin/dashboard/DashboardTabs";
 import { OperationsContent } from "@/components/admin/dashboard/OperationsContent";
 import { AdminDashboardProvider, useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
-import { AuthService } from "@/services/AuthService";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
