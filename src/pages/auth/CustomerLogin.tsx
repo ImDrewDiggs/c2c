@@ -1,19 +1,35 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "@/components/employee/dashboard/LoadingState";
 
 export default function CustomerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, loading } = useAuth();
+  const [initialLoading, setInitialLoading] = useState(true);
+  const { signIn, loading: authLoading, user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Check for existing session on mount
+  useEffect(() => {
+    // Short timeout to prevent flash of loading state for already authenticated users
+    const timer = setTimeout(() => {
+      if (user) {
+        navigate('/customer/dashboard');
+      }
+      setInitialLoading(false);
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +54,11 @@ export default function CustomerLogin() {
       setIsSubmitting(false);
     }
   };
+
+  // Show optimized loading state on initial render
+  if (initialLoading) {
+    return <LoadingState message="Loading authentication..." size="medium" />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -88,7 +109,7 @@ export default function CustomerLogin() {
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting || loading}
+                  disabled={isSubmitting || authLoading}
                 />
               </div>
             </div>
@@ -108,15 +129,15 @@ export default function CustomerLogin() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting || loading}
+                  disabled={isSubmitting || authLoading}
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={isSubmitting || loading}>
-              {(isSubmitting || loading) ? (
+            <Button type="submit" className="w-full" disabled={isSubmitting || authLoading}>
+              {(isSubmitting || authLoading) ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...

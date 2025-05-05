@@ -1,10 +1,37 @@
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function LoadingState() {
+interface LoadingStateProps {
+  size?: 'small' | 'medium' | 'large';
+  fullscreen?: boolean;
+  message?: string;
+}
+
+export function LoadingState({ 
+  size = 'medium', 
+  fullscreen = true,
+  message
+}: LoadingStateProps) {
+  const sizeClasses = {
+    small: 'h-4 w-4',
+    medium: 'h-8 w-8',
+    large: 'h-12 w-12'
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    <div className={cn(
+      "flex flex-col items-center justify-center",
+      fullscreen ? "min-h-screen" : "p-4"
+    )}>
+      <Loader2 className={cn(
+        sizeClasses[size], 
+        "animate-spin text-primary"
+      )} />
+      {message && (
+        <p className="mt-2 text-sm text-gray-400">{message}</p>
+      )}
     </div>
   );
 }

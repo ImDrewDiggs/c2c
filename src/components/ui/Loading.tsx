@@ -6,11 +6,15 @@ import { cn } from '@/lib/utils';
 interface LoadingProps {
   fullscreen?: boolean;
   size?: 'small' | 'medium' | 'large';
+  message?: string;
+  className?: string;
 }
 
 const Loading: React.FC<LoadingProps> = ({ 
   fullscreen = true, 
-  size = 'medium' 
+  size = 'medium',
+  message,
+  className
 }) => {
   const sizeClasses = {
     small: 'h-4 w-4',
@@ -20,13 +24,17 @@ const Loading: React.FC<LoadingProps> = ({
   
   return (
     <div className={cn(
-      "flex justify-center items-center",
-      fullscreen ? "min-h-screen" : "p-4"
+      "flex flex-col justify-center items-center",
+      fullscreen ? "min-h-screen" : "p-4",
+      className
     )}>
       <Loader2 className={cn(
         sizeClasses[size], 
         "animate-spin text-primary"
       )} />
+      {message && (
+        <p className="mt-2 text-sm text-gray-400">{message}</p>
+      )}
     </div>
   );
 };
