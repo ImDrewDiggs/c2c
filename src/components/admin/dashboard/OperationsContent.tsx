@@ -4,7 +4,6 @@ import { House, Assignment, EmployeeLocation, Location } from "@/types/map";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { PickupsList } from "@/components/admin/PickupsList";
 import { OperationsMap } from "@/components/admin/OperationsMap";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 /**
  * Props interface for the OperationsContent component
@@ -39,7 +38,7 @@ export function OperationsContent({
   const safePickups = Array.isArray(pickups) ? pickups : [];
 
   return (
-    <div className="h-full w-full overflow-y-auto pb-6">
+    <div className="h-full w-full overflow-auto pb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left column: Revenue chart and pickups list */}
         <div className="space-y-6">
