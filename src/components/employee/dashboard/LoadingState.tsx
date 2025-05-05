@@ -7,12 +7,14 @@ interface LoadingStateProps {
   size?: 'small' | 'medium' | 'large';
   fullscreen?: boolean;
   message?: string;
+  className?: string;
 }
 
 export function LoadingState({ 
   size = 'medium', 
   fullscreen = true,
-  message
+  message,
+  className
 }: LoadingStateProps) {
   const sizeClasses = {
     small: 'h-4 w-4',
@@ -23,7 +25,8 @@ export function LoadingState({
   return (
     <div className={cn(
       "flex flex-col items-center justify-center",
-      fullscreen ? "min-h-screen" : "p-4"
+      fullscreen ? "min-h-screen" : "p-4",
+      className
     )}>
       <Loader2 className={cn(
         sizeClasses[size], 

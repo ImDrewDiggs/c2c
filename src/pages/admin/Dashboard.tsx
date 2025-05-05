@@ -12,7 +12,7 @@ import { OperationsContent } from "@/components/admin/dashboard/OperationsConten
 import { AdminDashboardProvider, useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { LoadingState } from "@/components/employee/dashboard/LoadingState";
 
 /**
  * Error fallback component for the dashboard
@@ -44,10 +44,11 @@ function AdminDashboardContent() {
   // Show loading state if dashboard data isn't available yet
   if (!dashboardData) {
     return (
-      <div className="flex items-center justify-center p-8 h-[calc(100vh-64px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-muted-foreground ml-2">Loading dashboard data...</p>
-      </div>
+      <LoadingState 
+        fullscreen={true} 
+        size="medium" 
+        message="Loading dashboard data..." 
+      />
     );
   }
   
