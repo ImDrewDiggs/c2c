@@ -10,7 +10,7 @@ interface LoadingStateProps {
   className?: string;
 }
 
-export function LoadingState({ 
+export const LoadingState = React.memo(function LoadingState({ 
   size = 'medium', 
   fullscreen = true,
   message,
@@ -37,4 +37,4 @@ export function LoadingState({
       )}
     </div>
   );
-}
+});

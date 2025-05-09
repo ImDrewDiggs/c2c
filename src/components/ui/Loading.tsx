@@ -10,12 +10,12 @@ interface LoadingProps {
   className?: string;
 }
 
-const Loading: React.FC<LoadingProps> = ({ 
+const Loading = React.memo(({ 
   fullscreen = true, 
   size = 'medium',
   message,
   className
-}) => {
+}: LoadingProps) => {
   const sizeClasses = {
     small: 'h-4 w-4',
     medium: 'h-8 w-8',
@@ -37,6 +37,8 @@ const Loading: React.FC<LoadingProps> = ({
       )}
     </div>
   );
-};
+});
 
-export default React.memo(Loading);
+Loading.displayName = 'Loading';
+
+export default Loading;

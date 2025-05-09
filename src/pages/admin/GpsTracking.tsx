@@ -9,6 +9,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "@/components/employee/dashboard/LoadingState";
 
 function GpsTrackingContent() {
   const dashboardContext = useAdminDashboard();
@@ -28,7 +29,7 @@ function GpsTrackingContent() {
   // Error handling for geolocation
   useEffect(() => {
     if (dashboardContext && !dashboardContext.currentLocation) {
-      navigator.permissions.query({ name: 'geolocation' }).then(result => {
+      navigator.permissions.query({ name: 'geolocation' as PermissionName }).then(result => {
         if (result.state === 'denied') {
           setError('Location access is blocked. Please enable location services in your browser settings.');
           toast({
