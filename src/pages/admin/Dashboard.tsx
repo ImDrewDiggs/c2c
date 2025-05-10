@@ -12,7 +12,7 @@ import { OperationsContent } from "@/components/admin/dashboard/OperationsConten
 import { AdminDashboardProvider, useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/employee/dashboard/LoadingState";
+import Loading from "@/components/ui/Loading";
 
 /**
  * Error fallback component for the dashboard
@@ -44,7 +44,7 @@ function AdminDashboardContent() {
   // Show loading state if dashboard data isn't available yet
   if (!dashboardData) {
     return (
-      <LoadingState 
+      <Loading 
         fullscreen={true} 
         size="medium" 
         message="Loading dashboard data..." 

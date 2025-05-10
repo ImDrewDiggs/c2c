@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -60,7 +59,7 @@ const App = () => {
         <AuthProvider>
           <div className="min-h-screen bg-background">
             <Navbar />
-            <Suspense fallback={<Loading fullscreen={true} size="large" />}>
+            <Suspense fallback={<Loading fullscreen={true} size="large" message="Loading application..." />}>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />

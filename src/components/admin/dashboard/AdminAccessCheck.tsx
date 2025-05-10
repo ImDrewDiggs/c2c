@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import Loading from "@/components/ui/Loading";
 
 /**
  * Props interface for AdminAccessCheck component
@@ -111,12 +112,11 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
    */
   if (loading || checkingAccess) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 h-[calc(100vh-64px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-muted-foreground">
-          {loading ? "Verifying access..." : "Preparing dashboard..."}
-        </p>
-      </div>
+      <Loading 
+        fullscreen={true} 
+        size="medium"
+        message={loading ? "Verifying access..." : "Preparing dashboard..."}
+      />
     );
   }
 

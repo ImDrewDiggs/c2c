@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
 import { useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
 import { useState, useEffect } from "react";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { LoadingState } from "@/components/employee/dashboard/LoadingState";
+import Loading from "@/components/ui/Loading";
 
 function GpsTrackingContent() {
   const dashboardContext = useAdminDashboard();
@@ -67,10 +67,12 @@ function GpsTrackingContent() {
   return (
     <div className="h-[600px]">
       {isLoading ? (
-        <div className="h-full flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading employee location data...</span>
-        </div>
+        <Loading 
+          fullscreen={false}
+          size="medium"
+          message="Loading employee location data..."
+          className="h-full"
+        />
       ) : (
         <EmployeeTracker 
           employeeLocations={employeeLocations || []} 
