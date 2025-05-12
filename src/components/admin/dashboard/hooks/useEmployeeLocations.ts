@@ -26,7 +26,6 @@ export function useEmployeeLocations() {
         console.log("Employee locations loaded from database:", locations.length);
         
         const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
-          id: loc.id,
           employee_id: loc.employee_id,
           latitude: loc.latitude,
           longitude: loc.longitude,
@@ -42,7 +41,6 @@ export function useEmployeeLocations() {
         console.log("Using mock employee location data");
         const mockLocations: EmployeeLocation[] = [
           {
-            id: "14f2a771-3b8e-47a4-83c2-5278b561d43a",
             employee_id: "750e8400-e29b-41d4-a716-446655440000",
             latitude: 42.3601,
             longitude: -71.0589,
@@ -51,7 +49,6 @@ export function useEmployeeLocations() {
             last_seen_at: new Date().toISOString()
           },
           {
-            id: "29d3b024-5c4a-4172-a8f1-9cd9bfc91a22",
             employee_id: "750e8400-e29b-41d4-a716-446655440001",
             latitude: 42.3475,
             longitude: -71.0972,
@@ -60,7 +57,6 @@ export function useEmployeeLocations() {
             last_seen_at: new Date().toISOString()
           },
           {
-            id: "3c1f593e-6bc9-4d8b-aeb0-7d4e25b8c1d3",
             employee_id: "750e8400-e29b-41d4-a716-446655440002",
             latitude: 42.3736,
             longitude: -71.1097,
@@ -69,7 +65,6 @@ export function useEmployeeLocations() {
             last_seen_at: new Date().toISOString()
           },
           {
-            id: "4a7e2d6f-9c10-483b-95e8-628df419ab54",
             employee_id: "750e8400-e29b-41d4-a716-446655440003",
             latitude: 42.3523,
             longitude: -71.0748,
@@ -78,7 +73,6 @@ export function useEmployeeLocations() {
             last_seen_at: new Date().toISOString()
           },
           {
-            id: "5b8d7f1e-2a9c-4e67-b0d3-1fc48e93a2c5",
             employee_id: "750e8400-e29b-41d4-a716-446655440004",
             latitude: 42.3412,
             longitude: -71.1212,
@@ -87,7 +81,6 @@ export function useEmployeeLocations() {
             last_seen_at: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
           },
           {
-            id: "6f9c4e8d-3b5a-47d2-91f0-835ca6d07b16",
             employee_id: "750e8400-e29b-41d4-a716-446655440005",
             latitude: 42.3502,
             longitude: -71.0652,
