@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { UserRole, UserData } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { RouteProtectionOptions } from '@/types/auth';
+import { AuthService } from '@/services/AuthService';
 
 export function useRouteProtection(
   loading: boolean,
@@ -74,47 +75,44 @@ export function useRouteProtection(
         return;
       }
       
-      // Allow customer routes for customers
-      if (currentPath.startsWith('/customer') && (!userData || userData.role === 'customer')) {
-        console.log('[RouteProtection] Customer on customer route, allowing access');
+      // Check for specific role paths
+      const isCustomerRoute = currentPath.startsWith('/customer');
+      const isEmployeeRoute = currentPath.startsWith('/employee');
+      const isAdminRoute = currentPath.startsWith('/admin');
+      
+      // Only allow access if the role matches or user is admin
+      if (isCustomerRoute && (userData?.role === 'customer' || userData?.role === 'admin' || isSuperAdmin)) {
+        console.log('[RouteProtection] Customer route access allowed');
         return;
       }
       
-      // Allow employee routes for employees
-      if (currentPath.startsWith('/employee') && (!userData || userData.role === 'employee')) {
-        console.log('[RouteProtection] Employee on employee route, allowing access');
+      if (isEmployeeRoute && (userData?.role === 'employee' || userData?.role === 'admin' || isSuperAdmin)) {
+        console.log('[RouteProtection] Employee route access allowed');
         return;
       }
       
-      // For users with profiles, check proper role access
-      if (userData) {
-        console.log('[RouteProtection] Checking role-based access for user with role:', userData.role);
-        
-        // Check if the user is trying to access a route they don't have permission for
-        const isProtectedRoute = Object.entries(roleBasedRoutes).some(
-          ([role, routes]) => 
-            routes.some(route => currentPath.startsWith(route)) && 
-            role !== userData.role && 
-            !(role === 'admin' && isSuperAdmin)
-        );
-        
-        if (isProtectedRoute) {
-          console.log('[RouteProtection] User attempting to access unauthorized route, redirecting');
-          toast({
-            variant: "destructive",
-            title: "Access Denied",
-            description: `You don't have permission to access this section.`,
-          });
-          
-          // Redirect based on user role
-          redirectBasedOnRole(userData.role);
-        } else {
-          console.log('[RouteProtection] User has proper role access, allowing');
-        }
-      } 
-    } 
-    // Handle unauthenticated users trying to access protected routes
-    else {
+      if (isAdminRoute && (userData?.role === 'admin' || isSuperAdmin)) {
+        console.log('[RouteProtection] Admin route access allowed');
+        return;
+      }
+      
+      // Unauthorized access attempt
+      console.log('[RouteProtection] Unauthorized access attempt detected');
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "You don't have permission to access this area",
+      });
+      
+      // Redirect to the appropriate dashboard based on role
+      if (userData?.role) {
+        redirectBasedOnRole(userData.role);
+      } else {
+        // If no role, redirect to home
+        navigate('/', { replace: true });
+      }
+    } else {
+      // Handle unauthenticated users trying to access protected routes
       const isAnyProtectedRoute = Object.values(roleBasedRoutes).flat().some(route => 
         currentPath.startsWith(route)
       );

@@ -13,6 +13,7 @@ import { AdminDashboardProvider, useAdminDashboard } from "@/components/admin/da
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/ui/Loading";
+import { LogoutButton } from "@/components/LogoutButton";
 
 /**
  * Error fallback component for the dashboard
@@ -55,7 +56,10 @@ function AdminDashboardContent() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Dashboard header with title and actions */}
-      <DashboardHeader isSuperAdmin={isSuperAdmin} />
+      <div className="flex justify-between items-center">
+        <DashboardHeader isSuperAdmin={isSuperAdmin} />
+        <LogoutButton />
+      </div>
 
       {/* Key metrics overview */}
       <StatsOverview 

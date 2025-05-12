@@ -10,44 +10,75 @@ import { supabase } from "@/lib/supabase";
 import CustomerSubscriptions from "@/components/customer/CustomerSubscriptions";
 import CustomerProfile from "@/components/customer/CustomerProfile";
 import ServiceHistory from "@/components/customer/ServiceHistory";
+import { LogoutButton } from "@/components/LogoutButton";
+import Loading from "@/components/ui/Loading";
 
 export default function CustomerDashboard() {
-  const { user, userData } = useAuth();
+  const { user, userData, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("subscriptions");
   const [loading, setLoading] = useState(true);
+  const [accessVerified, setAccessVerified] = useState(false);
 
   useEffect(() => {
-    // Check if the user is authenticated
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "Please log in to access the customer dashboard.",
-      });
-      navigate("/customer/login");
-    } else {
+    const verifyAccess = async () => {
+      // Always allow admin access
+      if (isSuperAdmin || userData?.role === 'admin') {
+        setAccessVerified(true);
+        setLoading(false);
+        return;
+      }
+      
+      // Check if user is authenticated and has customer role
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please log in to access the customer dashboard.",
+        });
+        navigate("/customer/login");
+        return;
+      }
+      
+      if (userData?.role !== 'customer') {
+        toast({
+          variant: "destructive",
+          title: "Access Denied", 
+          description: "You must be a customer to access this dashboard."
+        });
+        navigate("/");
+        return;
+      }
+      
+      setAccessVerified(true);
       setLoading(false);
-    }
-  }, [user, navigate, toast]);
+    };
+    
+    verifyAccess();
+  }, [user, userData, navigate, toast, isSuperAdmin]);
 
-  if (loading) {
+  if (loading || !accessVerified) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
+      <Loading
+        fullscreen={true}
+        size="medium"
+        message="Verifying access..."
+      />
     );
   }
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Customer Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back, {userData?.full_name || user?.email?.split('@')[0] || 'Customer'}
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Customer Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome back, {userData?.full_name || user?.email?.split('@')[0] || 'Customer'}
+            </p>
+          </div>
+          <LogoutButton />
         </div>
 
         <Card>

@@ -92,14 +92,6 @@ export function useAuthActions() {
       // For non-admin users, handle profile checking
       console.log('[AuthActions] Creating default user data for non-admin');
       
-      // Create a default profile in memory
-      const defaultUserData: UserData = {
-        id: signInData.user.id,
-        email: email,
-        role: role,
-        full_name: email.split('@')[0]
-      };
-      
       try {
         // Try to fetch the profile first
         const profile = await fetchUserData(signInData.user.id);
@@ -116,14 +108,37 @@ export function useAuthActions() {
           
           // Use the existing profile
           setUserData(profile);
+          return profile.role;
         } else {
-          console.log('[AuthActions] No profile found, using default profile data');
+          // No profile found, we need to create one
+          console.log('[AuthActions] No profile found, creating default profile with role:', role);
+          
+          // Create a default profile data
+          const defaultUserData: UserData = {
+            id: signInData.user.id,
+            email: email,
+            role: role,
+            full_name: email.split('@')[0]
+          };
+          
+          // Create profile in database
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert(defaultUserData);
+            
+          if (profileError) {
+            console.error('[AuthActions] Error creating profile:', profileError);
+            await signOut();
+            throw new Error('Error creating user profile');
+          }
+          
           setUserData(defaultUserData);
         }
       } catch (profileError) {
-        // If there's an error fetching the profile, just use the default one
-        console.warn('[AuthActions] Error fetching profile, using default:', profileError);
-        setUserData(defaultUserData);
+        // If there's an error fetching the profile, log out and throw error
+        console.error('[AuthActions] Profile error:', profileError);
+        await signOut();
+        throw new Error('Error verifying user profile');
       }
 
       toast({

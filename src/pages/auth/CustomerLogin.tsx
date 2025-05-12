@@ -14,22 +14,22 @@ export default function CustomerLogin() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const { signIn, loading: authLoading, user } = useAuth();
+  const { signIn, loading: authLoading, user, userData } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Check for existing session on mount
+  // Check for existing session on mount and redirect appropriately
   useEffect(() => {
     // Short timeout to prevent flash of loading state for already authenticated users
     const timer = setTimeout(() => {
-      if (user) {
+      if (user && (userData?.role === 'customer' || userData?.role === 'admin')) {
         navigate('/customer/dashboard');
       }
       setInitialLoading(false);
     }, 200);
     
     return () => clearTimeout(timer);
-  }, [user, navigate]);
+  }, [user, userData, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +45,20 @@ export default function CustomerLogin() {
     console.log("Attempting to sign in with:", email);
     setIsSubmitting(true);
     try {
-      await signIn(email, password, 'customer');
-      console.log("Sign in successful");
+      const role = await signIn(email, password, 'customer');
+      console.log("Sign in successful with role:", role);
+      
+      if (role !== 'customer' && role !== 'admin') {
+        // If the user is not a customer or admin, show an error
+        toast({
+          variant: "destructive",
+          title: "Access Denied", 
+          description: "You must be a customer to access the customer dashboard"
+        });
+        return;
+      }
+      
+      navigate('/customer/dashboard', { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
       // Toast is already handled in the signIn function

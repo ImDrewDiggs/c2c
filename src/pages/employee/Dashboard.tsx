@@ -9,12 +9,15 @@ import { QuickActions } from "@/components/employee/dashboard/QuickActions";
 import { DashboardHeader } from "@/components/employee/dashboard/DashboardHeader";
 import { DashboardContent } from "@/components/employee/dashboard/DashboardContent";
 import { LoadingState } from "@/components/employee/dashboard/LoadingState";
+import { LogoutButton } from "@/components/LogoutButton";
+import { AuthService } from '@/services/AuthService';
 
 export default function EmployeeDashboard() {
-  const { user, userData } = useAuth();
+  const { user, userData, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("time-tracker");
+  const [accessVerified, setAccessVerified] = useState(false);
   
   // Use our custom hook to manage dashboard data and state
   const {
@@ -26,29 +29,46 @@ export default function EmployeeDashboard() {
     currentLocation
   } = useEmployeeDashboard();
 
+  // Verify proper role access
   useEffect(() => {
-    // Check if the user is authenticated and has the employee role
-    if (!user || userData?.role !== 'employee') {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "Please log in as an employee to access this dashboard.",
-      });
-      navigate("/employee/login");
-    } else {
+    const verifyAccess = async () => {
+      // Admin always has access
+      if (isSuperAdmin || (userData?.role === 'admin')) {
+        setAccessVerified(true);
+        setLoading(false);
+        return;
+      }
+      
+      // Check if user is an employee
+      if (!user || userData?.role !== 'employee') {
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You must be logged in as an employee to access this dashboard.",
+        });
+        navigate("/employee/login");
+        return;
+      }
+      
+      setAccessVerified(true);
       setLoading(false);
-    }
-  }, [user, userData, navigate, toast, setLoading]);
+    };
+    
+    verifyAccess();
+  }, [user, userData, navigate, toast, setLoading, isSuperAdmin]);
 
-  if (loading) {
-    return <LoadingState />;
+  if (loading || !accessVerified) {
+    return <LoadingState message="Verifying access..." />;
   }
 
   return (
     <ScrollArea className="h-[calc(100vh-64px)]">
       <div className="container mx-auto py-10 px-4 md:px-6">
-        {/* Dashboard Header */}
-        <DashboardHeader userData={userData} user={user} />
+        {/* Dashboard Header with Logout button */}
+        <div className="flex justify-between items-center mb-6">
+          <DashboardHeader userData={userData} user={user} />
+          <LogoutButton />
+        </div>
         
         <div className="space-y-6 mt-6">
           {/* Quick Actions */}

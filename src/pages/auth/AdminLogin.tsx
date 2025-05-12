@@ -54,6 +54,16 @@ export default function AdminLogin() {
       const role = await signIn(email, password, 'admin');
       console.log("[AdminLogin] Sign in successful with role:", role);
       
+      if (role !== 'admin') {
+        // If the user is not an admin, show an error
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You must be an admin to access the admin dashboard",
+        });
+        return;
+      }
+      
       // Show successful login toast
       toast({
         title: "Success",
