@@ -28,6 +28,10 @@ export function LogoutButton({
       setIsLoggingOut(true);
       await signOut();
       navigate("/", { replace: true });
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
     } catch (error) {
       console.error("Logout error:", error);
       toast({

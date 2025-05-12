@@ -23,7 +23,7 @@ interface AdminAccessCheckProps {
  */
 export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   // Get authentication data and navigation utilities
-  const { user, userData, isSuperAdmin, loading } = useAuth();
+  const { user, userData, isSuperAdmin, loading: authLoading } = useAuth();
   const [accessChecked, setAccessChecked] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const accessCheckAttempted = useRef(false);
@@ -35,11 +35,23 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
    * Sets accessChecked to true if valid admin user is found
    */
   useEffect(() => {
-    if (!loading && user && (isSuperAdmin || (userData && userData.role === "admin"))) {
+    if (!authLoading && user && (isSuperAdmin || (userData && userData.role === "admin"))) {
+      console.log("[AdminAccessCheck] Valid admin user detected", {
+        email: user.email,
+        isSuperAdmin,
+        role: userData?.role
+      });
       setCheckingAccess(false);
       setAccessChecked(true);
+    } else if (!authLoading) {
+      console.log("[AdminAccessCheck] Not an admin user or no user detected", {
+        hasUser: !!user,
+        userEmail: user?.email,
+        isSuperAdmin,
+        userRole: userData?.role
+      });
     }
-  }, [loading, user, userData, isSuperAdmin]);
+  }, [authLoading, user, userData, isSuperAdmin]);
 
   /**
    * Main access check logic
@@ -50,7 +62,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
     if (accessChecked || accessCheckAttempted.current) return;
     
     // Only check after loading is complete
-    if (!loading) {
+    if (!authLoading) {
       accessCheckAttempted.current = true;
       console.log("[AdminAccessCheck] Checking admin access:", {
         hasUser: !!user,
@@ -85,7 +97,7 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
       setAccessChecked(true);
       setCheckingAccess(false);
     }
-  }, [user, userData, isSuperAdmin, loading, navigate, toast, accessChecked]);
+  }, [user, userData, isSuperAdmin, authLoading, navigate, toast, accessChecked]);
 
   /**
    * Timeout to prevent indefinite loading state
@@ -111,12 +123,12 @@ export function AdminAccessCheck({ children }: AdminAccessCheckProps) {
   /**
    * Show loading state while checking authentication
    */
-  if (loading || checkingAccess) {
+  if (authLoading || checkingAccess) {
     return (
       <Loading 
         fullscreen={true} 
         size="medium"
-        message={loading ? "Verifying access..." : "Preparing dashboard..."}
+        message={authLoading ? "Verifying access..." : "Preparing dashboard..."}
       />
     );
   }
