@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -6,20 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { UserData, UserRole } from '@/lib/supabase';
 import { AuthService } from '@/services/AuthService';
 import { useToast } from '@/hooks/use-toast';
-
-/**
- * AuthContextType defines the shape of the authentication context
- */
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  userData: UserData | null;
-  loading: boolean;
-  isAdmin: boolean;
-  signIn: (email: string, password: string, role: UserRole) => Promise<string>;
-  signOut: () => Promise<void>;
-  refreshUserData: () => Promise<UserData | null>;
-}
+import { AuthContextType } from '@/types/auth';
 
 // Define routes by role
 const roleBasedRoutes: Record<UserRole, string[]> = {
@@ -47,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { toast } = useToast();
   
   // Check for session and set up auth state listener
@@ -67,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setUserData(null);
           setIsAdmin(false);
+          setIsSuperAdmin(false);
           setLoading(false);
           return;
         }
@@ -88,6 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const isAdminUser = profile.role === 'admin' || 
                                   AuthService.isAdminEmail(currentSession.user.email);
               setIsAdmin(isAdminUser);
+              const isSuperAdminUser = profile.role === 'super_admin' || 
+                                      AuthService.isAdminEmail(currentSession.user.email);
+              setIsSuperAdmin(isSuperAdminUser);
             }
           } catch (err) {
             console.error('[AuthContext] Error fetching user profile:', err);
@@ -114,6 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const isAdminUser = profile.role === 'admin' || 
                                   AuthService.isAdminEmail(sessionUser.email);
               setIsAdmin(isAdminUser);
+              const isSuperAdminUser = profile.role === 'super_admin' || 
+                                      AuthService.isAdminEmail(sessionUser.email);
+              setIsSuperAdmin(isSuperAdminUser);
             }
           })
           .catch(err => {
@@ -270,6 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear user data first
       setUserData(null);
       setIsAdmin(false);
+      setIsSuperAdmin(false);
       
       const { error } = await AuthService.signOut();
       if (error) throw error;
@@ -303,6 +298,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserData(profile);
         const isAdminUser = profile.role === 'admin' || AuthService.isAdminEmail(user.email);
         setIsAdmin(isAdminUser);
+        const isSuperAdminUser = profile.role === 'super_admin' || AuthService.isAdminEmail(user.email);
+        setIsSuperAdmin(isSuperAdminUser);
         return profile;
       }
       return null;
@@ -319,10 +316,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userData, 
     loading,
     isAdmin,
+    isSuperAdmin,
     signIn,
     signOut,
-    refreshUserData
-  }), [user, session, userData, loading, isAdmin]);
+    refreshUserData,
+    ADMIN_EMAIL: AuthService.ADMIN_EMAIL
+  }), [user, session, userData, loading, isAdmin, isSuperAdmin]);
 
   return (
     <AuthContext.Provider value={authContextValue}>

@@ -84,10 +84,10 @@ function GpsTrackingContent() {
 }
 
 export default function AdminGpsTracking() {
-  const { user, userData, isSuperAdmin, loading } = useAuth();
+  const { user, userData, isAdmin, isSuperAdmin, loading } = useAuth();
 
   // Authorization check - only admins should access GPS tracking
-  if (!loading && (!userData || (userData.role !== 'admin' && !isSuperAdmin))) {
+  if (!loading && (!userData || (userData.role !== 'admin' && !isAdmin && !isSuperAdmin))) {
     return <Navigate to="/admin/login" replace />;
   }
 

@@ -8,7 +8,9 @@ export interface AuthContextType {
   signIn: (email: string, password: string, role: UserRole) => Promise<string | void>;
   signOut: () => Promise<void>;
   loading: boolean;
-  isSuperAdmin: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean; // Adding the missing property
+  ADMIN_EMAIL?: string;
 }
 
 export interface RouteProtectionOptions {

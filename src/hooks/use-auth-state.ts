@@ -30,6 +30,7 @@ export function useAuthState() {
     user,
     userData,
     loading,
+    isAdmin: isAdminUser,
     isSuperAdmin: isAdminUser, // Ensure isSuperAdmin reflects combined admin status
     signIn,
     signOut,
