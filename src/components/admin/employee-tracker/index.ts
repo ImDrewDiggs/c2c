@@ -5,5 +5,5 @@ export { EmployeeTable } from './EmployeeTable';
 export { LocationMap } from './LocationMap';
 export { useEmployeeData } from './useEmployeeData';
 
-// Export types if needed
+// Export types
 export type { EmployeeData } from './types';
