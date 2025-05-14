@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
@@ -76,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const isAdminUser = profile.role === 'admin' || 
                                   AuthService.isAdminEmail(currentSession.user.email);
               setIsAdmin(isAdminUser);
-              const isSuperAdminUser = profile.role === 'super_admin' || 
-                                      AuthService.isAdminEmail(currentSession.user.email);
+              // Check for admin email directly instead of role comparison for super admin
+              const isSuperAdminUser = AuthService.isAdminEmail(currentSession.user.email);
               setIsSuperAdmin(isSuperAdminUser);
             }
           } catch (err) {
@@ -105,8 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const isAdminUser = profile.role === 'admin' || 
                                   AuthService.isAdminEmail(sessionUser.email);
               setIsAdmin(isAdminUser);
-              const isSuperAdminUser = profile.role === 'super_admin' || 
-                                      AuthService.isAdminEmail(sessionUser.email);
+              // Check for admin email directly instead of role comparison for super admin
+              const isSuperAdminUser = AuthService.isAdminEmail(sessionUser.email);
               setIsSuperAdmin(isSuperAdminUser);
             }
           })
@@ -298,7 +299,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserData(profile);
         const isAdminUser = profile.role === 'admin' || AuthService.isAdminEmail(user.email);
         setIsAdmin(isAdminUser);
-        const isSuperAdminUser = profile.role === 'super_admin' || AuthService.isAdminEmail(user.email);
+        // Check for admin email directly for super admin status
+        const isSuperAdminUser = AuthService.isAdminEmail(user.email);
         setIsSuperAdmin(isSuperAdminUser);
         return profile;
       }
