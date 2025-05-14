@@ -42,14 +42,11 @@ export default function EmployeeLogin() {
       return;
     }
     
-    console.log("Attempting to sign in with:", email);
     setIsSubmitting(true);
     try {
       const role = await signIn(email, password, 'employee');
-      console.log("Sign in successful with role:", role);
       
       if (role !== 'employee' && role !== 'admin') {
-        // If the user is not an employee or admin, show an error
         toast({
           variant: "destructive",
           title: "Access Denied",

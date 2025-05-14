@@ -1,103 +1,252 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContextType } from '@/types/auth';
-import { useAuthState } from '@/hooks/use-auth-state';
-import { useRouteProtection } from '@/hooks/use-route-protection';
-import { UserRole } from '@/lib/supabase';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
+import { UserData, UserRole } from '@/lib/supabase';
 import { AuthService } from '@/services/AuthService';
 import { useToast } from '@/hooks/use-toast';
 
-// Define protected routes by role
+/**
+ * AuthContextType defines the shape of the authentication context
+ */
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  userData: UserData | null;
+  loading: boolean;
+  isAdmin: boolean;
+  signIn: (email: string, password: string, role: UserRole) => Promise<string>;
+  signOut: () => Promise<void>;
+  refreshUserData: () => Promise<UserData | null>;
+}
+
+// Define routes by role
 const roleBasedRoutes: Record<UserRole, string[]> = {
   customer: ['/customer'],
   employee: ['/employee'],
   admin: ['/admin']
 };
 
-// Define public routes that should never trigger auth redirection
+// Define public routes
 const publicRoutes = ['/', '/about', '/testimonials', '/services-and-prices', '/subscription', '/faq', '/contact', '/customer/login', '/customer/register', '/employee/login', '/admin/login'];
 
-// Create context with defaultValue
+// Create context
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * AuthProvider component
+ * Provides authentication state and methods to the application
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
-  const [redirectInProgress, setRedirectInProgress] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   
-  console.log('[AuthContext] AuthProvider initialized, path:', location.pathname);
-
-  // Use our custom hooks
-  const {
-    user,
-    userData,
-    loading,
-    isSuperAdmin,
-    signIn,
-    signOut,
-    ADMIN_EMAIL
-  } = useAuthState();
-
-  // Log auth state changes for debugging
+  // Check for session and set up auth state listener
   useEffect(() => {
-    console.log('[AuthContext] AuthProvider useEffect - auth state update:', {
-      hasUser: !!user,
-      userEmail: user?.email,
-      hasUserData: !!userData,
-      userRole: userData?.role,
-      isSuperAdmin,
-      isLoading: loading,
-      initialCheckDone,
-      currentPath: location.pathname
-    });
+    let mounted = true;
     
-    if (!loading && !initialCheckDone) {
-      setInitialCheckDone(true);
-    }
-  }, [user, userData, isSuperAdmin, loading, initialCheckDone, location.pathname]);
-
-  // Wait to initialize route protection until after initial auth check to prevent redirect loops
-  const { redirectBasedOnRole } = useRouteProtection(
-    loading,
-    user,
-    userData,
-    isSuperAdmin,
-    { publicRoutes, roleBasedRoutes, adminEmail: ADMIN_EMAIL }
-  );
-
-  // Wrap signIn to handle redirection after successful login
-  const handleSignIn = async (email: string, password: string, role: UserRole): Promise<string> => {
-    console.log('[AuthContext] handleSignIn called for email:', email, 'role:', role);
+    console.log('[AuthContext] Setting up auth state change listener');
     
-    if (redirectInProgress) {
-      console.log('[AuthContext] Redirect already in progress, ignoring sign in request');
-      return '';
-    }
+    // First set up the auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log('[AuthContext] Auth state changed:', event);
+        
+        if (!mounted) return;
+        
+        if (event === 'SIGNED_OUT' || !currentSession) {
+          setUser(null);
+          setSession(null);
+          setUserData(null);
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
+        
+        // Update the basic auth state
+        setUser(currentSession.user);
+        setSession(currentSession);
+        
+        // Defer additional operations
+        setTimeout(async () => {
+          // Only fetch additional data if still mounted
+          if (!mounted) return;
+          
+          // Now fetch the user profile
+          try {
+            const { profile } = await AuthService.fetchUserProfile(currentSession.user.id);
+            if (profile) {
+              setUserData(profile);
+              const isAdminUser = profile.role === 'admin' || 
+                                  AuthService.isAdminEmail(currentSession.user.email);
+              setIsAdmin(isAdminUser);
+            }
+          } catch (err) {
+            console.error('[AuthContext] Error fetching user profile:', err);
+          } finally {
+            setLoading(false);
+          }
+        }, 0);
+      }
+    );
     
-    try {
-      setRedirectInProgress(true);
-      const resultRole = await signIn(email, password, role);
+    // Then check for existing session
+    AuthService.getSession().then(({ user: sessionUser, session: currentSession }) => {
+      if (!mounted) return;
       
-      // Special handling for admin email - always redirect to admin dashboard
-      if (email === ADMIN_EMAIL || role === 'admin') {
-        console.log('[AuthContext] Admin login detected, redirecting to admin dashboard');
-        // Use setTimeout to ensure state updates have propagated before navigation
+      if (sessionUser && currentSession) {
+        setUser(sessionUser);
+        setSession(currentSession);
+        
+        // Fetch user profile in background
+        AuthService.fetchUserProfile(sessionUser.id)
+          .then(({ profile }) => {
+            if (mounted && profile) {
+              setUserData(profile);
+              const isAdminUser = profile.role === 'admin' || 
+                                  AuthService.isAdminEmail(sessionUser.email);
+              setIsAdmin(isAdminUser);
+            }
+          })
+          .catch(err => {
+            console.error('[AuthContext] Error fetching initial user profile:', err);
+          })
+          .finally(() => {
+            if (mounted) {
+              setLoading(false);
+              setInitialCheckDone(true);
+            }
+          });
+      } else {
+        setLoading(false);
+        setInitialCheckDone(true);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+  
+  // Handle route protection
+  useEffect(() => {
+    if (loading || !initialCheckDone) return;
+    
+    const currentPath = location.pathname;
+    
+    // Skip protection for public routes
+    const isPublicRoute = publicRoutes.some(route => 
+      currentPath === route || currentPath.startsWith(route + '/')
+    );
+    
+    if (isPublicRoute) return;
+    
+    // Handle authenticated users
+    if (user) {
+      // Special bypass for admin
+      if (isAdmin && currentPath.startsWith('/admin')) {
+        return;
+      }
+      
+      // Check for specific role paths
+      const isCustomerRoute = currentPath.startsWith('/customer');
+      const isEmployeeRoute = currentPath.startsWith('/employee');
+      const isAdminRoute = currentPath.startsWith('/admin');
+      
+      // Only allow access if the role matches or user is admin
+      if (isCustomerRoute && (userData?.role === 'customer' || isAdmin)) {
+        return;
+      }
+      
+      if (isEmployeeRoute && (userData?.role === 'employee' || isAdmin)) {
+        return;
+      }
+      
+      if (isAdminRoute && isAdmin) {
+        return;
+      }
+      
+      // Unauthorized access attempt
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "You don't have permission to access this area",
+      });
+      
+      // Redirect to appropriate dashboard
+      if (userData?.role === 'customer') {
+        navigate('/customer/dashboard', { replace: true });
+      } else if (userData?.role === 'employee') {
+        navigate('/employee/dashboard', { replace: true });
+      } else if (isAdmin) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    } else {
+      // Handle unauthenticated users trying to access protected routes
+      const isAnyProtectedRoute = Object.values(roleBasedRoutes).flat().some(route => 
+        currentPath.startsWith(route)
+      );
+      
+      if (isAnyProtectedRoute) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "Please log in to access this page.",
+        });
+        
+        // Direct to appropriate login page
+        if (currentPath.startsWith('/admin')) {
+          navigate('/admin/login', { replace: true });
+        } else if (currentPath.startsWith('/employee')) {
+          navigate('/employee/login', { replace: true });
+        } else {
+          navigate('/customer/login', { replace: true });
+        }
+      }
+    }
+  }, [loading, initialCheckDone, user, userData, isAdmin, location.pathname, navigate, toast]);
+  
+  /**
+   * Sign in function
+   */
+  const signIn = async (email: string, password: string, role: UserRole): Promise<string> => {
+    setLoading(true);
+    try {
+      const { user: authUser, session: authSession, role: resultRole, error } = 
+        await AuthService.signIn(email, password, role);
+      
+      if (error) throw error;
+      if (!authUser || !authSession) throw new Error('Authentication failed');
+      
+      // Special handling for admin
+      if (AuthService.isAdminEmail(email) || resultRole === 'admin') {
+        setIsAdmin(true);
         setTimeout(() => {
           navigate('/admin/dashboard', { replace: true });
-          setRedirectInProgress(false);
-        }, 500);
+        }, 100);
         return 'admin';
       }
       
-      console.log('[AuthContext] Redirecting based on role:', role);
-      // Use timeout to ensure state updates have propagated
+      // Redirect based on role
       setTimeout(() => {
-        redirectBasedOnRole(role);
-        setRedirectInProgress(false);
-      }, 500);
+        if (resultRole === 'customer') {
+          navigate('/customer/dashboard', { replace: true });
+        } else if (resultRole === 'employee') {
+          navigate('/employee/dashboard', { replace: true });
+        }
+      }, 100);
+      
       return resultRole;
     } catch (error: any) {
       console.error('[AuthContext] Login error:', error);
@@ -106,20 +255,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Authentication Error",
         description: error.message || "An unexpected error occurred during login"
       });
-      setRedirectInProgress(false);
-      return '';
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Create a stable context value object to prevent unnecessary re-renders
+  
+  /**
+   * Sign out function
+   */
+  const signOut = async () => {
+    setLoading(true);
+    try {
+      // Clear user data first
+      setUserData(null);
+      setIsAdmin(false);
+      
+      const { error } = await AuthService.signOut();
+      if (error) throw error;
+      
+      navigate('/', { replace: true });
+      toast({
+        title: "Success",
+        description: "Successfully logged out",
+      });
+    } catch (error: any) {
+      console.error('[AuthContext] Sign out error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error signing out",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  /**
+   * Refresh user data
+   */
+  const refreshUserData = async () => {
+    if (!user) return null;
+    
+    try {
+      const { profile } = await AuthService.fetchUserProfile(user.id);
+      if (profile) {
+        setUserData(profile);
+        const isAdminUser = profile.role === 'admin' || AuthService.isAdminEmail(user.email);
+        setIsAdmin(isAdminUser);
+        return profile;
+      }
+      return null;
+    } catch (err) {
+      console.error('[AuthContext] Error refreshing user data:', err);
+      return null;
+    }
+  };
+  
+  // Create a stable context value
   const authContextValue = useMemo<AuthContextType>(() => ({
     user, 
+    session,
     userData, 
-    signIn: handleSignIn, 
-    signOut, 
     loading,
-    isSuperAdmin
-  }), [user, userData, handleSignIn, signOut, loading, isSuperAdmin]);
+    isAdmin,
+    signIn,
+    signOut,
+    refreshUserData
+  }), [user, session, userData, loading, isAdmin]);
 
   return (
     <AuthContext.Provider value={authContextValue}>
@@ -128,6 +331,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * useAuth hook for accessing the auth context
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

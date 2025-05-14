@@ -42,11 +42,9 @@ export default function CustomerLogin() {
       return;
     }
     
-    console.log("Attempting to sign in with:", email);
     setIsSubmitting(true);
     try {
       const role = await signIn(email, password, 'customer');
-      console.log("Sign in successful with role:", role);
       
       if (role !== 'customer' && role !== 'admin') {
         // If the user is not a customer or admin, show an error
