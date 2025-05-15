@@ -1,19 +1,11 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { StatsOverview } from "@/components/admin/StatsOverview";
-import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
-import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { QuickLinks } from "@/components/admin/QuickLinks";
 import { AdminAccessCheck } from "@/components/admin/dashboard/AdminAccessCheck";
-import { DashboardHeader } from "@/components/admin/dashboard/DashboardHeader";
-import { DashboardTabs } from "@/components/admin/dashboard/DashboardTabs";
-import { OperationsContent } from "@/components/admin/dashboard/OperationsContent";
-import { AdminDashboardProvider, useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
+import { AdminDashboardProvider } from "@/components/admin/dashboard/AdminDashboardProvider";
+import { AdminDashboardContent } from "@/components/admin/dashboard/AdminDashboardContent";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/ui/Loading";
-import { LogoutButton } from "@/components/LogoutButton";
 
 /**
  * Error fallback component for the dashboard
@@ -28,73 +20,6 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
         {error.stack}
       </pre>
       <Button onClick={resetErrorBoundary}>Try Again</Button>
-    </div>
-  );
-}
-
-/**
- * AdminDashboardContent - Content component for the admin dashboard
- * 
- * Consumes the dashboard context and renders the dashboard UI elements.
- * This component is wrapped by the AdminDashboardProvider for data access.
- */
-function AdminDashboardContent() {
-  const { user, userData, isSuperAdmin } = useAuth();
-  const dashboardData = useAdminDashboard();
-  
-  // Show loading state if dashboard data isn't available yet
-  if (!dashboardData) {
-    return (
-      <Loading 
-        fullscreen={true} 
-        size="medium" 
-        message="Loading dashboard data..." 
-      />
-    );
-  }
-  
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Dashboard header with title and actions */}
-      <div className="flex justify-between items-center">
-        <DashboardHeader isSuperAdmin={isSuperAdmin} />
-        <LogoutButton />
-      </div>
-
-      {/* Key metrics overview */}
-      <StatsOverview 
-        stats={{
-          dailyPickups: dashboardData.stats.dailyPickups,
-          pendingPickups: dashboardData.stats.pendingPickups,
-          todayRevenue: dashboardData.stats.todayRevenue,
-        }}
-        activeEmployeesCount={dashboardData.activeEmployees}
-      />
-
-      {/* Quick access links for common actions */}
-      <QuickLinks />
-
-      {/* Tab navigation for different dashboard sections */}
-      <DashboardTabs
-        operationsContent={
-          <OperationsContent
-            houses={dashboardData.houses}
-            assignments={dashboardData.assignments}
-            currentLocation={dashboardData.currentLocation}
-            employeeLocations={dashboardData.employeeLocations}
-            revenueData={dashboardData.mockRevenueData}
-            pickups={dashboardData.mockPickups}
-          />
-        }
-        employeesContent={
-          <EmployeeTracker 
-            employeeLocations={dashboardData.employeeLocations} 
-            currentLocation={dashboardData.currentLocation}
-          />
-        }
-        analyticsContent={<AnalyticsDashboard />}
-        usersContent={<UserManagement />}
-      />
     </div>
   );
 }

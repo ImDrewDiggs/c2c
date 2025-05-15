@@ -8,19 +8,17 @@ import { AdminDashboardContextValue } from "../types/dashboardTypes";
  */
 export const AdminDashboardContext = createContext<AdminDashboardContextValue>({
   stats: {
-    dailyPickups: 0,
-    weeklyPickups: 0,
-    monthlyPickups: 0,
+    totalUsers: 0,
+    newSignups: 0,
     activeEmployees: 0,
-    pendingPickups: 0,
-    completedPickups: 0,
-    todayRevenue: 0,
+    completedJobs: 0,
+    pendingJobs: 0
   },
-  houses: [],
-  assignments: [],
+  serviceAreas: [],
+  scheduledJobs: [],
   currentLocation: null,
   employeeLocations: [],
-  activeEmployees: 0,
-  mockRevenueData: [],
-  mockPickups: [],
+  activityLogs: [],
+  loading: true,
+  error: null
 });

@@ -5,47 +5,47 @@ import { House, Assignment, EmployeeLocation, Location } from "@/types/map";
  * Type definition for the statistics data in the dashboard
  */
 export interface DashboardStats {
-  dailyPickups: number;
-  weeklyPickups: number;
-  monthlyPickups: number;
+  totalUsers: number;
+  newSignups: number;
   activeEmployees: number;
-  pendingPickups: number;
-  completedPickups: number;
-  todayRevenue: number;
+  completedJobs: number;
+  pendingJobs: number;
 }
 
 /**
- * Mock pickup data type used in the dashboard
+ * Activity log item type
  */
-export interface MockPickup {
-  id: number;
-  address: string;
-  status: string;
-  scheduledTime: string;
-  assignedTo: string;
+export interface ActivityLog {
+  id: string;
+  user_id?: string;
+  action: string;
+  entity_type: string;
+  entity_id?: string;
+  details?: any;
+  created_at: string;
 }
 
 /**
- * Mock revenue data point type used in charts
+ * Scheduled job type
  */
-export interface RevenueDataPoint {
-  name: string;
-  amount: number;
+export interface ScheduledJob extends Assignment {
+  house?: House;
+  employee_name?: string;
+  due_date?: string;
 }
 
 /**
  * Type definition for the admin dashboard context value
- * Contains all data needed for the admin dashboard components
  */
 export interface AdminDashboardContextValue {
   stats: DashboardStats;
-  houses: House[];
-  assignments: Assignment[];
+  serviceAreas: House[];
+  scheduledJobs: ScheduledJob[];
   currentLocation: Location | null;
   employeeLocations: EmployeeLocation[];
-  activeEmployees: number;
-  mockRevenueData: RevenueDataPoint[];
-  mockPickups: MockPickup[];
+  activityLogs: ActivityLog[];
+  loading: boolean;
+  error: string | null;
 }
 
 /**
