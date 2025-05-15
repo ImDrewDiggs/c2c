@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ const TimeTracker = () => {
   const [elapsedTime, setElapsedTime] = useState("0h 0m");
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [locationEnabled, setLocationEnabled] = useState(false);
   const userId = user?.id;
 
   // Get the active work session if there is one
@@ -80,6 +80,77 @@ const TimeTracker = () => {
     enabled: !!userId,
   });
 
+  // Function to get and update employee location
+  const updateEmployeeLocation = useCallback(async (isOnline: boolean) => {
+    if (!userId || !navigator.geolocation) return false;
+
+    try {
+      if (isOnline) {
+        // Only get location if clocking in
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const locationData = {
+              employee_id: userId,
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              is_online: true,
+              timestamp: new Date().toISOString(),
+              last_seen_at: new Date().toISOString()
+            };
+            
+            const { error } = await supabase
+              .from('employee_locations')
+              .upsert(locationData, {
+                onConflict: 'employee_id'
+              });
+              
+            if (error) {
+              console.error('Error updating location:', error);
+              return false;
+            }
+            
+            setLocationEnabled(true);
+            return true;
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast({
+              variant: "destructive",
+              title: "Location Error",
+              description: "Unable to get your location. Please enable location services."
+            });
+            return false;
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      } else {
+        // When clocking out, mark as offline but keep the last location
+        const { error } = await supabase
+          .from('employee_locations')
+          .upsert({
+            employee_id: userId,
+            is_online: false,
+            last_seen_at: new Date().toISOString()
+          }, {
+            onConflict: 'employee_id'
+          });
+        
+        if (error) {
+          console.error('Error updating location status:', error);
+          return false;
+        }
+        
+        setLocationEnabled(false);
+        return true;
+      }
+    } catch (error) {
+      console.error('Error in location tracking:', error);
+      return false;
+    }
+    
+    return true;
+  }, [userId, toast]);
+
   // Update elapsed time every minute
   useEffect(() => {
     if (!activeSession) {
@@ -105,11 +176,26 @@ const TimeTracker = () => {
     return () => clearInterval(interval);
   }, [activeSession]);
 
+  // Initialize location tracking if already clocked in
   useEffect(() => {
+    if (activeSession && userId) {
+      setIsClockedIn(true);
+      // Check if location is already being tracked
+      supabase
+        .from('employee_locations')
+        .select('*')
+        .eq('employee_id', userId)
+        .eq('is_online', true)
+        .single()
+        .then(({ data }) => {
+          setLocationEnabled(!!data);
+        });
+    }
+    
     if (!sessionLoading) {
       setLoading(false);
     }
-  }, [sessionLoading]);
+  }, [activeSession, userId, sessionLoading]);
 
   // Clock in mutation
   const clockIn = useMutation({
@@ -117,33 +203,7 @@ const TimeTracker = () => {
       if (!userId) throw new Error("User not authenticated");
       
       // Start tracking location when clocking in
-      try {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              // Create employee location entry
-              await supabase.from('employee_locations').upsert({
-                employee_id: userId,
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                is_online: true,
-                timestamp: new Date().toISOString(),
-                last_seen_at: new Date().toISOString()
-              });
-            },
-            (error) => {
-              console.error("Error getting location:", error);
-              toast({
-                variant: "destructive",
-                title: "Location Error",
-                description: "Unable to get your location. Please enable location services."
-              });
-            }
-          );
-        }
-      } catch (error) {
-        console.error("Error updating location:", error);
-      }
+      await updateEmployeeLocation(true);
       
       // Create new work session
       const { data, error } = await supabase
@@ -190,18 +250,7 @@ const TimeTracker = () => {
       const diffInHours = diffInMs / (1000 * 60 * 60);
       
       // Stop tracking location when clocking out
-      try {
-        // Update employee status to offline
-        await supabase.from('employee_locations').upsert({
-          employee_id: userId,
-          latitude: 0, // Use last known or default
-          longitude: 0, // Use last known or default
-          is_online: false,
-          last_seen_at: new Date().toISOString()
-        });
-      } catch (error) {
-        console.error("Error updating location status:", error);
-      }
+      await updateEmployeeLocation(false);
       
       // Update work session
       const { data, error } = await supabase
@@ -307,6 +356,11 @@ const TimeTracker = () => {
                   <span className="text-sm font-medium">{elapsedTime}</span>
                 </div>
               </div>
+              {locationEnabled && (
+                <div className="mt-2 text-xs text-green-600">
+                  Location tracking active
+                </div>
+              )}
             </div>
           )}
           
