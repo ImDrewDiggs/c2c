@@ -26,9 +26,29 @@ export interface ActivityLog {
 }
 
 /**
- * Scheduled job type
+ * Revenue data point for charts
  */
-export interface ScheduledJob extends Assignment {
+export interface RevenueDataPoint {
+  name: string;
+  amount: number;
+}
+
+/**
+ * Mock pickup data for UI display
+ */
+export interface MockPickup {
+  id: number;
+  address: string;
+  status: string;
+  scheduledTime: string;
+  assignedTo: string;
+}
+
+/**
+ * Scheduled job type
+ * Extending Assignment but making house optional to match the expected structure
+ */
+export interface ScheduledJob extends Omit<Assignment, 'house'> {
   house?: House;
   employee_name?: string;
   due_date?: string;
