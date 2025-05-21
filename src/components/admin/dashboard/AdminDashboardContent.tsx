@@ -12,6 +12,12 @@ import { QuickActionsPanel } from "./QuickActionsPanel";
 import { LiveGpsMap } from "./LiveGpsMap";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import React from "react";
+
+// Define render2 function to fix the "render2 is not a function" error
+export const render2 = (component: React.ReactNode): React.ReactNode => {
+  return component;
+};
 
 export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();

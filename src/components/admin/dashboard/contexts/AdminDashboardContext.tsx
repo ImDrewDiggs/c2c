@@ -1,24 +1,28 @@
 
-import { createContext } from "react";
-import { AdminDashboardContextValue } from "../types/dashboardTypes";
+import { createContext, useContext } from "react";
+import { AdminDashboardData } from "../types/dashboardTypes";
+import { render2 } from "../AdminDashboardContent";
 
-/**
- * Create context with a proper initial value to avoid undefined checks
- * This provides a default state for the context before data is loaded
- */
-export const AdminDashboardContext = createContext<AdminDashboardContextValue>({
-  stats: {
-    totalUsers: 0,
-    newSignups: 0,
-    activeEmployees: 0,
-    completedJobs: 0,
-    pendingJobs: 0
-  },
-  serviceAreas: [],
-  scheduledJobs: [],
-  currentLocation: null,
-  employeeLocations: [],
-  activityLogs: [],
-  loading: true,
-  error: null
-});
+// Create context with an initial undefined value
+export const AdminDashboardContext = createContext<AdminDashboardData | undefined>(undefined);
+
+// Create hook for using the context
+export function useAdminDashboardContext() {
+  const context = useContext(AdminDashboardContext);
+  if (context === undefined) {
+    throw new Error("useAdminDashboardContext must be used within an AdminDashboardProvider");
+  }
+  return context;
+}
+
+// Ensure the provider component uses render2 function
+export const AdminDashboardProvider = ({ children, value }: { 
+  children: React.ReactNode;
+  value: AdminDashboardData;
+}) => {
+  return render2(
+    <AdminDashboardContext.Provider value={value}>
+      {children}
+    </AdminDashboardContext.Provider>
+  );
+};
