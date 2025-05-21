@@ -1,10 +1,10 @@
 
 import { createContext, useContext } from "react";
-import { AdminDashboardData } from "../types/dashboardTypes";
+import { AdminDashboardContextValue } from "../types/dashboardTypes";
 import { render2 } from "../AdminDashboardContent";
 
 // Create context with an initial undefined value
-export const AdminDashboardContext = createContext<AdminDashboardData | undefined>(undefined);
+export const AdminDashboardContext = createContext<AdminDashboardContextValue | undefined>(undefined);
 
 // Create hook for using the context
 export function useAdminDashboardContext() {
@@ -18,7 +18,7 @@ export function useAdminDashboardContext() {
 // Ensure the provider component uses render2 function
 export const AdminDashboardProvider = ({ children, value }: { 
   children: React.ReactNode;
-  value: AdminDashboardData;
+  value: AdminDashboardContextValue;
 }) => {
   return render2(
     <AdminDashboardContext.Provider value={value}>
