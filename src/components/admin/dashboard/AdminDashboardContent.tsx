@@ -1,4 +1,3 @@
-
 import { useAdminDashboard } from "./hooks/useAdminDashboard";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,9 +14,11 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 
 // Define render2 function properly - this is the key fix
-export const render2 = (component: React.ReactNode): React.ReactElement => {
-  // Simply return the component as a React element
-  return component as React.ReactElement;
+export const render2 = (element: React.ReactNode): React.ReactElement => {
+  if (!React.isValidElement(element)) {
+    throw new Error("render2 requires a valid React element");
+  }
+  return element;
 };
 
 export function AdminDashboardContent() {

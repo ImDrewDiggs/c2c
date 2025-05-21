@@ -15,12 +15,12 @@ export function useAdminDashboardContext() {
   return context;
 }
 
-// Ensure the provider component uses render2 function correctly
+// Provider component that uses the render2 function correctly
 export const AdminDashboardProvider = ({ children, value }: { 
   children: React.ReactNode;
   value: AdminDashboardContextValue;
 }) => {
-  // Fix: Use render2 correctly - it takes a JSX element and returns a React element
+  // Use render2 correctly with a valid React element
   return render2(
     <AdminDashboardContext.Provider value={value}>
       {children}
