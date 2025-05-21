@@ -14,9 +14,10 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
-// Define render2 function to fix the "render2 is not a function" error
-export const render2 = (component: React.ReactNode): React.ReactNode => {
-  return component;
+// Define render2 function properly - this is the key fix
+export const render2 = (component: React.ReactNode): React.ReactElement => {
+  // Simply return the component as a React element
+  return component as React.ReactElement;
 };
 
 export function AdminDashboardContent() {
