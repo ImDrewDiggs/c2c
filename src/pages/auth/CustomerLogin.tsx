@@ -145,7 +145,7 @@ export default function CustomerLogin() {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4">
             <Button type="submit" className="w-full" disabled={isSubmitting || authLoading}>
               {(isSubmitting || authLoading) ? (
                 <>
@@ -153,6 +153,16 @@ export default function CustomerLogin() {
                   Signing in...
                 </>
               ) : "Sign in"}
+            </Button>
+            
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
+              onClick={() => navigate("/customer/register")}
+              disabled={isSubmitting || authLoading}
+            >
+              Create New Account
             </Button>
           </div>
 

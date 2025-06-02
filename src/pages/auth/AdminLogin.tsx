@@ -70,6 +70,13 @@ export default function AdminLogin() {
     }
   };
 
+  const handleSignUpClick = () => {
+    toast({
+      title: "Admin Access",
+      description: "Administrator accounts are created by system administrators only.",
+    });
+  };
+
   if (initialLoading) {
     return <Loading fullscreen={true} size="medium" message="Loading authentication..." />;
   }
@@ -149,7 +156,7 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4">
             <Button type="submit" className="w-full" disabled={isSubmitting || authLoading}>
               {(isSubmitting || authLoading) ? (
                 <>
@@ -158,6 +165,28 @@ export default function AdminLogin() {
                 </>
               ) : "Sign in"}
             </Button>
+            
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
+              onClick={handleSignUpClick}
+              disabled={isSubmitting || authLoading}
+            >
+              Request Admin Access
+            </Button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-400">
+              Need admin access?{" "}
+              <button 
+                onClick={handleSignUpClick}
+                className="text-primary hover:text-primary/80 underline bg-transparent border-none cursor-pointer"
+              >
+                Contact system administrator
+              </button>
+            </p>
           </div>
         </motion.form>
       </div>

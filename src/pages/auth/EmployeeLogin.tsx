@@ -64,6 +64,13 @@ export default function EmployeeLogin() {
     }
   };
 
+  const handleSignUpClick = () => {
+    toast({
+      title: "Employee Registration",
+      description: "Please contact your administrator to create an employee account.",
+    });
+  };
+
   // Show optimized loading state on initial render
   if (initialLoading) {
     return <LoadingState message="Loading authentication..." size="medium" />;
@@ -144,7 +151,7 @@ export default function EmployeeLogin() {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4">
             <Button type="submit" className="w-full" disabled={isSubmitting || authLoading}>
               {(isSubmitting || authLoading) ? (
                 <>
@@ -153,6 +160,28 @@ export default function EmployeeLogin() {
                 </>
               ) : "Sign in"}
             </Button>
+            
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
+              onClick={handleSignUpClick}
+              disabled={isSubmitting || authLoading}
+            >
+              Request Employee Account
+            </Button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-400">
+              Need an employee account?{" "}
+              <button 
+                onClick={handleSignUpClick}
+                className="text-primary hover:text-primary/80 underline bg-transparent border-none cursor-pointer"
+              >
+                Contact administrator
+              </button>
+            </p>
           </div>
         </motion.form>
       </div>
