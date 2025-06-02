@@ -47,8 +47,14 @@ export default function Navbar() {
             ))}
             <div className="flex space-x-4">
               <button 
-                onClick={() => navigate("/customer/login")} 
+                onClick={() => navigate("/customer/register")} 
                 className="btn-primary !py-2"
+              >
+                Sign Up
+              </button>
+              <button 
+                onClick={() => navigate("/customer/login")} 
+                className="nav-link"
               >
                 Customer Login
               </button>
@@ -103,6 +109,12 @@ export default function Navbar() {
               ))}
               <button
                 className="block btn-primary text-center !py-2 mb-2 w-full"
+                onClick={() => handleNavigation("/customer/register")}
+              >
+                Sign Up
+              </button>
+              <button
+                className="block nav-link py-2 w-full text-left"
                 onClick={() => handleNavigation("/customer/login")}
               >
                 Customer Login
