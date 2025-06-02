@@ -5,8 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { House, Location, Assignment, EmployeeLocation } from '@/types/map';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { EmployeeLocationRow } from '@/lib/supabase-types';
+import { supabase } from '@/lib/supabase';
 
 // Fix Leaflet default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -247,7 +246,7 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
       {/* Employee location markers */}
       {employeeLocations.map((employee) => (
         <Marker
-          key={employee.employee_id} // Changed from employee.id to employee.employee_id
+          key={employee.employee_id}
           position={[employee.latitude, employee.longitude]}
           icon={employee.is_online ? activeEmployeeIcon : employeeIcon}
         >

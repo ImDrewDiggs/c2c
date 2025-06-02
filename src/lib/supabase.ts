@@ -11,10 +11,9 @@ export interface UserData {
   phone?: string;
 }
 
-// Initialize Supabase client with the correct API key
-// Use the key from integrations/supabase/client.ts which has the latest key
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ibxxacioufdgldfoxwza.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlieHhhY2lvdWZkZ2xkZm94d3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk3NzAwNDIsImV4cCI6MjA1NTM0NjA0Mn0.XPMh_xzCZIN39srb9QF2k8DW3MUqjuQfYLz31DoDzXI';
+// Use the correct Supabase URL and key from the integrations client
+const supabaseUrl = 'https://pofidqkzmqxbskazxmnu.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZmlkcWt6bXF4YnNrYXp4bW51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2NTQxNzYsImV4cCI6MjA2NDIzMDE3Nn0.EMNQs_YRQN6CpXQBzZh3fLWaPRrhm7paRgVV_4MrxQQ';
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {

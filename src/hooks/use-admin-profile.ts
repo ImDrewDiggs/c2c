@@ -2,7 +2,7 @@
 import { supabase } from '@/lib/supabase';
 
 // Fixed admin email reference
-const ADMIN_EMAIL = 'diggs844037@yahoo.com';
+const ADMIN_EMAIL = 'drewdiggs844037@gmail.com';
 
 export function useAdminProfile() {
   // Special function to ensure admin profile exists
