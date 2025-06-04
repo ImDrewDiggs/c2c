@@ -26,7 +26,11 @@ export function useAdminProfile() {
         console.log('[DIAGNOSTIC][AdminProfile] Profile exists, updating to admin role');
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ role: 'admin' })
+          .update({ 
+            role: 'admin',
+            email: email,
+            full_name: 'Administrator'
+          })
           .eq('id', userId);
           
         if (updateError) {
@@ -45,7 +49,7 @@ export function useAdminProfile() {
           id: userId,
           email: email,
           role: 'admin',
-          full_name: 'Admin User'
+          full_name: 'Administrator'
         });
       
       if (error) {

@@ -4,15 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/ui/Loading";
+import { createAdminUser, ADMIN_CREDENTIALS } from "@/utils/adminSetup";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const { signIn, loading: authLoading, user, isAdmin } = useAuth();
   const { toast } = useToast();
@@ -67,6 +69,38 @@ export default function AdminLogin() {
       // Toast is handled in signIn function
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateAdminUser = async () => {
+    setIsCreatingAdmin(true);
+    try {
+      const result = await createAdminUser();
+      
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: `${result.message}. You can now login with the admin credentials.`,
+        });
+        
+        // Pre-fill the form with admin credentials
+        setEmail(ADMIN_CREDENTIALS.email);
+        setPassword(ADMIN_CREDENTIALS.password);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.message,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create admin user",
+      });
+    } finally {
+      setIsCreatingAdmin(false);
     }
   };
 
@@ -164,6 +198,26 @@ export default function AdminLogin() {
                   Signing in...
                 </>
               ) : "Sign in"}
+            </Button>
+            
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
+              onClick={handleCreateAdminUser}
+              disabled={isSubmitting || authLoading || isCreatingAdmin}
+            >
+              {isCreatingAdmin ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Admin User...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Create Admin User
+                </>
+              )}
             </Button>
             
             <Button 
