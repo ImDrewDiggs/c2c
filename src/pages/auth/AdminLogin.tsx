@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, ArrowLeft, Loader2, UserPlus } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2, UserPlus, HelpCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/ui/Loading";
@@ -105,7 +105,7 @@ export default function AdminLogin() {
       } else {
         toast({
           variant: "destructive",
-          title: "Error",
+          title: "Admin Creation Failed",
           description: result.message,
         });
       }
@@ -121,10 +121,10 @@ export default function AdminLogin() {
     }
   };
 
-  const handleSignUpClick = () => {
+  const handleRequestAdminAccess = () => {
     toast({
-      title: "Admin Access",
-      description: "Administrator accounts are created by system administrators only.",
+      title: "Admin Access Request",
+      description: "For admin access, please contact the system administrator or use the 'Create Admin User' button if you're setting up the system for the first time.",
     });
   };
 
@@ -241,18 +241,19 @@ export default function AdminLogin() {
               type="button" 
               variant="outline" 
               className="w-full" 
-              onClick={handleSignUpClick}
+              onClick={handleRequestAdminAccess}
               disabled={isSubmitting || authLoading}
             >
+              <HelpCircle className="mr-2 h-4 w-4" />
               Request Admin Access
             </Button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-400">
-              Need admin access?{" "}
+              Need help with admin access?{" "}
               <button 
-                onClick={handleSignUpClick}
+                onClick={handleRequestAdminAccess}
                 className="text-primary hover:text-primary/80 underline bg-transparent border-none cursor-pointer"
               >
                 Contact system administrator
