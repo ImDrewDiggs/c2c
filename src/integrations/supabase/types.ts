@@ -360,7 +360,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_admin_profile: {
+        Args: { admin_user_id: string; admin_email: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

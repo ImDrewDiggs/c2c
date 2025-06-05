@@ -47,6 +47,7 @@ export default function AdminLogin() {
     setIsSubmitting(true);
     
     try {
+      console.log('[AdminLogin] Attempting to sign in:', email);
       const role = await signIn(email, password, 'admin');
       
       if (role !== 'admin') {
@@ -65,8 +66,16 @@ export default function AdminLogin() {
 
       navigate("/admin/dashboard", { replace: true });
     } catch (error: any) {
-      console.error("Login error:", error);
-      // Toast is handled in signIn function
+      console.error("[AdminLogin] Login error:", error);
+      
+      // Provide specific error message for admin email
+      if (email === ADMIN_CREDENTIALS.email) {
+        toast({
+          variant: "destructive",
+          title: "Admin Login Failed",
+          description: "If you haven't created the admin account yet, please use the 'Create Admin User' button first.",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -75,6 +84,7 @@ export default function AdminLogin() {
   const handleCreateAdminUser = async () => {
     setIsCreatingAdmin(true);
     try {
+      console.log('[AdminLogin] Creating admin user...');
       const result = await createAdminUser();
       
       if (result.success) {
@@ -94,10 +104,11 @@ export default function AdminLogin() {
         });
       }
     } catch (error: any) {
+      console.error('[AdminLogin] Error creating admin user:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create admin user",
+        description: "Failed to create admin user. Please check the console for details.",
       });
     } finally {
       setIsCreatingAdmin(false);

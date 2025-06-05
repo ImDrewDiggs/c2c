@@ -27,7 +27,7 @@ export class AuthService {
    */
   static async checkUserRole(userId: string, requiredRole: string): Promise<boolean> {
     try {
-      // Check if this is the admin email (special case)
+      // Admin email always has access
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user?.email === this.ADMIN_EMAIL) {
         return true;
@@ -45,13 +45,7 @@ export class AuthService {
         return false;
       }
       
-      // Admin can access everything
-      if (profile?.role === 'admin') {
-        return true;
-      }
-      
-      // Otherwise, check if roles match
-      return profile?.role === requiredRole;
+      return profile?.role === 'admin' || profile?.role === requiredRole;
     } catch (err) {
       console.error('[AuthService] Error in checkUserRole:', err);
       return false;
@@ -59,55 +53,31 @@ export class AuthService {
   }
   
   /**
-   * Ensure admin profile exists
+   * Ensure admin profile exists using the database function
    */
   static async ensureAdminProfile(userId: string, email: string): Promise<boolean> {
     try {
-      // Check if profile exists
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-        
-      if (checkError) {
-        console.error('[AuthService] Error checking for existing profile:', checkError);
+      if (!this.isAdminEmail(email)) {
+        return false;
       }
+
+      console.log('[AuthService] Creating admin profile using database function');
       
-      // If profile exists, update to admin role
-      if (existingProfile) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ role: 'admin' })
-          .eq('id', userId);
-          
-        if (updateError) {
-          console.error('[AuthService] Error updating profile to admin:', updateError);
-          return email === this.ADMIN_EMAIL;
-        }
-        
-        return true;
-      }
-      
-      // If profile doesn't exist, create it
-      const { error } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email: email,
-          role: 'admin',
-          full_name: 'Admin User'
-        });
-      
+      const { error } = await supabase.rpc('create_admin_profile', {
+        admin_user_id: userId,
+        admin_email: email
+      });
+
       if (error) {
-        console.error('[AuthService] Error creating admin profile:', error);
-        return email === this.ADMIN_EMAIL;
+        console.error('[AuthService] Error calling create_admin_profile:', error);
+        return false;
       }
-      
+
+      console.log('[AuthService] Admin profile created successfully');
       return true;
     } catch (err) {
       console.error('[AuthService] Failed to create admin profile:', err);
-      return email === this.ADMIN_EMAIL;
+      return false;
     }
   }
 
