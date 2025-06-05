@@ -75,6 +75,12 @@ export default function AdminLogin() {
           title: "Admin Login Failed",
           description: "If you haven't created the admin account yet, please use the 'Create Admin User' button first.",
         });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: error.message || "Invalid login credentials",
+        });
       }
     } finally {
       setIsSubmitting(false);
