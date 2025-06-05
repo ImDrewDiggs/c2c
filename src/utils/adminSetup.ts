@@ -18,8 +18,8 @@ export async function createAdminUser() {
 
     if (!existingSignInError && existingSignIn.user) {
       console.log('Admin user already exists and can sign in');
-      // User exists and credentials work, ensure profile exists
-      await ensureAdminProfile(existingSignIn.user.id);
+      // User exists and credentials work, ensure profile exists using the safe function
+      await ensureAdminProfileSafe(existingSignIn.user.id);
       // Sign out after verification
       await supabase.auth.signOut();
       return { success: true, message: 'Admin user verified and profile updated' };
@@ -58,8 +58,8 @@ export async function createAdminUser() {
       // Wait a moment for the user to be fully created in the auth system
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Create admin profile
-      await ensureAdminProfile(signUpData.user.id);
+      // Create admin profile using the safe function
+      await ensureAdminProfileSafe(signUpData.user.id);
       
       // Sign out the newly created user so they can sign in properly
       await supabase.auth.signOut();
@@ -74,59 +74,22 @@ export async function createAdminUser() {
   }
 }
 
-async function ensureAdminProfile(userId: string) {
+async function ensureAdminProfileSafe(userId: string) {
   try {
-    console.log('Creating admin profile for user ID:', userId);
+    console.log('Creating admin profile using safe function for user ID:', userId);
     
-    // First verify the user exists in auth.users by checking current auth state
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) {
-      console.warn('Could not verify user in auth system:', userError);
-    }
-    
-    // Try to create/update the profile directly first
-    const { data: existingProfile, error: selectError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    // Use the new security definer function that bypasses RLS
+    const { error } = await supabase.rpc('create_admin_profile_safe', {
+      admin_user_id: userId,
+      admin_email: ADMIN_CREDENTIALS.email
+    });
 
-    if (existingProfile) {
-      // Profile exists, update it to admin
-      console.log('Updating existing profile to admin');
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          role: 'admin',
-          email: ADMIN_CREDENTIALS.email,
-          full_name: 'Administrator',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
-
-      if (updateError) {
-        console.error('Error updating profile:', updateError);
-        throw updateError;
-      }
-    } else {
-      // Profile doesn't exist, create it
-      console.log('Creating new admin profile');
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email: ADMIN_CREDENTIALS.email,
-          role: 'admin',
-          full_name: 'Administrator'
-        });
-
-      if (insertError) {
-        console.error('Error creating profile:', insertError);
-        throw insertError;
-      }
+    if (error) {
+      console.error('Error calling create_admin_profile_safe:', error);
+      throw error;
     }
 
-    console.log('Admin profile created/updated successfully');
+    console.log('Admin profile created/updated successfully using safe function');
   } catch (error) {
     console.error('Failed to ensure admin profile:', error);
     throw error;

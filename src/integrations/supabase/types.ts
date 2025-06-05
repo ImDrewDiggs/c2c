@@ -364,6 +364,14 @@ export type Database = {
         Args: { admin_user_id: string; admin_email: string }
         Returns: undefined
       }
+      create_admin_profile_safe: {
+        Args: { admin_user_id: string; admin_email: string }
+        Returns: undefined
+      }
+      is_admin_user: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

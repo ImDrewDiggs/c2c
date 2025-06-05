@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase";
 import { UserData } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
@@ -33,6 +34,19 @@ export class AuthService {
         return true;
       }
       
+      // Use the safe admin check function to avoid RLS recursion
+      const { data: isAdmin, error: adminCheckError } = await supabase.rpc('is_admin_user', {
+        user_id: userId
+      });
+      
+      if (adminCheckError) {
+        console.error('[AuthService] Error checking admin status:', adminCheckError);
+      }
+      
+      if (isAdmin) {
+        return true;
+      }
+      
       // Check profile in database
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -53,7 +67,7 @@ export class AuthService {
   }
   
   /**
-   * Ensure admin profile exists using the database function
+   * Ensure admin profile exists using the safe database function
    */
   static async ensureAdminProfile(userId: string, email: string): Promise<boolean> {
     try {
@@ -61,15 +75,15 @@ export class AuthService {
         return false;
       }
 
-      console.log('[AuthService] Creating admin profile using database function');
+      console.log('[AuthService] Creating admin profile using safe database function');
       
-      const { error } = await supabase.rpc('create_admin_profile', {
+      const { error } = await supabase.rpc('create_admin_profile_safe', {
         admin_user_id: userId,
         admin_email: email
       });
 
       if (error) {
-        console.error('[AuthService] Error calling create_admin_profile:', error);
+        console.error('[AuthService] Error calling create_admin_profile_safe:', error);
         return false;
       }
 
