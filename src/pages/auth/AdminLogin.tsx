@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, ArrowLeft, Loader2, UserPlus, HelpCircle } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2, UserPlus, HelpCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/ui/Loading";
@@ -16,7 +16,7 @@ export default function AdminLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [justCreatedAdmin, setJustCreatedAdmin] = useState(false);
+  const [adminCreationResult, setAdminCreationResult] = useState<string | null>(null);
   const { signIn, loading: authLoading, user, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -69,20 +69,11 @@ export default function AdminLogin() {
     } catch (error: any) {
       console.error("[AdminLogin] Login error:", error);
       
-      // If they just created an admin user, give them specific guidance
-      if (justCreatedAdmin) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "Please wait a few more seconds for the user creation to complete, then try again.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: error.message || "Invalid login credentials. If you just created the admin account, please wait a moment and try again.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: error.message || "Invalid login credentials. If you just created the admin account, please check your email for a confirmation link.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -90,12 +81,14 @@ export default function AdminLogin() {
 
   const handleCreateAdminUser = async () => {
     setIsCreatingAdmin(true);
+    setAdminCreationResult(null);
+    
     try {
       console.log('[AdminLogin] Creating admin user...');
       const result = await createAdminUser();
       
       if (result.success) {
-        setJustCreatedAdmin(true);
+        setAdminCreationResult(result.message);
         toast({
           title: "Success",
           description: result.message,
@@ -104,12 +97,8 @@ export default function AdminLogin() {
         // Pre-fill the form with admin credentials
         setEmail(ADMIN_CREDENTIALS.email);
         setPassword(ADMIN_CREDENTIALS.password);
-        
-        // Reset the flag after 10 seconds
-        setTimeout(() => {
-          setJustCreatedAdmin(false);
-        }, 10000);
       } else {
+        setAdminCreationResult(result.message);
         toast({
           variant: "destructive",
           title: "Admin Creation Failed",
@@ -118,10 +107,12 @@ export default function AdminLogin() {
       }
     } catch (error: any) {
       console.error('[AdminLogin] Error creating admin user:', error);
+      const errorMessage = "Failed to create admin user. Please check the console for details.";
+      setAdminCreationResult(errorMessage);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create admin user. Please check the console for details.",
+        description: errorMessage,
       });
     } finally {
       setIsCreatingAdmin(false);
@@ -214,11 +205,36 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          {justCreatedAdmin && (
-            <div className="bg-blue-600/20 border border-blue-500/30 rounded-md p-3">
-              <p className="text-sm text-blue-200">
-                Admin user created successfully! Please wait a moment for the system to process, then try signing in.
-              </p>
+          {adminCreationResult && (
+            <div className={`rounded-md p-3 ${
+              adminCreationResult.includes('confirmation') || adminCreationResult.includes('check your email')
+                ? 'bg-yellow-600/20 border border-yellow-500/30'
+                : adminCreationResult.includes('successfully') || adminCreationResult.includes('verified')
+                ? 'bg-green-600/20 border border-green-500/30'
+                : 'bg-red-600/20 border border-red-500/30'
+            }`}>
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className={`h-5 w-5 ${
+                    adminCreationResult.includes('confirmation') || adminCreationResult.includes('check your email')
+                      ? 'text-yellow-400'
+                      : adminCreationResult.includes('successfully') || adminCreationResult.includes('verified')
+                      ? 'text-green-400'
+                      : 'text-red-400'
+                  }`} />
+                </div>
+                <div className="ml-3">
+                  <p className={`text-sm ${
+                    adminCreationResult.includes('confirmation') || adminCreationResult.includes('check your email')
+                      ? 'text-yellow-200'
+                      : adminCreationResult.includes('successfully') || adminCreationResult.includes('verified')
+                      ? 'text-green-200'
+                      : 'text-red-200'
+                  }`}>
+                    {adminCreationResult}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

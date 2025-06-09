@@ -10,7 +10,7 @@ export async function createAdminUser() {
   try {
     console.log('Creating admin user account...');
     
-    // First, try to sign in to see if user already exists
+    // First, try to sign in to see if user already exists and can authenticate
     const { data: existingSignIn, error: existingSignInError } = await supabase.auth.signInWithPassword({
       email: ADMIN_CREDENTIALS.email,
       password: ADMIN_CREDENTIALS.password,
@@ -22,7 +22,7 @@ export async function createAdminUser() {
       await ensureAdminProfileSafe(existingSignIn.user.id);
       // Sign out after verification
       await supabase.auth.signOut();
-      return { success: true, message: 'Admin user verified and profile updated' };
+      return { success: true, message: 'Admin user verified and profile updated. You can now sign in.' };
     }
 
     // If sign in failed, try to create new user
@@ -33,18 +33,19 @@ export async function createAdminUser() {
       options: {
         data: {
           full_name: 'Administrator'
-        }
+        },
+        emailRedirectTo: window.location.origin
       }
     });
 
     if (signUpError) {
       console.error('Sign up error:', signUpError);
       
-      // If user already exists but password is wrong
+      // If user already exists but password is wrong or user is unconfirmed
       if (signUpError.message.includes('already registered')) {
         return { 
           success: false, 
-          message: 'Admin user exists but password verification failed. Please check the password or contact support.' 
+          message: 'Admin user exists but may need email confirmation. Please check your email and confirm the account, or contact support if the password is incorrect.' 
         };
       }
       
@@ -58,7 +59,16 @@ export async function createAdminUser() {
 
     console.log('New admin user created:', signUpData.user.id);
     
-    // Create admin profile using the safe function
+    // Check if email confirmation is required
+    if (!signUpData.session) {
+      console.log('Email confirmation required for new user');
+      return { 
+        success: true, 
+        message: 'Admin user created but requires email confirmation. Please check your email and click the confirmation link, then try signing in.' 
+      };
+    }
+
+    // If we have a session, the user is confirmed and ready to use
     try {
       await ensureAdminProfileSafe(signUpData.user.id);
       console.log('Admin profile created successfully');
@@ -70,10 +80,7 @@ export async function createAdminUser() {
     // Sign out the newly created user
     await supabase.auth.signOut();
     
-    // Wait a moment for Supabase to fully process the user creation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    return { success: true, message: 'Admin user created successfully. Please wait a moment before signing in.' };
+    return { success: true, message: 'Admin user created successfully. You can now sign in with the admin credentials.' };
   } catch (error: any) {
     console.error('Error creating admin user:', error);
     return { success: false, message: error.message };
