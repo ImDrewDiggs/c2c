@@ -79,13 +79,13 @@ export default function AdminLogin() {
     }
   };
 
-  const handleCreateAdminUser = async () => {
+  const handleCreateAdminUser = async (adminEmail?: string) => {
     setIsCreatingAdmin(true);
     setAdminCreationResult(null);
     
     try {
-      console.log('[AdminLogin] Creating admin user...');
-      const result = await createAdminUser();
+      console.log('[AdminLogin] Creating admin user:', adminEmail || 'default');
+      const result = await createAdminUser(adminEmail);
       
       if (result.success) {
         setAdminCreationResult(result.message);
@@ -94,9 +94,15 @@ export default function AdminLogin() {
           description: result.message,
         });
         
-        // Pre-fill the form with admin credentials
-        setEmail(ADMIN_CREDENTIALS.email);
-        setPassword(ADMIN_CREDENTIALS.password);
+        // Pre-fill the form with the created admin credentials
+        const targetAdmin = adminEmail 
+          ? ADMIN_CREDENTIALS.find(admin => admin.email === adminEmail)
+          : ADMIN_CREDENTIALS[0];
+        
+        if (targetAdmin) {
+          setEmail(targetAdmin.email);
+          setPassword(targetAdmin.password);
+        }
       } else {
         setAdminCreationResult(result.message);
         toast({
@@ -248,25 +254,49 @@ export default function AdminLogin() {
               ) : "Sign in"}
             </Button>
             
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full" 
-              onClick={handleCreateAdminUser}
-              disabled={isSubmitting || authLoading || isCreatingAdmin}
-            >
-              {isCreatingAdmin ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Admin User...
-                </>
-              ) : (
-                <>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Create Admin User
-                </>
-              )}
-            </Button>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-400 text-center">Create Admin Users:</p>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => handleCreateAdminUser('diggs844037@yahoo.com')}
+                disabled={isSubmitting || authLoading || isCreatingAdmin}
+              >
+                {isCreatingAdmin ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Create Yahoo Admin
+                  </>
+                )}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => handleCreateAdminUser('drewdiggs844037@gmail.com')}
+                disabled={isSubmitting || authLoading || isCreatingAdmin}
+              >
+                {isCreatingAdmin ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Create Gmail Admin
+                  </>
+                )}
+              </Button>
+            </div>
             
             <Button 
               type="button" 

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase";
 import { UserData } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
@@ -13,14 +12,17 @@ import type { User, Session } from "@supabase/supabase-js";
  * - Session handling
  */
 export class AuthService {
-  // Static property for admin email
-  static readonly ADMIN_EMAIL: string = 'diggs844037@yahoo.com';
+  // Static property for admin emails
+  static readonly ADMIN_EMAILS: string[] = [
+    'diggs844037@yahoo.com',
+    'drewdiggs844037@gmail.com'
+  ];
   
   /**
-   * Check if an email is the admin email
+   * Check if an email is an admin email
    */
   static isAdminEmail(email?: string | null): boolean {
-    return email === this.ADMIN_EMAIL;
+    return email ? this.ADMIN_EMAILS.includes(email) : false;
   }
   
   /**
@@ -28,9 +30,9 @@ export class AuthService {
    */
   static async checkUserRole(userId: string, requiredRole: string): Promise<boolean> {
     try {
-      // Admin email always has access
+      // Admin emails always have access
       const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.email === this.ADMIN_EMAIL) {
+      if (userData?.user?.email && this.isAdminEmail(userData.user.email)) {
         return true;
       }
       
@@ -282,17 +284,17 @@ export class AuthService {
         // Check if this is the admin email
         const { data: userData } = await supabase.auth.getUser();
         
-        if (userData?.user?.email === this.ADMIN_EMAIL) {
+        if (userData?.user?.email && this.isAdminEmail(userData.user.email)) {
           // Create temporary admin data
           const adminData: UserData = {
             id: userId,
-            email: this.ADMIN_EMAIL,
+            email: userData.user.email,
             role: 'admin',
             full_name: 'Administrator',
           };
           
           // Try to create the profile in the background
-          this.ensureAdminProfile(userId, this.ADMIN_EMAIL).catch(err => {
+          this.ensureAdminProfile(userId, userData.user.email).catch(err => {
             console.warn('[AuthService] Admin profile creation failed:', err.message);
           });
           

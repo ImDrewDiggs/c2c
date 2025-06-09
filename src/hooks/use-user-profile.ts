@@ -10,7 +10,7 @@ export function useUserProfile() {
   const { toast } = useToast();
   
   // Use the static property from AuthService
-  const ADMIN_EMAIL = AuthService.ADMIN_EMAIL;
+  const ADMIN_EMAILS = AuthService.ADMIN_EMAILS;
 
   async function fetchUserData(userId: string) {
     try {
@@ -24,14 +24,14 @@ export function useUserProfile() {
       if (error) {
         console.error('[UserProfile] Error fetching user data:', error);
         
-        // Check if this is the admin user and immediately set appropriate state
+        // Check if this is an admin user and immediately set appropriate state
         const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.email === ADMIN_EMAIL) {
+        if (userData?.user?.email && AuthService.isAdminEmail(userData.user.email)) {
           console.log('[UserProfile] Admin user detected by email. Setting admin privileges regardless of profile.');
           // Create temporary admin data object
           const adminData: UserData = {
             id: userId,
-            email: ADMIN_EMAIL,
+            email: userData.user.email,
             role: 'admin',
             full_name: 'Administrator',
           };
@@ -60,7 +60,7 @@ export function useUserProfile() {
       if (!data) {
         console.log('[UserProfile] No user profile found for ID:', userId);
         
-        // Check if this is the admin email by getting auth user
+        // Check if this is an admin email by getting auth user
         const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
@@ -83,7 +83,7 @@ export function useUserProfile() {
           // Create temporary admin data object
           const adminData: UserData = {
             id: userId,
-            email: ADMIN_EMAIL,
+            email: userData?.user?.email || '',
             role: 'admin',
             full_name: 'Administrator',
           };
@@ -92,7 +92,7 @@ export function useUserProfile() {
           
           // Try to create the profile in the background
           console.log('[UserProfile] Attempting to create admin profile in background');
-          AuthService.ensureAdminProfile(userId, ADMIN_EMAIL).catch(err => {
+          AuthService.ensureAdminProfile(userId, userData?.user?.email || '').catch(err => {
             console.warn('[UserProfile] Admin profile creation failed, but continuing with temporary profile:', err.message);
           });
           
@@ -127,12 +127,12 @@ export function useUserProfile() {
         });
         setUserData(data);
         // Ensure admin is properly flagged
-        const isAdmin = data.email === ADMIN_EMAIL || data.role === 'admin';
+        const isAdmin = AuthService.isAdminEmail(data.email) || data.role === 'admin';
         console.log('[UserProfile] Setting isSuperAdmin to:', isAdmin);
         setIsSuperAdmin(isAdmin);
         
         // If this is admin email but role isn't set as admin, update it
-        if (data.email === ADMIN_EMAIL && data.role !== 'admin') {
+        if (AuthService.isAdminEmail(data.email) && data.role !== 'admin') {
           console.log('[UserProfile] Updating user to admin role');
           const { error: updateError } = await supabase
             .from('profiles')
@@ -154,15 +154,15 @@ export function useUserProfile() {
     } catch (err) {
       console.error('[UserProfile] Unexpected error during fetchUserData:', err);
       
-      // Check if this is the admin user even if there's an error
+      // Check if this is an admin user even if there's an error
       try {
         const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.email === ADMIN_EMAIL) {
+        if (userData?.user?.email && AuthService.isAdminEmail(userData.user.email)) {
           console.log('[UserProfile] Admin user detected during error recovery. Setting admin privileges.');
           // Create temporary admin data
           const adminData: UserData = {
             id: userId,
-            email: ADMIN_EMAIL,
+            email: userData.user.email,
             role: 'admin',
             full_name: 'Administrator',
           };
@@ -192,7 +192,7 @@ export function useUserProfile() {
 
   // Helper function to create missing profile for known users
   async function createMissingUserProfile(userId: string, isAdmin: boolean = false): Promise<boolean> {
-    return AuthService.ensureAdminProfile(userId, isAdmin ? ADMIN_EMAIL : '');
+    return AuthService.ensureAdminProfile(userId, isAdmin ? ADMIN_EMAILS[0] : '');
   }
 
   return {
@@ -202,6 +202,6 @@ export function useUserProfile() {
     setIsSuperAdmin,
     fetchUserData,
     createMissingUserProfile,
-    ADMIN_EMAIL
+    ADMIN_EMAILS
   };
 }
