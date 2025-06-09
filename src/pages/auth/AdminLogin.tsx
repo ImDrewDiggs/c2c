@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -68,20 +67,11 @@ export default function AdminLogin() {
     } catch (error: any) {
       console.error("[AdminLogin] Login error:", error);
       
-      // Provide specific error message for admin email
-      if (email === ADMIN_CREDENTIALS.email) {
-        toast({
-          variant: "destructive",
-          title: "Admin Login Failed",
-          description: "If you haven't created the admin account yet, please use the 'Create Admin User' button first.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: error.message || "Invalid login credentials",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: error.message || "Invalid login credentials. If you just created the admin account, please wait a moment and try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -96,7 +86,7 @@ export default function AdminLogin() {
       if (result.success) {
         toast({
           title: "Success",
-          description: `${result.message}. You can now login with the admin credentials.`,
+          description: result.message,
         });
         
         // Pre-fill the form with admin credentials

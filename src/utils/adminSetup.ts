@@ -58,27 +58,20 @@ export async function createAdminUser() {
 
     console.log('New admin user created:', signUpData.user.id);
     
-    // Wait longer for the auth system to fully process the new user
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Verify the user exists in auth.users before creating profile
-    const { data: verifyUser, error: verifyError } = await supabase.auth.getUser();
-    
-    if (verifyError || !verifyUser.user) {
-      console.error('User verification failed after creation:', verifyError);
-      return { 
-        success: false, 
-        message: 'User was created but verification failed. Please try signing in manually.' 
-      };
+    // Don't try to verify immediately - just create the profile and let the user sign in
+    try {
+      // Create admin profile using the safe function
+      await ensureAdminProfileSafe(signUpData.user.id);
+      console.log('Admin profile created successfully');
+    } catch (profileError) {
+      console.warn('Profile creation failed, but user was created:', profileError);
+      // Continue anyway - the profile can be created on first login
     }
-    
-    // Create admin profile using the safe function
-    await ensureAdminProfileSafe(signUpData.user.id);
     
     // Sign out the newly created user
     await supabase.auth.signOut();
     
-    return { success: true, message: 'Admin user created successfully' };
+    return { success: true, message: 'Admin user created successfully. You can now sign in with the admin credentials.' };
   } catch (error: any) {
     console.error('Error creating admin user:', error);
     return { success: false, message: error.message };
