@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -15,6 +16,7 @@ export default function AdminLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [justCreatedAdmin, setJustCreatedAdmin] = useState(false);
   const { signIn, loading: authLoading, user, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -67,11 +69,20 @@ export default function AdminLogin() {
     } catch (error: any) {
       console.error("[AdminLogin] Login error:", error);
       
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: error.message || "Invalid login credentials. If you just created the admin account, please wait a moment and try again.",
-      });
+      // If they just created an admin user, give them specific guidance
+      if (justCreatedAdmin) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please wait a few more seconds for the user creation to complete, then try again.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: error.message || "Invalid login credentials. If you just created the admin account, please wait a moment and try again.",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -84,6 +95,7 @@ export default function AdminLogin() {
       const result = await createAdminUser();
       
       if (result.success) {
+        setJustCreatedAdmin(true);
         toast({
           title: "Success",
           description: result.message,
@@ -92,6 +104,11 @@ export default function AdminLogin() {
         // Pre-fill the form with admin credentials
         setEmail(ADMIN_CREDENTIALS.email);
         setPassword(ADMIN_CREDENTIALS.password);
+        
+        // Reset the flag after 10 seconds
+        setTimeout(() => {
+          setJustCreatedAdmin(false);
+        }, 10000);
       } else {
         toast({
           variant: "destructive",
@@ -196,6 +213,14 @@ export default function AdminLogin() {
               </div>
             </div>
           </div>
+
+          {justCreatedAdmin && (
+            <div className="bg-blue-600/20 border border-blue-500/30 rounded-md p-3">
+              <p className="text-sm text-blue-200">
+                Admin user created successfully! Please wait a moment for the system to process, then try signing in.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-4">
             <Button type="submit" className="w-full" disabled={isSubmitting || authLoading}>

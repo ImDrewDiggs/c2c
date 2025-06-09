@@ -58,9 +58,8 @@ export async function createAdminUser() {
 
     console.log('New admin user created:', signUpData.user.id);
     
-    // Don't try to verify immediately - just create the profile and let the user sign in
+    // Create admin profile using the safe function
     try {
-      // Create admin profile using the safe function
       await ensureAdminProfileSafe(signUpData.user.id);
       console.log('Admin profile created successfully');
     } catch (profileError) {
@@ -71,7 +70,10 @@ export async function createAdminUser() {
     // Sign out the newly created user
     await supabase.auth.signOut();
     
-    return { success: true, message: 'Admin user created successfully. You can now sign in with the admin credentials.' };
+    // Wait a moment for Supabase to fully process the user creation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    return { success: true, message: 'Admin user created successfully. Please wait a moment before signing in.' };
   } catch (error: any) {
     console.error('Error creating admin user:', error);
     return { success: false, message: error.message };
