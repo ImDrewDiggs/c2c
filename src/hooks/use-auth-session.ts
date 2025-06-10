@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useUserProfile } from './use-user-profile';
+import { useAbortController } from './use-abort-controller';
 
 export function useAuthSession() {
   const [user, setUser] = useState<User | null>(null);
@@ -13,11 +14,10 @@ export function useAuthSession() {
   const authChangeSubscription = useRef<{ unsubscribe: () => void } | null>(null);
 
   const { fetchUserData } = useUserProfile();
+  const { isMounted } = useAbortController();
 
   // Initial session check
   useEffect(() => {
-    let isMounted = true;
-    
     // Skip if we've already done the initial check
     if (initialSessionCheckComplete.current) return;
     
@@ -32,25 +32,29 @@ export function useAuthSession() {
           throw error;
         }
         
-        if (session?.user && isMounted) {
+        if (session?.user && isMounted()) {
           console.log('[AuthSession] User found in session:', session.user.email);
           setUser(session.user);
           
-          // Fetch user profile but don't block on it
-          fetchUserData(session.user.id).catch(err => {
-            console.warn('[AuthSession] Profile fetch error, continuing anyway:', err.message);
-          });
-        } else if (isMounted) {
+          // Defer profile fetch to prevent blocking
+          setTimeout(() => {
+            if (isMounted()) {
+              fetchUserData(session.user.id).catch(err => {
+                console.warn('[AuthSession] Profile fetch error, continuing anyway:', err.message);
+              });
+            }
+          }, 100);
+        } else if (isMounted()) {
           console.log('[AuthSession] No user in session during initial check');
           setUser(null);
         }
       } catch (error) {
         console.error('[AuthSession] Error checking session:', error);
-        if (isMounted) {
+        if (isMounted()) {
           setSessionCheckError(error instanceof Error ? error : new Error('Failed to check session'));
         }
       } finally {
-        if (isMounted) {
+        if (isMounted()) {
           setLoading(false);
           setSessionChecked(true);
           initialSessionCheckComplete.current = true;
@@ -59,11 +63,7 @@ export function useAuthSession() {
     };
     
     checkSession();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchUserData]);
+  }, [fetchUserData, isMounted]);
 
   // Auth state change listener - only set up after initial session check
   useEffect(() => {
@@ -76,6 +76,10 @@ export function useAuthSession() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[AuthSession] Auth state changed:', { event, userEmail: session?.user?.email });
       
+      if (!isMounted()) {
+        return;
+      }
+      
       if (event === 'SIGNED_OUT') {
         console.log('[AuthSession] SIGNED_OUT event received, clearing user state');
         setUser(null);
@@ -85,12 +89,13 @@ export function useAuthSession() {
       
       if (session?.user) {
         setUser(session.user);
-        // Don't fetch profile data here to avoid potential deadlocks
-        // Use setTimeout to defer any additional operations
+        // Defer profile data fetch to prevent potential deadlocks
         setTimeout(() => {
-          fetchUserData(session.user.id).catch(err => {
-            console.warn('[AuthSession] Profile fetch after state change error:', err.message);
-          });
+          if (isMounted()) {
+            fetchUserData(session.user.id).catch(err => {
+              console.warn('[AuthSession] Profile fetch after state change error:', err.message);
+            });
+          }
         }, 100);
       } else {
         setUser(null);
@@ -108,7 +113,7 @@ export function useAuthSession() {
         authChangeSubscription.current = null;
       }
     };
-  }, [sessionChecked, fetchUserData]);
+  }, [sessionChecked, fetchUserData, isMounted]);
 
   return { 
     user, 

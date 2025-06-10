@@ -7,16 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft, Loader2, UserPlus, HelpCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useFormState } from "@/hooks/use-form-state";
 import Loading from "@/components/ui/Loading";
 import { createAdminUser, ADMIN_CREDENTIALS } from "@/utils/adminSetup";
+import { validateEmail } from "@/utils/validation";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [adminCreationResult, setAdminCreationResult] = useState<string | null>(null);
+  
+  const loginForm = useFormState({}, { clearErrorOnSubmit: true });
+  const adminCreationForm = useFormState({}, { clearErrorOnSubmit: true });
+  
   const { signIn, loading: authLoading, user, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -37,35 +41,31 @@ export default function AdminLogin() {
     e.preventDefault();
     
     if (!email || !password) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please provide both email and password",
-      });
+      loginForm.setError("Please provide both email and password");
       return;
     }
     
-    setIsSubmitting(true);
+    if (!validateEmail(email)) {
+      loginForm.setError("Please provide a valid email address");
+      return;
+    }
     
     try {
-      console.log('[AdminLogin] Attempting to sign in:', email);
-      const role = await signIn(email, password, 'admin');
-      
-      if (role !== 'admin') {
+      await loginForm.handleSubmit(async () => {
+        console.log('[AdminLogin] Attempting to sign in:', email);
+        const role = await signIn(email, password, 'admin');
+        
+        if (role !== 'admin') {
+          throw new Error("You must be an admin to access the admin dashboard");
+        }
+        
         toast({
-          variant: "destructive",
-          title: "Access Denied",
-          description: "You must be an admin to access the admin dashboard",
+          title: "Success",
+          description: "Login successful. Redirecting to dashboard...",
         });
-        return;
-      }
-      
-      toast({
-        title: "Success",
-        description: "Login successful. Redirecting to dashboard...",
-      });
 
-      navigate("/admin/dashboard", { replace: true });
+        navigate("/admin/dashboard", { replace: true });
+      });
     } catch (error: any) {
       console.error("[AdminLogin] Login error:", error);
       
@@ -74,54 +74,45 @@ export default function AdminLogin() {
         title: "Authentication Error",
         description: error.message || "Invalid login credentials. If you just created the admin account, please check your email for a confirmation link.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleCreateAdminUser = async (adminEmail?: string) => {
-    setIsCreatingAdmin(true);
     setAdminCreationResult(null);
     
     try {
-      console.log('[AdminLogin] Creating admin user:', adminEmail || 'default');
-      const result = await createAdminUser(adminEmail);
-      
-      if (result.success) {
-        setAdminCreationResult(result.message);
-        toast({
-          title: "Success",
-          description: result.message,
-        });
+      await adminCreationForm.handleSubmit(async () => {
+        console.log('[AdminLogin] Creating admin user:', adminEmail || 'default');
+        const result = await createAdminUser(adminEmail);
         
-        // Pre-fill the form with the created admin credentials
-        const targetAdmin = adminEmail 
-          ? ADMIN_CREDENTIALS.find(admin => admin.email === adminEmail)
-          : ADMIN_CREDENTIALS[0];
-        
-        if (targetAdmin) {
-          setEmail(targetAdmin.email);
-          setPassword(targetAdmin.password);
+        if (result.success) {
+          setAdminCreationResult(result.message);
+          toast({
+            title: "Success",
+            description: result.message,
+          });
+          
+          // Pre-fill the form with the created admin credentials
+          const targetAdmin = adminEmail 
+            ? ADMIN_CREDENTIALS.find(admin => admin.email === adminEmail)
+            : ADMIN_CREDENTIALS[0];
+          
+          if (targetAdmin) {
+            setEmail(targetAdmin.email);
+            setPassword(targetAdmin.password);
+          }
+        } else {
+          setAdminCreationResult(result.message);
+          throw new Error(result.message);
         }
-      } else {
-        setAdminCreationResult(result.message);
-        toast({
-          variant: "destructive",
-          title: "Admin Creation Failed",
-          description: result.message,
-        });
-      }
+      });
     } catch (error: any) {
       console.error('[AdminLogin] Error creating admin user:', error);
-      const errorMessage = "Failed to create admin user. Please check the console for details.";
-      setAdminCreationResult(errorMessage);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: errorMessage,
+        title: "Admin Creation Failed",
+        description: error.message || "Failed to create admin user. Please check the console for details.",
       });
-    } finally {
-      setIsCreatingAdmin(false);
     }
   };
 
@@ -135,6 +126,8 @@ export default function AdminLogin() {
   if (initialLoading) {
     return <Loading fullscreen={true} size="medium" message="Loading authentication..." />;
   }
+
+  const isFormDisabled = loginForm.isLoading || authLoading || adminCreationForm.isLoading;
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -185,7 +178,7 @@ export default function AdminLogin() {
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting || authLoading}
+                  disabled={isFormDisabled}
                 />
               </div>
             </div>
@@ -205,11 +198,26 @@ export default function AdminLogin() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting || authLoading}
+                  disabled={isFormDisabled}
                 />
               </div>
             </div>
           </div>
+
+          {(loginForm.error || adminCreationForm.error) && (
+            <div className="rounded-md p-3 bg-red-600/20 border border-red-500/30">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-200">
+                    {loginForm.error || adminCreationForm.error}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {adminCreationResult && (
             <div className={`rounded-md p-3 ${
@@ -245,8 +253,8 @@ export default function AdminLogin() {
           )}
 
           <div className="space-y-4">
-            <Button type="submit" className="w-full" disabled={isSubmitting || authLoading}>
-              {(isSubmitting || authLoading) ? (
+            <Button type="submit" className="w-full" disabled={isFormDisabled}>
+              {loginForm.isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
@@ -262,9 +270,9 @@ export default function AdminLogin() {
                 variant="outline" 
                 className="w-full" 
                 onClick={() => handleCreateAdminUser('diggs844037@yahoo.com')}
-                disabled={isSubmitting || authLoading || isCreatingAdmin}
+                disabled={isFormDisabled}
               >
-                {isCreatingAdmin ? (
+                {adminCreationForm.isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...
@@ -282,9 +290,9 @@ export default function AdminLogin() {
                 variant="outline" 
                 className="w-full" 
                 onClick={() => handleCreateAdminUser('drewdiggs844037@gmail.com')}
-                disabled={isSubmitting || authLoading || isCreatingAdmin}
+                disabled={isFormDisabled}
               >
-                {isCreatingAdmin ? (
+                {adminCreationForm.isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...
@@ -303,7 +311,7 @@ export default function AdminLogin() {
               variant="outline" 
               className="w-full" 
               onClick={handleRequestAdminAccess}
-              disabled={isSubmitting || authLoading}
+              disabled={isFormDisabled}
             >
               <HelpCircle className="mr-2 h-4 w-4" />
               Request Admin Access
