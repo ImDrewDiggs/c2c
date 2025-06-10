@@ -21,10 +21,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     autoRefreshToken: true,
     storage: localStorage,
     // Reduce token lifetime for security
-    storageKey: 'can2curb-auth-token',
-    // Add security headers
-    additionalHeaders: {
-      'X-Client-Info': 'can2curb-web-app'
-    }
+    storageKey: 'can2curb-auth-token'
   }
 });
