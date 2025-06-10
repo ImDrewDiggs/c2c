@@ -368,6 +368,14 @@ export type Database = {
         Args: { admin_user_id: string; admin_email: string }
         Returns: undefined
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      is_admin_by_email: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_admin_user: {
         Args: { user_id: string }
         Returns: boolean

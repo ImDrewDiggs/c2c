@@ -33,20 +33,36 @@ export class AuthService {
    */
   static async checkUserRole(userId: string, requiredRole: string): Promise<boolean> {
     try {
-      // Use server-side function for role checking to prevent client manipulation
-      const { data: hasRole, error } = await supabase.rpc('check_user_has_role', {
-        user_id: userId,
-        required_role: requiredRole
-      });
+      // Use the new security definer function for role checking
+      const { data: userRole, error } = await supabase.rpc('get_current_user_role');
       
       if (error) {
         console.error('[AuthService] Error checking user role:', error);
         return false;
       }
       
-      return hasRole === true;
+      return userRole === requiredRole;
     } catch (err) {
       console.error('[AuthService] Error in checkUserRole:', err);
+      return false;
+    }
+  }
+  
+  /**
+   * Check if current user is admin using server-side function
+   */
+  static async isCurrentUserAdmin(): Promise<boolean> {
+    try {
+      const { data: isAdmin, error } = await supabase.rpc('is_admin_by_email');
+      
+      if (error) {
+        console.error('[AuthService] Error checking admin status:', error);
+        return false;
+      }
+      
+      return isAdmin === true;
+    } catch (err) {
+      console.error('[AuthService] Error in isCurrentUserAdmin:', err);
       return false;
     }
   }
@@ -103,9 +119,6 @@ export class AuthService {
 
       console.log(`[AuthService] Attempting to sign in as ${role} with email: ${sanitizedEmail}`);
       
-      // Special case for admin email - bypass role checking
-      const isAdmin = this.isAdminEmail(sanitizedEmail);
-      
       // Clear any existing session first to prevent conflicts
       await supabase.auth.signOut();
       
@@ -130,9 +143,11 @@ export class AuthService {
         return { user: null, session: null, role: '', error: new Error('Authentication failed') };
       }
 
-      // For admin users, use server-side validation
+      // Check if user is admin using server-side function
+      const isAdmin = await this.isCurrentUserAdmin();
+      
       if (isAdmin) {
-        console.log('[AuthService] Admin user login detected');
+        console.log('[AuthService] Admin user login detected via server-side check');
         try {
           await this.ensureAdminProfile(signInData.user.id, sanitizedEmail);
         } catch (profileError) {
@@ -150,7 +165,7 @@ export class AuthService {
       try {
         const hasRequiredRole = await this.checkUserRole(signInData.user.id, role);
         
-        if (!hasRequiredRole) {
+        if (!hasRequiredRole && role !== 'customer') {
           await supabase.auth.signOut();
           return { 
             user: null, 
@@ -163,7 +178,7 @@ export class AuthService {
         return {
           user: signInData.user,
           session: signInData.session,
-          role: role
+          role: hasRequiredRole ? role : 'customer'
         };
       } catch (roleError: any) {
         await supabase.auth.signOut();
@@ -233,10 +248,12 @@ export class AuthService {
     error?: Error;
   }> {
     try {
-      // Use server-side function for profile fetching to ensure RLS compliance
-      const { data, error } = await supabase.rpc('get_user_profile', {
-        target_user_id: userId
-      });
+      // Direct query since RLS policies are now properly configured
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
         
       if (error) {
         return { profile: null, error };
