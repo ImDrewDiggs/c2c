@@ -36,11 +36,12 @@ export function useAuthSession() {
           console.log('[AuthSession] User found in session:', session.user.email);
           setUser(session.user);
           
-          // Defer profile fetch to prevent blocking
+          // Only fetch profile data for non-admin users to prevent recursion
+          // Admin users will be handled by the auth state directly
           setTimeout(() => {
             if (isMounted()) {
               fetchUserData(session.user.id).catch(err => {
-                console.warn('[AuthSession] Profile fetch error, continuing anyway:', err.message);
+                console.warn('[AuthSession] Profile fetch error (continuing anyway):', err.message);
               });
             }
           }, 100);
@@ -89,7 +90,7 @@ export function useAuthSession() {
       
       if (session?.user) {
         setUser(session.user);
-        // Defer profile data fetch to prevent potential deadlocks
+        // Only defer profile fetch for non-recursive scenarios
         setTimeout(() => {
           if (isMounted()) {
             fetchUserData(session.user.id).catch(err => {

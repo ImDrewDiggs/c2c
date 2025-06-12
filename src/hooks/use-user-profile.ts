@@ -16,7 +16,27 @@ export function useUserProfile() {
     try {
       console.log('[UserProfile] Fetching user data for ID:', userId);
       
-      // Use direct query since RLS policies are now properly configured
+      // Get user from auth first to check email
+      const { data: authUser } = await supabase.auth.getUser();
+      const userEmail = authUser?.user?.email;
+      
+      // Check if this is an admin email first
+      const isAdminByEmail = AuthService.isAdminEmail(userEmail);
+      
+      if (isAdminByEmail) {
+        console.log('[UserProfile] Admin user detected by email, setting admin data');
+        const adminData: UserData = {
+          id: userId,
+          email: userEmail,
+          role: 'admin',
+          full_name: 'Administrator',
+        };
+        setUserData(adminData);
+        setIsSuperAdmin(true);
+        return adminData;
+      }
+      
+      // For non-admin users, try to fetch profile data
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -26,41 +46,16 @@ export function useUserProfile() {
       if (error) {
         console.error('[UserProfile] Error fetching user data:', error);
         
-        // Check if this is an admin user by email and handle accordingly
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.email && AuthService.isAdminEmail(userData.user.email)) {
-          console.log('[UserProfile] Admin user detected by email. Creating admin profile.');
-          
-          // Try to create admin profile
-          try {
-            await AuthService.ensureAdminProfile(userId, userData.user.email);
-            
-            // Try to fetch again after creation
-            const { data: retryData, error: retryError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', userId)
-              .maybeSingle();
-            
-            if (!retryError && retryData) {
-              setUserData(retryData);
-              setIsSuperAdmin(true);
-              return retryData;
-            }
-          } catch (createError) {
-            console.error('[UserProfile] Error creating admin profile:', createError);
-          }
-          
-          // Fallback: Create temporary admin data object
-          const adminData: UserData = {
+        // Create default user data if profile fetch fails
+        if (userEmail) {
+          const defaultUserData: UserData = {
             id: userId,
-            email: userData.user.email,
-            role: 'admin',
-            full_name: 'Administrator',
+            email: userEmail,
+            role: 'customer',
+            full_name: userEmail.split('@')[0],
           };
-          setUserData(adminData);
-          setIsSuperAdmin(true);
-          return adminData;
+          setUserData(defaultUserData);
+          return defaultUserData;
         }
         
         return null;
@@ -69,57 +64,13 @@ export function useUserProfile() {
       if (!data) {
         console.log('[UserProfile] No user profile found for ID:', userId);
         
-        // Check if this is an admin email
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          console.error('[UserProfile] Error fetching user details:', userError);
-          return null;
-        }
-        
-        const isAdmin = AuthService.isAdminEmail(userData?.user?.email);
-        
-        if (isAdmin && userData?.user) {
-          console.log('[UserProfile] Admin user without profile. Creating admin profile.');
-          
-          try {
-            await AuthService.ensureAdminProfile(userId, userData.user.email);
-            
-            // Try to fetch the newly created profile
-            const { data: newProfile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', userId)
-              .maybeSingle();
-            
-            if (newProfile) {
-              setUserData(newProfile);
-              setIsSuperAdmin(true);
-              return newProfile;
-            }
-          } catch (createError) {
-            console.warn('[UserProfile] Admin profile creation failed:', createError);
-          }
-          
-          // Fallback to temporary admin data
-          const adminData: UserData = {
-            id: userId,
-            email: userData.user.email,
-            role: 'admin',
-            full_name: 'Administrator',
-          };
-          setUserData(adminData);
-          setIsSuperAdmin(true);
-          return adminData;
-        } 
-        
-        // For non-admin users without profiles, create default profile
-        if (userData?.user) {
+        // Create default profile for non-admin users
+        if (userEmail) {
           const defaultUserData: UserData = {
             id: userId,
-            email: userData.user.email || '',
-            role: (userData.user.user_metadata?.role as UserData['role']) || 'customer',
-            full_name: userData.user.user_metadata?.full_name || userData.user.email?.split('@')[0] || 'User',
+            email: userEmail,
+            role: 'customer',
+            full_name: userEmail.split('@')[0],
           };
           setUserData(defaultUserData);
           return defaultUserData;
@@ -136,8 +87,8 @@ export function useUserProfile() {
         
         setUserData(data);
         
-        // Check if user is admin
-        const isAdmin = AuthService.isAdminEmail(data.email) || data.role === 'admin';
+        // Check if user is admin by role or email
+        const isAdmin = data.role === 'admin' || AuthService.isAdminEmail(data.email);
         setIsSuperAdmin(isAdmin);
         
         return data;
@@ -147,12 +98,12 @@ export function useUserProfile() {
       
       // Fallback for admin users during errors
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.email && AuthService.isAdminEmail(userData.user.email)) {
+        const { data: authUser } = await supabase.auth.getUser();
+        if (authUser?.user?.email && AuthService.isAdminEmail(authUser.user.email)) {
           console.log('[UserProfile] Admin user detected during error recovery.');
           const adminData: UserData = {
             id: userId,
-            email: userData.user.email,
+            email: authUser.user.email,
             role: 'admin',
             full_name: 'Administrator',
           };
@@ -172,7 +123,19 @@ export function useUserProfile() {
 
   // Helper function to create missing profile for known users
   async function createMissingUserProfile(userId: string, isAdmin: boolean = false): Promise<boolean> {
-    return AuthService.ensureAdminProfile(userId, isAdmin ? ADMIN_EMAILS[0] : '');
+    try {
+      const { data: authUser } = await supabase.auth.getUser();
+      const email = authUser?.user?.email || '';
+      
+      if (isAdmin || AuthService.isAdminEmail(email)) {
+        return AuthService.ensureAdminProfile(userId, email);
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      return false;
+    }
   }
 
   return {

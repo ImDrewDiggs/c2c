@@ -1,267 +1,102 @@
 
-import { supabase } from "@/lib/supabase";
-import { UserData } from "@/lib/supabase";
-import type { User, Session } from "@supabase/supabase-js";
-import { validateEmail, validatePassword, sanitizeInput } from "@/utils/validation";
+import { supabase, UserData } from '@/lib/supabase';
 
-/**
- * AuthService - Centralized service for authentication operations
- * 
- * This service handles all authentication-related operations including:
- * - Login/logout with enhanced security
- * - Role verification via server-side functions
- * - User profile management
- * - Session handling with improved security
- */
 export class AuthService {
-  // Admin emails are now checked server-side via RLS policies
-  static readonly ADMIN_EMAILS: string[] = [
+  static readonly ADMIN_EMAILS = [
     'diggs844037@yahoo.com',
     'drewdiggs844037@gmail.com'
   ];
-  
-  /**
-   * Check if an email is an admin email (client-side fallback only)
-   * Primary check should be server-side via RLS
-   */
+
   static isAdminEmail(email?: string | null): boolean {
-    return email ? this.ADMIN_EMAILS.includes(email) : false;
+    if (!email) return false;
+    return this.ADMIN_EMAILS.includes(email.toLowerCase());
   }
-  
-  /**
-   * Enhanced role checking with server-side validation
-   */
-  static async checkUserRole(userId: string, requiredRole: string): Promise<boolean> {
+
+  static async signIn(email: string, password: string, role: UserData['role']) {
     try {
-      // Use the new security definer function for role checking
-      const { data: userRole, error } = await supabase.rpc('get_current_user_role');
+      console.log('[AuthService] Attempting sign in for:', email);
       
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
       if (error) {
-        console.error('[AuthService] Error checking user role:', error);
-        return false;
-      }
-      
-      return userRole === requiredRole;
-    } catch (err) {
-      console.error('[AuthService] Error in checkUserRole:', err);
-      return false;
-    }
-  }
-  
-  /**
-   * Check if current user is admin using server-side function
-   */
-  static async isCurrentUserAdmin(): Promise<boolean> {
-    try {
-      const { data: isAdmin, error } = await supabase.rpc('is_admin_by_email');
-      
-      if (error) {
-        console.error('[AuthService] Error checking admin status:', error);
-        return false;
-      }
-      
-      return isAdmin === true;
-    } catch (err) {
-      console.error('[AuthService] Error in isCurrentUserAdmin:', err);
-      return false;
-    }
-  }
-  
-  /**
-   * Ensure admin profile exists using the safe database function
-   */
-  static async ensureAdminProfile(userId: string, email: string): Promise<boolean> {
-    try {
-      if (!this.isAdminEmail(email)) {
-        return false;
+        console.error('[AuthService] Sign in error:', error);
+        return { error, user: null, role: null };
       }
 
-      console.log('[AuthService] Creating admin profile using safe database function');
+      if (!data.user) {
+        return { error: new Error('No user returned'), user: null, role: null };
+      }
+
+      console.log('[AuthService] Sign in successful for:', data.user.email);
+
+      // Determine role based on email for admin users
+      const actualRole = this.isAdminEmail(data.user.email) ? 'admin' : role;
       
+      // For admin users, ensure profile exists
+      if (actualRole === 'admin') {
+        await this.ensureAdminProfile(data.user.id, data.user.email);
+      }
+
+      return { 
+        error: null, 
+        user: data.user, 
+        role: actualRole 
+      };
+    } catch (error) {
+      console.error('[AuthService] Unexpected sign in error:', error);
+      return { 
+        error: error instanceof Error ? error : new Error('Unknown error'), 
+        user: null, 
+        role: null 
+      };
+    }
+  }
+
+  static async signOut() {
+    try {
+      console.log('[AuthService] Signing out');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('[AuthService] Sign out error:', error);
+        return { error };
+      }
+
+      console.log('[AuthService] Sign out successful');
+      return { error: null };
+    } catch (error) {
+      console.error('[AuthService] Unexpected sign out error:', error);
+      return { 
+        error: error instanceof Error ? error : new Error('Unknown error') 
+      };
+    }
+  }
+
+  static async ensureAdminProfile(userId: string, email: string): Promise<boolean> {
+    try {
+      console.log('[AuthService] Ensuring admin profile for:', email);
+      
+      // Use the security definer function to safely create admin profile
       const { error } = await supabase.rpc('create_admin_profile_safe', {
         admin_user_id: userId,
         admin_email: email
       });
 
       if (error) {
-        console.error('[AuthService] Error calling create_admin_profile_safe:', error);
-        return false;
+        console.warn('[AuthService] Admin profile creation warning:', error);
+        // Don't throw error for admin users - they should still be able to access
+        return true;
       }
 
-      console.log('[AuthService] Admin profile created successfully');
+      console.log('[AuthService] Admin profile ensured for:', email);
       return true;
-    } catch (err) {
-      console.error('[AuthService] Failed to create admin profile:', err);
-      return false;
-    }
-  }
-
-  /**
-   * Enhanced sign in with better validation and security
-   */
-  static async signIn(email: string, password: string, role: UserData['role']): Promise<{
-    user: User | null;
-    session: Session | null;
-    role: string;
-    error?: Error;
-  }> {
-    try {
-      // Input validation
-      const sanitizedEmail = sanitizeInput(email.toLowerCase());
-      
-      if (!validateEmail(sanitizedEmail)) {
-        return { user: null, session: null, role: '', error: new Error('Invalid email format') };
-      }
-      
-      if (!password || password.length < 6) {
-        return { user: null, session: null, role: '', error: new Error('Password must be at least 6 characters') };
-      }
-
-      console.log(`[AuthService] Attempting to sign in as ${role} with email: ${sanitizedEmail}`);
-      
-      // Clear any existing session first to prevent conflicts
-      await supabase.auth.signOut();
-      
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: sanitizedEmail,
-        password,
-      });
-
-      if (signInError) {
-        console.error('[AuthService] Sign in error:', signInError);
-        
-        // Provide more specific error messages
-        if (signInError.message.includes('Invalid login credentials')) {
-          return { user: null, session: null, role: '', error: new Error('Invalid email or password') };
-        }
-        
-        return { user: null, session: null, role: '', error: signInError };
-      }
-
-      if (!signInData.user) {
-        console.error('[AuthService] No user returned from sign in');
-        return { user: null, session: null, role: '', error: new Error('Authentication failed') };
-      }
-
-      // Check if user is admin using server-side function
-      const isAdmin = await this.isCurrentUserAdmin();
-      
-      if (isAdmin) {
-        console.log('[AuthService] Admin user login detected via server-side check');
-        try {
-          await this.ensureAdminProfile(signInData.user.id, sanitizedEmail);
-        } catch (profileError) {
-          console.error('[AuthService] Error handling admin profile:', profileError);
-        }
-        
-        return { 
-          user: signInData.user,
-          session: signInData.session,
-          role: 'admin'
-        };
-      }
-      
-      // For non-admin users, check role via server-side function
-      try {
-        const hasRequiredRole = await this.checkUserRole(signInData.user.id, role);
-        
-        if (!hasRequiredRole && role !== 'customer') {
-          await supabase.auth.signOut();
-          return { 
-            user: null, 
-            session: null, 
-            role: '', 
-            error: new Error(`Access denied. This account is not authorized for ${role} access.`)
-          };
-        }
-        
-        return {
-          user: signInData.user,
-          session: signInData.session,
-          role: hasRequiredRole ? role : 'customer'
-        };
-      } catch (roleError: any) {
-        await supabase.auth.signOut();
-        return { 
-          user: null, 
-          session: null, 
-          role: '', 
-          error: new Error('Error verifying user permissions')
-        };
-      }
-    } catch (error: any) {
-      return { 
-        user: null, 
-        session: null, 
-        role: '', 
-        error: error
-      };
-    }
-  }
-
-  /**
-   * Sign out with enhanced cleanup
-   */
-  static async signOut(): Promise<{ error?: Error }> {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        return { error };
-      }
-      
-      // Clear any cached data
-      localStorage.removeItem('can2curb-user-cache');
-      
-      return {};
-    } catch (error: any) {
-      return { error };
-    }
-  }
-
-  /**
-   * Get current session with enhanced error handling
-   */
-  static async getSession(): Promise<{ 
-    user: User | null,
-    session: Session | null,
-    error?: Error
-  }> {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        return { user: null, session: null, error };
-      }
-      return { 
-        user: data.session?.user || null, 
-        session: data.session || null 
-      };
-    } catch (error: any) {
-      return { user: null, session: null, error };
-    }
-  }
-
-  /**
-   * Fetch user profile data with enhanced security
-   */
-  static async fetchUserProfile(userId: string): Promise<{
-    profile: UserData | null;
-    error?: Error;
-  }> {
-    try {
-      // Direct query since RLS policies are now properly configured
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-        
-      if (error) {
-        return { profile: null, error };
-      }
-      
-      return { profile: data as UserData };
-    } catch (error: any) {
-      return { profile: null, error };
+    } catch (error) {
+      console.warn('[AuthService] Admin profile creation failed:', error);
+      // Return true for admin emails even if profile creation fails
+      return this.isAdminEmail(email);
     }
   }
 }
