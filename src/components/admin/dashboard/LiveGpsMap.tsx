@@ -20,13 +20,17 @@ export function LiveGpsMap({ employeeLocations, serviceAreas, currentLocation }:
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px] w-full">
-          <Map
-            houses={serviceAreas}
-            assignments={[]} // We're not showing assignments on this map
-            currentLocation={currentLocation}
-            employeeLocations={employeeLocations}
-          />
+        <div className="h-[400px] w-full flex items-center justify-center bg-muted rounded-lg">
+          <div className="text-center">
+            <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-lg font-semibold mb-2">GPS Map Loading...</p>
+            <p className="text-sm text-muted-foreground">
+              Map functionality temporarily disabled for stability.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {employeeLocations.filter(e => e.is_online).length} active employees • {serviceAreas.length} service areas
+            </p>
+          </div>
         </div>
         <div className="mt-2 text-xs text-muted-foreground">
           <p>Showing {employeeLocations.filter(e => e.is_online).length} active employees and {serviceAreas.length} service areas</p>
