@@ -1,6 +1,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TimeTracker from "@/components/employee/TimeTracker";
+import { TimeTracker } from "@/components/employee/TimeTracker";
 import { JobAssignments } from "@/components/employee/JobAssignments";
 import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
 import { Assignment, Location } from "@/types/map";
@@ -79,7 +79,7 @@ export function DashboardContent({
       </TabsList>
 
       <TabsContent value="time-tracker">
-        <TimeTracker />
+        <TimeTracker userId={userId || ''} />
       </TabsContent>
 
       <TabsContent value="job-assignments">

@@ -14,6 +14,163 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignments: {
+        Row: {
+          assigned_date: string
+          completed_at: string | null
+          created_at: string
+          employee_id: string
+          house_id: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_date?: string
+          completed_at?: string | null
+          created_at?: string
+          employee_id: string
+          house_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_date?: string
+          completed_at?: string | null
+          created_at?: string
+          employee_id?: string
+          house_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_locations: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          is_online: boolean
+          last_seen_at: string
+          latitude: number
+          longitude: number
+          timestamp: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          is_online?: boolean
+          last_seen_at?: string
+          latitude: number
+          longitude: number
+          timestamp?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          is_online?: boolean
+          last_seen_at?: string
+          latitude?: number
+          longitude?: number
+          timestamp?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_locations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      houses: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

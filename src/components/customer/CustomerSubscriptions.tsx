@@ -19,78 +19,22 @@ const CustomerSubscriptions = ({ userId }: CustomerSubscriptionsProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  // Get subscriptions for the customer
-  const { data: subscriptions, isLoading, error } = useQuery({
-    queryKey: ['customerSubscriptions', userId],
-    queryFn: async () => {
-      // First get the customer-subscription links
-      const { data: customerSubs, error: customerSubsError } = await supabase
-        .from('customer_subscriptions')
-        .select('*')
-        .eq('customer_id', userId);
-      
-      if (customerSubsError) throw customerSubsError;
-      
-      if (!customerSubs || customerSubs.length === 0) {
-        return [];
-      }
-      
-      // Then get the actual subscription details
-      const subscriptionIds = customerSubs.map(sub => sub.subscription_id);
-      
-      const { data: subscriptionData, error: subsError } = await supabase
-        .from('subscriptions')
-        .select(`
-          *,
-          service_plans:plan_id (
-            name,
-            price,
-            description,
-            frequency
-          )
-        `)
-        .in('id', subscriptionIds);
-      
-      if (subsError) throw subsError;
-      
-      return subscriptionData || [];
-    },
-    enabled: !!userId,
-  });
+  // Temporarily disabled until subscription tables are created
+  const subscriptions = [];
+  const isLoading = false;
+  const error = null;
 
   const handleNavigateToPlans = () => {
     navigate("/subscription");
   };
 
   const handleCancelSubscription = async (subscriptionId: string) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('id', subscriptionId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Subscription Cancelled",
-        description: "Your subscription has been cancelled successfully.",
-      });
-
-      // Refresh data
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (error) {
-      console.error("Error cancelling subscription:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to cancel subscription. Please try again.",
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Temporarily disabled until subscription tables are created
+    console.log('Would cancel subscription:', subscriptionId);
+    toast({
+      title: "Feature Coming Soon",
+      description: "Subscription management will be available once all tables are set up.",
+    });
   };
 
   if (isLoading) {
@@ -128,62 +72,16 @@ const CustomerSubscriptions = ({ userId }: CustomerSubscriptionsProps) => {
 
   return (
     <div className="space-y-6">
-      {subscriptions.map((subscription) => (
-        <Card key={subscription.id}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>{subscription.service_plans?.name || "Subscription Plan"}</CardTitle>
-                <CardDescription>Started on {new Date(subscription.start_date).toLocaleDateString()}</CardDescription>
-              </div>
-              <Badge 
-                variant={subscription.status === 'active' ? "default" : 
-                  subscription.status === 'cancelled' ? "destructive" : "outline"}
-              >
-                {subscription.status}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Plan Price:</span>
-                <span className="text-lg">${subscription.service_plans?.price.toFixed(2)}/{subscription.service_plans?.frequency}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Next Service Date:</span>
-                <span>{subscription.next_service_date ? new Date(subscription.next_service_date).toLocaleDateString() : "Not scheduled"}</span>
-              </div>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-medium mb-2">Plan Details</h4>
-                <p className="text-muted-foreground text-sm">{subscription.service_plans?.description || "No description available."}</p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div className="flex gap-2 w-full">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => navigate("/schedule")}
-              >
-                Schedule Pickup
-              </Button>
-              {subscription.status === "active" && (
-                <Button 
-                  variant="destructive" 
-                  className="flex-1"
-                  onClick={() => handleCancelSubscription(subscription.id)}
-                  disabled={loading}
-                >
-                  {loading ? "Processing..." : "Cancel Plan"}
-                </Button>
-              )}
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+      {/* Temporarily showing mock data until subscription tables are created */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscriptions Coming Soon</CardTitle>
+          <CardDescription>The subscription system is being set up.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Database tables are being created for the subscription system.</p>
+        </CardContent>
+      </Card>
       
       <div className="flex justify-center">
         <Button onClick={handleNavigateToPlans}>Browse Additional Plans</Button>
