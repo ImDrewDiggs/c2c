@@ -184,6 +184,15 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     error
   };
 
+  // Log the dashboard data being provided
+  console.log('[AdminDashboardProvider] Providing context value:', {
+    hasStats: !!dashboardData.stats,
+    hasEmployeeLocations: !!dashboardData.employeeLocations,
+    hasServiceAreas: !!dashboardData.serviceAreas,
+    loading: dashboardData.loading,
+    error: dashboardData.error
+  });
+
   // Provide the context value to children
   return (
     <AdminDashboardContext.Provider value={dashboardData}>
