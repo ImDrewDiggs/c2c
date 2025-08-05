@@ -13,19 +13,17 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
-// Define render2 function properly - this is the key fix
-export const render2 = (element: React.ReactNode): React.ReactElement => {
-  if (!React.isValidElement(element)) {
-    throw new Error("render2 requires a valid React element");
-  }
-  return element;
-};
+// Remove the render2 function - it's not needed
 
 export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
+  console.log('[AdminDashboardContent] Auth state:', { user: !!user, userData, isSuperAdmin });
+  
   const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, loading, error } = useAdminDashboard();
+  console.log('[AdminDashboardContent] Dashboard data:', { stats, loading, error });
   
   const handleRefresh = () => {
+    console.log('[AdminDashboardContent] Refresh triggered');
     window.location.reload();
   };
 

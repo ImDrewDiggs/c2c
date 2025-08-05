@@ -30,15 +30,22 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
 
   // Fetch dashboard data
   useEffect(() => {
+    console.log('[AdminDashboardProvider] Starting data fetch...');
     async function fetchDashboardData() {
       try {
+        console.log('[AdminDashboardProvider] Fetching profiles...');
         // Fetch total users count
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, role, created_at')
           .order('created_at', { ascending: false });
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('[AdminDashboardProvider] Profiles error:', profilesError);
+          throw profilesError;
+        }
+
+        console.log('[AdminDashboardProvider] Profiles data:', profilesData?.length, 'users');
 
         // Get count of total users
         const totalUsers = profilesData?.length || 0;
@@ -55,6 +62,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
           user => user.role === 'employee'
         ).length || 0;
 
+        console.log('[AdminDashboardProvider] Using mock data for missing tables...');
         // Temporarily use mock data until types regenerate
         const locationData = [];
         const housesData = [];
@@ -73,6 +81,14 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
         const logsData = [];
 
         // Update all state
+        console.log('[AdminDashboardProvider] Setting dashboard stats:', {
+          totalUsers,
+          newSignups,
+          activeEmployees,
+          completedJobs,
+          pendingJobs
+        });
+        
         setStats({
           totalUsers,
           newSignups,
@@ -85,13 +101,15 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
         setScheduledJobs(assignmentsData || []);
         setActivityLogs(logsData || []);
         setLoading(false);
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
+        console.log('[AdminDashboardProvider] Dashboard data loaded successfully!');
+      } catch (err: any) {
+        console.error("[AdminDashboardProvider] Error fetching dashboard data:", err);
         setError(err.message);
         setLoading(false);
       }
     }
 
+    console.log('[AdminDashboardProvider] Starting fetchDashboardData...');
     fetchDashboardData();
 
     // Set up real-time listeners for employee locations
