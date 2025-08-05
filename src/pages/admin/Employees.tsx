@@ -51,7 +51,7 @@ const formSchema = z.object({
   jobTitle: z.enum(["Driver", "Can Courier", "Can Cleaner", "Supervisor", "Trainee"], {
     required_error: "Please select a job title",
   }),
-  status: z.enum(["Active", "On Leave", "Inactive"], {
+  status: z.enum(["active", "on_leave", "inactive"], {
     required_error: "Please select a status",
   }),
 });
@@ -75,7 +75,7 @@ export default function AdminEmployees() {
       driversLicense: "",
       payRate: "",
       jobTitle: "Driver",
-      status: "Active"
+      status: "active"
     },
   });
 
@@ -93,17 +93,17 @@ export default function AdminEmployees() {
       
       if (error) throw error;
       
-      // Map profiles data to Employee interface with default values
+      // Map profiles data to Employee interface using the new fields
       const employeeData = data?.map(profile => ({
         id: profile.id,
         full_name: profile.full_name || 'No Name',
         email: profile.email,
         phone: profile.phone || 'No Phone',
-        address: 'No Address', // Default since not in profiles table
-        drivers_license: 'No License', // Default since not in profiles table
-        pay_rate: '0.00', // Default since not in profiles table
-        job_title: 'Employee', // Default since not in profiles table
-        status: 'Active'
+        address: profile.address || 'No Address',
+        drivers_license: profile.drivers_license || 'No License',
+        pay_rate: profile.pay_rate?.toString() || '0.00',
+        job_title: profile.job_title || 'Employee',
+        status: profile.status || 'active'
       })) || [];
       
       setEmployees(employeeData);
@@ -137,7 +137,7 @@ export default function AdminEmployees() {
       driversLicense: employee.drivers_license || "",
       payRate: employee.pay_rate || "",
       jobTitle: employee.job_title as any || "Driver",
-      status: employee.status as any || "Active"
+      status: employee.status as any || "active"
     });
     setEditEmployeeOpen(true);
   };
@@ -180,7 +180,7 @@ export default function AdminEmployees() {
           phone: values.phone,
           address: values.address,
           drivers_license: values.driversLicense,
-          pay_rate: values.payRate,
+          pay_rate: parseFloat(values.payRate),
           job_title: values.jobTitle,
           status: values.status
         })
@@ -262,17 +262,19 @@ export default function AdminEmployees() {
                     <TableCell className="hidden md:table-cell">{employee.email}</TableCell>
                     <TableCell className="hidden md:table-cell">{employee.phone}</TableCell>
                     <TableCell className="hidden lg:table-cell">{employee.address || "Not provided"}</TableCell>
-                    <TableCell>
-                      <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        employee.status === 'Active' || !employee.status 
-                          ? 'bg-green-100 text-green-800' 
-                          : employee.status === 'On Leave' 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-red-100 text-red-800'
-                      }`}>
-                        {employee.status || "Active"}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                         employee.status === 'active' || !employee.status 
+                           ? 'bg-green-100 text-green-800' 
+                           : employee.status === 'on_leave' 
+                             ? 'bg-yellow-100 text-yellow-800' 
+                             : 'bg-red-100 text-red-800'
+                       }`}>
+                         {employee.status === 'active' ? 'Active' : 
+                          employee.status === 'on_leave' ? 'On Leave' : 
+                          employee.status === 'inactive' ? 'Inactive' : 'Active'}
+                       </div>
+                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
                         <Button 
@@ -438,9 +440,9 @@ export default function AdminEmployees() {
                         {...field}
                         className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <option value="Active">Active</option>
-                        <option value="On Leave">On Leave</option>
-                        <option value="Inactive">Inactive</option>
+                        <option value="active">Active</option>
+                        <option value="on_leave">On Leave</option>
+                        <option value="inactive">Inactive</option>
                       </select>
                     </FormControl>
                     <FormMessage className="col-span-3 col-start-2" />

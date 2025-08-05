@@ -113,9 +113,12 @@ function LocationTracker() {
                   last_seen_at: new Date().toISOString(),
                 };
                 
-                // Temporarily disabled until types regenerate
-                console.log('Location data would be saved:', locationData);
-                const error = null;
+                const { error } = await supabase
+                  .from('employee_locations')
+                  .upsert(locationData, { 
+                    onConflict: 'employee_id',
+                    ignoreDuplicates: false 
+                  });
                 
                 if (error) {
                   console.error('Error updating location:', error);
@@ -164,9 +167,12 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
       last_seen_at: new Date().toISOString(),
     };
 
-    // Temporarily disabled until types regenerate
-    console.log('Location data would be saved:', locationData);
-    const error = null;
+    const { error } = await supabase
+      .from('employee_locations')
+      .upsert(locationData, { 
+        onConflict: 'employee_id',
+        ignoreDuplicates: false 
+      });
 
     if (error) {
       console.error('Error updating location:', error);

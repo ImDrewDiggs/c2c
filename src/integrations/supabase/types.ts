@@ -171,33 +171,354 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      maintenance_schedules: {
         Row: {
+          completed_date: string | null
+          cost: number | null
           created_at: string
-          email: string
-          full_name: string | null
+          description: string
           id: string
-          phone: string | null
-          role: string
+          maintenance_type: string
+          notes: string | null
+          scheduled_date: string
+          status: string
+          updated_at: string
+          vehicle_id: string
+          vendor_contact: string | null
+          vendor_name: string | null
+        }
+        Insert: {
+          completed_date?: string | null
+          cost?: number | null
+          created_at?: string
+          description: string
+          id?: string
+          maintenance_type: string
+          notes?: string | null
+          scheduled_date: string
+          status?: string
+          updated_at?: string
+          vehicle_id: string
+          vendor_contact?: string | null
+          vendor_name?: string | null
+        }
+        Update: {
+          completed_date?: string | null
+          cost?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          maintenance_type?: string
+          notes?: string | null
+          scheduled_date?: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string
+          vendor_contact?: string | null
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_schedules_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          attachment_urls: string[] | null
+          content: string
+          created_at: string
+          id: string
+          message_type: string
+          parent_message_id: string | null
+          priority: string
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string
+          status: string
+          subject: string
           updated_at: string
         }
         Insert: {
+          attachment_urls?: string[] | null
+          content: string
           created_at?: string
-          email: string
-          full_name?: string | null
           id?: string
-          phone?: string | null
-          role?: string
+          message_type?: string
+          parent_message_id?: string | null
+          priority?: string
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id: string
+          status?: string
+          subject: string
           updated_at?: string
         }
         Update: {
+          attachment_urls?: string[] | null
+          content?: string
           created_at?: string
+          id?: string
+          message_type?: string
+          parent_message_id?: string | null
+          priority?: string
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          priority: string
+          read_at: string | null
+          recipient_id: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          scheduled_for: string | null
+          sender_id: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          priority?: string
+          read_at?: string | null
+          recipient_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          scheduled_for?: string | null
+          sender_id?: string | null
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          read_at?: string | null
+          recipient_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          scheduled_for?: string | null
+          sender_id?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          drivers_license: string | null
+          email: string
+          full_name: string | null
+          id: string
+          job_title: string | null
+          pay_rate: number | null
+          phone: string | null
+          role: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          drivers_license?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          job_title?: string | null
+          pay_rate?: number | null
+          phone?: string | null
+          role?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          drivers_license?: string | null
           email?: string
           full_name?: string | null
           id?: string
+          job_title?: string | null
+          pay_rate?: number | null
           phone?: string | null
           role?: string
+          status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      vehicle_assignments: {
+        Row: {
+          assigned_date: string
+          created_at: string
+          employee_id: string
+          id: string
+          is_primary_driver: boolean | null
+          notes: string | null
+          unassigned_date: string | null
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          assigned_date?: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          is_primary_driver?: boolean | null
+          notes?: string | null
+          unassigned_date?: string | null
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          assigned_date?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          is_primary_driver?: boolean | null
+          notes?: string | null
+          unassigned_date?: string | null
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_assignments_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          capacity_cubic_yards: number | null
+          created_at: string
+          fuel_type: string | null
+          id: string
+          last_maintenance_date: string | null
+          license_plate: string
+          make: string
+          mileage: number | null
+          model: string
+          next_maintenance_date: string | null
+          notes: string | null
+          purchase_date: string | null
+          status: string
+          updated_at: string
+          vehicle_number: string
+          vehicle_type: string
+          vin: string | null
+          year: number
+        }
+        Insert: {
+          capacity_cubic_yards?: number | null
+          created_at?: string
+          fuel_type?: string | null
+          id?: string
+          last_maintenance_date?: string | null
+          license_plate: string
+          make: string
+          mileage?: number | null
+          model: string
+          next_maintenance_date?: string | null
+          notes?: string | null
+          purchase_date?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_number: string
+          vehicle_type?: string
+          vin?: string | null
+          year: number
+        }
+        Update: {
+          capacity_cubic_yards?: number | null
+          created_at?: string
+          fuel_type?: string | null
+          id?: string
+          last_maintenance_date?: string | null
+          license_plate?: string
+          make?: string
+          mileage?: number | null
+          model?: string
+          next_maintenance_date?: string | null
+          notes?: string | null
+          purchase_date?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_number?: string
+          vehicle_type?: string
+          vin?: string | null
+          year?: number
         }
         Relationships: []
       }

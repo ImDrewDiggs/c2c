@@ -87,18 +87,17 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
 
       const { data, error } = await supabase
         .from('profiles')
-        .insert([
-          { 
+        .insert({
             full_name: values.fullName, 
             email: values.email,
             phone: values.phone,
             address: values.address,
             drivers_license: values.driversLicense,
-            pay_rate: values.payRate,
+            pay_rate: parseFloat(values.payRate),
             job_title: values.jobTitle,
-            role: 'employee'
-          }
-        ]);
+            role: 'employee',
+            status: 'active'
+        });
 
       if (error) {
         console.error("Supabase error:", error);

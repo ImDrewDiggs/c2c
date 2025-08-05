@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { AdminPageLayout } from "@/components/admin/AdminPageLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
+import { RealAnalyticsDashboard } from "@/components/admin/analytics/RealAnalyticsDashboard";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -45,7 +45,7 @@ function AnalyticsContent() {
             </Card>
           }
         >
-          <AnalyticsDashboard />
+          <RealAnalyticsDashboard />
         </ErrorBoundary>
       </TabsContent>
       
