@@ -522,6 +522,54 @@ export type Database = {
         }
         Relationships: []
       }
+      work_sessions: {
+        Row: {
+          clock_in_location_lat: number | null
+          clock_in_location_lng: number | null
+          clock_in_time: string
+          clock_out_location_lat: number | null
+          clock_out_location_lng: number | null
+          clock_out_time: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          status: string
+          total_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          clock_in_location_lat?: number | null
+          clock_in_location_lng?: number | null
+          clock_in_time?: string
+          clock_out_location_lat?: number | null
+          clock_out_location_lng?: number | null
+          clock_out_time?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          clock_in_location_lat?: number | null
+          clock_in_location_lng?: number | null
+          clock_in_time?: string
+          clock_out_location_lat?: number | null
+          clock_out_location_lng?: number | null
+          clock_out_time?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
