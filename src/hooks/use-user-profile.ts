@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { supabase, UserData } from '@/lib/supabase';
+import { supabase, UserData } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/AuthService';
 
@@ -85,7 +85,7 @@ export function useUserProfile() {
           role: data.role
         });
         
-        setUserData(data);
+        setUserData(data as UserData);
         
         // Check if user is admin by role or email
         const isAdmin = data.role === 'admin' || AuthService.isAdminEmail(data.email);

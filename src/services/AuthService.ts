@@ -1,5 +1,5 @@
 
-import { supabase, UserData } from '@/lib/supabase';
+import { supabase, UserData } from '@/integrations/supabase/client';
 
 export class AuthService {
   static readonly ADMIN_EMAILS = [

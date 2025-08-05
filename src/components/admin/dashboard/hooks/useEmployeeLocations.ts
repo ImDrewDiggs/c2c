@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { EmployeeLocation } from "@/types/map";
 import { EmployeeLocationRow } from "@/lib/supabase-types";
 

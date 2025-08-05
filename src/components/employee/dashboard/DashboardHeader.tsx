@@ -1,6 +1,6 @@
 
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserData } from "@/lib/supabase";
+import { UserData } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 interface DashboardHeaderProps {

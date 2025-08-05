@@ -1,6 +1,6 @@
 
 import { useState, useRef } from 'react';
-import { supabase, UserData } from '@/lib/supabase';
+import { supabase, UserData } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from './use-user-profile';
 import { useAbortController } from './use-abort-controller';
@@ -89,7 +89,7 @@ export function useAuthActions() {
         const profile = await fetchUserData(result.user.id);
         
         if (profile && isMounted()) {
-          setUserData(profile);
+          setUserData(profile as UserData);
         } else if (isMounted()) {
           const defaultUserData: UserData = {
             id: result.user.id,

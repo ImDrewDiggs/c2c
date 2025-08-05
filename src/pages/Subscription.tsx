@@ -7,7 +7,7 @@ import MultiFamilyPlans, { CommunityTier, ServiceType } from "@/components/subsc
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const singleFamilyTiers: ServiceTier[] = [
   {

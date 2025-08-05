@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, User, Mail, Phone, Save, Edit2 } from "lucide-react";
-import { UserData } from "@/lib/supabase";
+import { UserData } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
 
 interface CustomerProfileProps {
   userId: string;

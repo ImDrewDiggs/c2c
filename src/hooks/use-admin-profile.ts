@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 // Updated admin email reference
 const ADMIN_EMAIL = 'diggs844037@yahoo.com';

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeLocation } from "@/types/map";
 import { Badge } from "@/components/ui/badge";
 import { User, Circle } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
 interface EmployeeStatusPanelProps {

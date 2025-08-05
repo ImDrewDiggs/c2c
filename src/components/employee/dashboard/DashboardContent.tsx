@@ -4,7 +4,7 @@ import TimeTracker from "@/components/employee/TimeTracker";
 import { JobAssignments } from "@/components/employee/JobAssignments";
 import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
 import { Assignment, Location } from "@/types/map";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface DashboardContentProps {

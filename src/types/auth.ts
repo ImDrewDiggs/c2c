@@ -1,6 +1,6 @@
 
 import { User } from "@supabase/supabase-js";
-import { UserData, UserRole } from "@/lib/supabase";
+import { UserData, UserRole } from "@/integrations/supabase/client";
 
 export interface AuthContextType {
   user: User | null;

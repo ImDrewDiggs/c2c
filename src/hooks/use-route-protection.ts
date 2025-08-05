@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UserRole, UserData } from '@/lib/supabase';
+import { UserRole, UserData } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { RouteProtectionOptions } from '@/types/auth';
 import { AuthService } from '@/services/AuthService';

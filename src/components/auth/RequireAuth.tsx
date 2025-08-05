@@ -3,7 +3,7 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { UserRole } from "@/lib/supabase";
+import { UserRole } from "@/integrations/supabase/client";
 import Loading from "@/components/ui/Loading";
 
 interface RequireAuthProps {

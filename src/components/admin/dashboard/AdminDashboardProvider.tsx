@@ -3,7 +3,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { AdminDashboardContext } from "./contexts/AdminDashboardContext";
 import { AdminDashboardProviderProps } from "./types/dashboardTypes";
 import { useCurrentLocation } from "./hooks/useCurrentLocation";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Dashboard Provider Component

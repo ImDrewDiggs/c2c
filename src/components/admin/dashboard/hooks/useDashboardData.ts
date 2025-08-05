@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { House, Assignment } from "@/types/map";
 import { HouseRow, AssignmentRow } from "@/lib/supabase-types";
 import { DashboardStats, RevenueDataPoint, MockPickup } from "../types/dashboardTypes";
