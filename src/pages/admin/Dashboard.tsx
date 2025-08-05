@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminAccessCheck } from "@/components/admin/dashboard/AdminAccessCheck";
-import { AdminDashboardProvider } from "@/components/admin/dashboard/AdminDashboardProvider";
+import { SimpleDashboardProvider } from "@/components/admin/dashboard/SimpleDashboardProvider";
 import { AdminDashboardContent } from "@/components/admin/dashboard/AdminDashboardContent";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
@@ -78,13 +78,13 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
  * error boundaries, and the data provider context.
  */
 export default function AdminDashboard() {
-  console.log('[AdminDashboard] Loading simplified dashboard');
+  console.log('[AdminDashboard] Loading with simple provider');
   
   return (
     <AdminAccessCheck>
-      <AdminDashboardProvider>
+      <SimpleDashboardProvider>
         <AdminDashboardContent />
-      </AdminDashboardProvider>
+      </SimpleDashboardProvider>
     </AdminAccessCheck>
   );
 }

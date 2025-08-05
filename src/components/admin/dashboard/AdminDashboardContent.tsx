@@ -1,4 +1,4 @@
-import { useAdminDashboard } from "./hooks/useAdminDashboard";
+import { useSimpleDashboard } from "./SimpleDashboardProvider";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import Loading from "@/components/ui/Loading";
@@ -19,7 +19,7 @@ export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   console.log('[AdminDashboardContent] Auth state:', { user: !!user, userData, isSuperAdmin });
   
-  const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, loading, error } = useAdminDashboard();
+  const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, loading, error } = useSimpleDashboard();
   console.log('[AdminDashboardContent] Dashboard data:', { stats, loading, error });
   
   const handleRefresh = () => {
