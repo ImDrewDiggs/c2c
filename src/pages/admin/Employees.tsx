@@ -93,7 +93,20 @@ export default function AdminEmployees() {
       
       if (error) throw error;
       
-      setEmployees(data as Employee[]);
+      // Map profiles data to Employee interface with default values
+      const employeeData = data?.map(profile => ({
+        id: profile.id,
+        full_name: profile.full_name || 'No Name',
+        email: profile.email,
+        phone: profile.phone || 'No Phone',
+        address: 'No Address', // Default since not in profiles table
+        drivers_license: 'No License', // Default since not in profiles table
+        pay_rate: '0.00', // Default since not in profiles table
+        job_title: 'Employee', // Default since not in profiles table
+        status: 'Active'
+      })) || [];
+      
+      setEmployees(employeeData);
     } catch (error: any) {
       console.error("Error fetching employees:", error);
       toast({
