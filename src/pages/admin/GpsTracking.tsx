@@ -2,7 +2,7 @@
 import { AdminPageLayout } from "@/components/admin/AdminPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
-import { useAdminDashboard } from "@/components/admin/dashboard/hooks/useAdminDashboard";
+import { useSimpleDashboard, SimpleDashboardProvider } from "@/components/admin/dashboard/SimpleDashboardProvider";
 import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/ui/Loading";
 
 function GpsTrackingContent() {
-  const dashboardContext = useAdminDashboard();
+  const dashboardContext = useSimpleDashboard();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -92,37 +92,39 @@ export default function AdminGpsTracking() {
   }
 
   return (
-    <AdminPageLayout 
-      title="GPS Tracking" 
-      description="Real-Time Employee Location Tracking"
-    >
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Employee Locations</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ErrorBoundary
-              fallbackRender={({ error }) => (
-                <div className="p-6 text-center">
-                  <div className="flex flex-col items-center text-destructive mb-4">
-                    <AlertTriangle className="h-10 w-10 mb-2" />
-                    <h3 className="font-semibold">Error Loading GPS Tracking</h3>
+    <SimpleDashboardProvider>
+      <AdminPageLayout 
+        title="GPS Tracking" 
+        description="Real-Time Employee Location Tracking"
+      >
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Employee Locations</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ErrorBoundary
+                fallbackRender={({ error }) => (
+                  <div className="p-6 text-center">
+                    <div className="flex flex-col items-center text-destructive mb-4">
+                      <AlertTriangle className="h-10 w-10 mb-2" />
+                      <h3 className="font-semibold">Error Loading GPS Tracking</h3>
+                    </div>
+                    <p className="text-muted-foreground mb-2">
+                      There was an error loading the GPS tracking data.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Error details: {error.message}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground mb-2">
-                    There was an error loading the GPS tracking data.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Error details: {error.message}
-                  </p>
-                </div>
-              )}
-            >
-              <GpsTrackingContent />
-            </ErrorBoundary>
-          </CardContent>
-        </Card>
-      </div>
-    </AdminPageLayout>
+                )}
+              >
+                <GpsTrackingContent />
+              </ErrorBoundary>
+            </CardContent>
+          </Card>
+        </div>
+      </AdminPageLayout>
+    </SimpleDashboardProvider>
   );
 }
