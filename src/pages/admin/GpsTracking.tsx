@@ -2,7 +2,7 @@
 import { AdminPageLayout } from "@/components/admin/AdminPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeTracker } from "@/components/admin/EmployeeTracker";
-import { useAdminDashboard } from "@/components/admin/dashboard/AdminDashboardProvider";
+import { useAdminDashboard } from "@/components/admin/dashboard/hooks/useAdminDashboard";
 import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";

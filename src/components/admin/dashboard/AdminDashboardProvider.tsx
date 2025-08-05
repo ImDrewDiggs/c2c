@@ -4,6 +4,7 @@ import { AdminDashboardContext } from "./contexts/AdminDashboardContext";
 import { AdminDashboardProviderProps } from "./types/dashboardTypes";
 import { useCurrentLocation } from "./hooks/useCurrentLocation";
 import { supabase } from "@/integrations/supabase/client";
+import { updateDashboardCache } from "@/utils/cacheUtils";
 
 /**
  * Dashboard Provider Component
@@ -62,11 +63,35 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
           user => user.role === 'employee'
         ).length || 0;
 
-        console.log('[AdminDashboardProvider] Using mock data for missing tables...');
-        // Temporarily use mock data until types regenerate
-        const locationData = [];
-        const housesData = [];
-        const assignmentsData = [];
+        // Fetch real data from database tables
+        console.log('[AdminDashboardProvider] Fetching employee locations...');
+        const { data: locationData, error: locationError } = await supabase
+          .from('employee_locations')
+          .select('*')
+          .order('updated_at', { ascending: false });
+
+        if (locationError) {
+          console.warn('[AdminDashboardProvider] Employee locations error:', locationError);
+        }
+
+        console.log('[AdminDashboardProvider] Fetching houses...');
+        const { data: housesData, error: housesError } = await supabase
+          .from('houses')
+          .select('*');
+
+        if (housesError) {
+          console.warn('[AdminDashboardProvider] Houses error:', housesError);
+        }
+
+        console.log('[AdminDashboardProvider] Fetching assignments...');
+        const { data: assignmentsData, error: assignmentsError } = await supabase
+          .from('assignments')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (assignmentsError) {
+          console.warn('[AdminDashboardProvider] Assignments error:', assignmentsError);
+        }
 
         // Count pending and completed jobs
         const pendingJobs = assignmentsData?.filter(
@@ -77,8 +102,16 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
           job => job.status === 'completed'
         ).length || 0;
 
-        // Temporarily use mock data until types regenerate
-        const logsData = [];
+        console.log('[AdminDashboardProvider] Fetching audit logs...');
+        const { data: logsData, error: logsError } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (logsError) {
+          console.warn('[AdminDashboardProvider] Audit logs error:', logsError);
+        }
 
         // Update all state
         console.log('[AdminDashboardProvider] Setting dashboard stats:', {
@@ -101,6 +134,7 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
         setScheduledJobs(assignmentsData || []);
         setActivityLogs(logsData || []);
         setLoading(false);
+        updateDashboardCache();
         console.log('[AdminDashboardProvider] Dashboard data loaded successfully!');
       } catch (err: any) {
         console.error("[AdminDashboardProvider] Error fetching dashboard data:", err);
@@ -112,18 +146,26 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
     console.log('[AdminDashboardProvider] Starting fetchDashboardData...');
     fetchDashboardData();
 
-    // Set up real-time listeners for employee locations
-    const channel = supabase
-      .channel('employee-locations-channel')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'employee_locations' }, 
-        (payload) => {
-          console.log('Employee location updated:', payload);
-          // Temporarily disabled until types regenerate
-          console.log('Employee location change detected');
-        }
-      )
-      .subscribe();
+        // Set up real-time listeners for employee locations
+        const channel = supabase
+          .channel('admin-dashboard-realtime')
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'employee_locations' }, 
+            (payload) => {
+              console.log('[AdminDashboardProvider] Employee location updated:', payload);
+              // Refetch location data on changes
+              fetchDashboardData();
+            }
+          )
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'assignments' }, 
+            (payload) => {
+              console.log('[AdminDashboardProvider] Assignment updated:', payload);
+              // Refetch data on assignment changes
+              fetchDashboardData();
+            }
+          )
+          .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -150,5 +192,4 @@ export function AdminDashboardProvider({ children }: AdminDashboardProviderProps
   );
 }
 
-// Re-export the hook for easier imports
-export { useAdminDashboard } from "./hooks/useAdminDashboard";
+// Note: Import useAdminDashboard directly from "./hooks/useAdminDashboard" to avoid circular dependencies

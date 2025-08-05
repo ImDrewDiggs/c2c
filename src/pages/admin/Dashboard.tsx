@@ -12,14 +12,61 @@ import Loading from "@/components/ui/Loading";
  * Displays when an error occurs in the dashboard and provides a way to recover
  */
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
+  
+  const handleRetry = () => {
+    // Force cache clear and reload
+    console.error('[AdminDashboard] Error boundary triggered:', error);
+    
+    // Clear any cached modules and force reload
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => registration.unregister());
+      });
+    }
+    
+    // Clear local storage cache if any
+    try {
+      localStorage.removeItem('dashboard-cache');
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn('Could not clear storage:', e);
+    }
+    
+    // Reset error boundary first, then reload if that fails
+    resetErrorBoundary();
+    
+    // Small delay then hard reload if error persists
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
+
   return (
-    <div className="p-6 bg-destructive/10 rounded-md">
-      <h2 className="text-xl font-semibold mb-4">Something went wrong loading the dashboard</h2>
-      <p className="mb-4 text-muted-foreground">{error.message}</p>
-      <pre className="bg-background p-4 rounded-md mb-4 overflow-auto max-h-40 text-xs">
-        {error.stack}
-      </pre>
-      <Button onClick={resetErrorBoundary}>Try Again</Button>
+    <div className="container mx-auto p-6">
+      <div className="bg-destructive/10 p-6 rounded-md max-w-2xl mx-auto">
+        <h2 className="text-xl font-semibold mb-4 text-destructive">
+          Dashboard Loading Error
+        </h2>
+        <p className="mb-4 text-muted-foreground">
+          There was an error loading the admin dashboard. This might be due to cached modules.
+        </p>
+        <details className="mb-4">
+          <summary className="cursor-pointer text-sm font-medium">Error Details</summary>
+          <pre className="bg-background p-4 rounded-md mt-2 overflow-auto max-h-40 text-xs">
+            {error.message}
+            {'\n\n'}
+            {error.stack}
+          </pre>
+        </details>
+        <div className="flex gap-2">
+          <Button onClick={handleRetry} variant="default">
+            Clear Cache & Retry
+          </Button>
+          <Button onClick={() => window.location.href = '/admin/login'} variant="outline">
+            Back to Login
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -31,12 +78,26 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
  * error boundaries, and the data provider context.
  */
 export default function AdminDashboard() {
+  // Add version tracking for cache busting
+  const dashboardVersion = "1.0.1";
+  
+  console.log(`[AdminDashboard] Loading dashboard v${dashboardVersion}`);
+  
   return (
     <AdminAccessCheck>
       <ErrorBoundary 
         FallbackComponent={ErrorFallback}
-        onReset={() => window.location.reload()}
-        onError={(error) => console.error("Dashboard Error:", error)}
+        onReset={() => {
+          console.log('[AdminDashboard] Error boundary reset triggered');
+          // Allow the custom error fallback to handle the reset
+        }}
+        onError={(error) => {
+          console.error("[AdminDashboard] Critical error caught:", error);
+          // Track if this is a render2 error specifically
+          if (error.message?.includes('render2')) {
+            console.error("[AdminDashboard] render2 error detected - likely cache issue");
+          }
+        }}
       >
         <AdminDashboardProvider>
           <AdminDashboardContent />
