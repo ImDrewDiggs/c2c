@@ -78,31 +78,13 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
  * error boundaries, and the data provider context.
  */
 export default function AdminDashboard() {
-  // Add version tracking for cache busting
-  const dashboardVersion = "1.0.1";
-  
-  console.log(`[AdminDashboard] Loading dashboard v${dashboardVersion}`);
+  console.log('[AdminDashboard] Loading simplified dashboard');
   
   return (
     <AdminAccessCheck>
-      <ErrorBoundary 
-        FallbackComponent={ErrorFallback}
-        onReset={() => {
-          console.log('[AdminDashboard] Error boundary reset triggered');
-          // Allow the custom error fallback to handle the reset
-        }}
-        onError={(error) => {
-          console.error("[AdminDashboard] Critical error caught:", error);
-          // Track if this is a render2 error specifically
-          if (error.message?.includes('render2')) {
-            console.error("[AdminDashboard] render2 error detected - likely cache issue");
-          }
-        }}
-      >
-        <AdminDashboardProvider>
-          <AdminDashboardContent />
-        </AdminDashboardProvider>
-      </ErrorBoundary>
+      <AdminDashboardProvider>
+        <AdminDashboardContent />
+      </AdminDashboardProvider>
     </AdminAccessCheck>
   );
 }
