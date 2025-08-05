@@ -18,14 +18,15 @@ import React from "react";
 
 export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
-  console.log('[AdminDashboardContent] Auth state:', { user: !!user, userData, isSuperAdmin });
   
-  const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, maintenanceSchedules, loading, error } = useSimpleDashboard();
-  console.log('[AdminDashboardContent] Dashboard data:', { stats, loading, error });
+  const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, maintenanceSchedules, loading, error, refresh } = useSimpleDashboard();
   
   const handleRefresh = () => {
-    console.log('[AdminDashboardContent] Refresh triggered');
-    window.location.reload();
+    if (refresh) {
+      refresh();
+    } else {
+      window.location.reload();
+    }
   };
 
   if (loading) {

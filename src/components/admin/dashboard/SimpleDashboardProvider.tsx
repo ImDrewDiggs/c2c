@@ -20,6 +20,7 @@ interface DashboardData {
   maintenanceSchedules: any[];
   loading: boolean;
   error: string | null;
+  refresh?: () => void;
 }
 
 // Create context with a default value
@@ -39,6 +40,7 @@ const SimpleDashboardContext = createContext<DashboardData>({
   maintenanceSchedules: [],
   loading: false,
   error: null,
+  refresh: undefined,
 });
 
 // Real provider component with database integration
@@ -62,13 +64,14 @@ export function SimpleDashboardProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [activeEmployees]); // Update when active employees change
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Fetch stats
+      // Fetch stats in parallel
       const [
         { count: totalUsers },
         { data: newSignups },
@@ -102,6 +105,8 @@ export function SimpleDashboardProvider({ children }: { children: ReactNode }) {
       setActivityLogs(logs || []);
       setMaintenanceSchedules(maintenance || []);
       
+      console.log('[SimpleDashboardProvider] Dashboard data refreshed successfully');
+      
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data');
@@ -120,6 +125,7 @@ export function SimpleDashboardProvider({ children }: { children: ReactNode }) {
     maintenanceSchedules,
     loading,
     error,
+    refresh: fetchDashboardData,
   };
 
   return (

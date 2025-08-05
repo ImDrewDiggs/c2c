@@ -71,7 +71,7 @@ export function EmployeeStatusPanel({ employees }: EmployeeStatusPanelProps) {
                       <p className="text-sm font-medium">
                         {profile?.full_name || profile?.email || `Employee ${employee.employee_id.substring(0, 8)}`}
                       </p>
-                      <Badge variant={employee.is_online ? "success" : "secondary"}>
+                      <Badge variant={employee.is_online ? "default" : "secondary"}>
                         {employee.is_online ? "Online" : "Offline"}
                       </Badge>
                     </div>
