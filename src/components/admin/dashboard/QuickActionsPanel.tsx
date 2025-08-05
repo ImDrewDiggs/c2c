@@ -14,14 +14,14 @@ export function QuickActionsPanel() {
   
   const quickActions = [
     {
-      title: "Manage Employees",
+      title: "Analytics",
       icon: <Users className="h-4 w-4 mr-2" />,
-      action: () => navigate("/admin/employees")
+      action: () => navigate("/admin/analytics")
     },
     {
-      title: "Service Areas",
+      title: "Fleet Management",
       icon: <MapPin className="h-4 w-4 mr-2" />,
-      action: () => navigate("/admin/properties")
+      action: () => navigate("/admin/fleet")
     },
     {
       title: "Schedule Jobs",
@@ -29,9 +29,9 @@ export function QuickActionsPanel() {
       action: () => navigate("/admin/schedules")
     },
     {
-      title: "Message Employees",
+      title: "Site Settings",
       icon: <MessageSquare className="h-4 w-4 mr-2" />,
-      action: () => navigate("/admin/notifications")
+      action: () => navigate("/admin/settings")
     }
   ];
 

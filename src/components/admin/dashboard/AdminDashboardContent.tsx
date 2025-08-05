@@ -8,6 +8,7 @@ import { EmployeeStatusPanel } from "./EmployeeStatusPanel";
 import { ScheduledJobsPanel } from "./ScheduledJobsPanel";
 import { ActivityLogsPanel } from "./ActivityLogsPanel";
 import { QuickActionsPanel } from "./QuickActionsPanel";
+import { MaintenanceSchedulePanel } from "./MaintenanceSchedulePanel";
 import { LiveGpsMap } from "./LiveGpsMap";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   console.log('[AdminDashboardContent] Auth state:', { user: !!user, userData, isSuperAdmin });
   
-  const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, loading, error } = useSimpleDashboard();
+  const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, maintenanceSchedules, loading, error } = useSimpleDashboard();
   console.log('[AdminDashboardContent] Dashboard data:', { stats, loading, error });
   
   const handleRefresh = () => {
@@ -75,7 +76,7 @@ export function AdminDashboardContent() {
       <StatsOverview stats={stats} />
       
       {/* Main dashboard grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* First column */}
         <div className="space-y-6">
           <ServiceAreasPanel serviceAreas={serviceAreas} />
@@ -91,6 +92,11 @@ export function AdminDashboardContent() {
         {/* Third column */}
         <div className="space-y-6">
           <ScheduledJobsPanel jobs={scheduledJobs} />
+        </div>
+        
+        {/* Fourth column */}
+        <div className="space-y-6">
+          <MaintenanceSchedulePanel schedules={maintenanceSchedules} />
         </div>
       </div>
       
