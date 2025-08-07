@@ -464,6 +464,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_logs: {
+        Row: {
+          created_at: string
+          event_details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           category: string
@@ -762,6 +792,18 @@ export type Database = {
       create_admin_profile_safe: {
         Args: { admin_user_id: string; admin_email: string }
         Returns: undefined
+      }
+      create_secure_admin_profile: {
+        Args: { admin_user_id: string; admin_email: string }
+        Returns: Json
+      }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      has_role: {
+        Args: { _user_id: string; _role: string }
+        Returns: boolean
       }
       is_admin_by_email: {
         Args: Record<PropertyKey, never>
