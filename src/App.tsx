@@ -23,6 +23,9 @@ const EmployeeDashboard = lazy(() => import('./pages/employee/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 const ContactUs = lazy(() => import('./pages/ContactUs'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
+const CheckoutError = lazy(() => import('./pages/CheckoutError'));
 
 // Admin Pages
 const AdminEmployees = lazy(() => import('./pages/admin/Employees'));
@@ -70,6 +73,9 @@ const App = () => {
                 <Route path="/schedule" element={<Schedule />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/contact" element={<ContactUs />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route path="/checkout/error" element={<CheckoutError />} />
 
                 {/* Auth Routes */}
                 <Route path="/customer/login" element={<CustomerLogin />} />

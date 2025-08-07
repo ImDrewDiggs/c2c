@@ -7,6 +7,8 @@ import MultiFamilyPlans, { CommunityTier, ServiceType } from "@/components/subsc
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const singleFamilyTiers: ServiceTier[] = [
   {
@@ -117,6 +119,7 @@ export default function Subscription() {
   const [selectedCommunityTierId, setSelectedCommunityTierId] = useState("basic-community");
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -154,44 +157,79 @@ export default function Subscription() {
     return 0;
   };
 
-  const handleSubscribe = async () => {
+  // Load services from database
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        
+        if (error) throw error;
+        setServices(data || []);
+      } catch (error) {
+        console.error('Error loading services:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load services. Please refresh the page.",
+        });
+      }
+    };
+    
+    loadServices();
+  }, [toast]);
+
+  const handleContinueToCheckout = () => {
     if (!user) {
       toast({
         variant: "destructive",
         title: "Authentication Required",
-        description: "Please log in to subscribe to a plan.",
+        description: "Please log in to continue to checkout.",
       });
       navigate("/customer/login");
       return;
     }
 
-    setIsProcessing(true);
-
-    try {
-      // Temporarily disabled until service_plans and subscription tables are created
-      console.log('Would create subscription:', {
-        selectedTab,
-        selectedTier,
-        selectedServiceTypes,
-        total: calculateTotal()
-      });
-      
-      toast({
-        title: "Feature Coming Soon",
-        description: "Subscription creation will be available once all subscription tables are set up.",
-      });
-      
-      return;
-    } catch (error) {
-      console.error('Error creating subscription:', error);
+    // Validate selections
+    if (selectedTab === "single-family" && !selectedTier) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to create subscription. Please try again.",
+        title: "Selection Required",
+        description: "Please select a service tier to continue.",
       });
-    } finally {
-      setIsProcessing(false);
+      return;
     }
+
+    if (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) {
+      toast({
+        variant: "destructive",
+        title: "Selection Required",
+        description: "Please select both a community tier and service to continue.",
+      });
+      return;
+    }
+
+    // Prepare checkout data
+    const checkoutData = {
+      subscriptionType: selectedTab,
+      selectedTier,
+      selectedServiceTypes,
+      selectedCommunityTierId,
+      selectedServiceId,
+      unitCount,
+      total: calculateTotal(),
+      services: services.filter(service => 
+        selectedTab === "single-family" 
+          ? service.category === 'single_family' && service.id === selectedTier
+          : service.category === 'multi_family'
+      )
+    };
+
+    // Navigate to checkout with data
+    navigate('/checkout', { state: checkoutData });
   };
 
   return (
@@ -240,6 +278,21 @@ export default function Subscription() {
           discount={0}
           subscriptionType={selectedTab}
         />
+        
+        <div className="flex justify-center">
+          <Button 
+            size="lg"
+            onClick={handleContinueToCheckout}
+            disabled={
+              (selectedTab === "single-family" && !selectedTier) ||
+              (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
+              isProcessing
+            }
+            className="w-full max-w-md"
+          >
+            Continue to Checkout
+          </Button>
+        </div>
       </div>
     </div>
   );

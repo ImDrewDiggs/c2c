@@ -363,6 +363,62 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          payment_method: string
+          paypal_transaction_id: string | null
+          processed_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          payment_method: string
+          paypal_transaction_id?: string | null
+          processed_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          payment_method?: string
+          paypal_transaction_id?: string | null
+          processed_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -479,6 +535,62 @@ export type Database = {
           value?: Json
         }
         Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          billing_address: Json | null
+          billing_cycle: string
+          created_at: string
+          id: string
+          plan_type: string
+          selected_features: Json | null
+          service_address: string | null
+          service_id: string | null
+          status: string
+          total_price: number
+          unit_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          billing_cycle?: string
+          created_at?: string
+          id?: string
+          plan_type: string
+          selected_features?: Json | null
+          service_address?: string | null
+          service_id?: string | null
+          status?: string
+          total_price: number
+          unit_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_address?: Json | null
+          billing_cycle?: string
+          created_at?: string
+          id?: string
+          plan_type?: string
+          selected_features?: Json | null
+          service_address?: string | null
+          service_id?: string | null
+          status?: string
+          total_price?: number
+          unit_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vehicle_assignments: {
         Row: {
