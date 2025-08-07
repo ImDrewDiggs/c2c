@@ -2,7 +2,7 @@ import { useSimpleDashboard } from "./SimpleDashboardProvider";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import Loading from "@/components/ui/Loading";
-import { StatsOverview } from "./StatsOverview";
+import { StatsOverview } from "../StatsOverview";
 import { ServiceAreasPanel } from "./ServiceAreasPanel";
 import { EmployeeStatusPanel } from "./EmployeeStatusPanel";
 import { ScheduledJobsPanel } from "./ScheduledJobsPanel";
@@ -10,11 +10,11 @@ import { ActivityLogsPanel } from "./ActivityLogsPanel";
 import { QuickActionsPanel } from "./QuickActionsPanel";
 import { MaintenanceSchedulePanel } from "./MaintenanceSchedulePanel";
 import { LiveGpsMap } from "./LiveGpsMap";
+import { DashboardTabs } from "./DashboardTabs";
+import { RealAnalyticsDashboard } from "../analytics/RealAnalyticsDashboard";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
-
-// Remove the render2 function - it's not needed
 
 export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
@@ -27,6 +27,13 @@ export function AdminDashboardContent() {
     } else {
       window.location.reload();
     }
+  };
+
+  // Transform stats to match StatsOverview interface
+  const transformedStats = {
+    dailyPickups: stats.completedJobs + stats.pendingJobs,
+    pendingPickups: stats.pendingJobs,
+    todayRevenue: 5400 // Mock today's revenue
   };
 
   if (loading) {
@@ -74,38 +81,64 @@ export function AdminDashboardContent() {
       </div>
 
       {/* Key metrics overview */}
-      <StatsOverview stats={stats} />
+      <StatsOverview stats={transformedStats} activeEmployeesCount={employeeLocations.filter(emp => emp.is_online).length} />
       
-      {/* Main dashboard grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* First column */}
-        <div className="space-y-6">
-          <ServiceAreasPanel serviceAreas={serviceAreas} />
-          <QuickActionsPanel />
-        </div>
-        
-        {/* Second column */}
-        <div className="space-y-6">
-          <EmployeeStatusPanel employees={employeeLocations} />
-          <ActivityLogsPanel logs={activityLogs} />
-        </div>
-        
-        {/* Third column */}
-        <div className="space-y-6">
-          <ScheduledJobsPanel jobs={scheduledJobs} />
-        </div>
-        
-        {/* Fourth column */}
-        <div className="space-y-6">
-          <MaintenanceSchedulePanel schedules={maintenanceSchedules} />
-        </div>
-      </div>
-      
-      {/* Full-width map section */}
-      <LiveGpsMap 
-        employeeLocations={employeeLocations} 
-        serviceAreas={serviceAreas}
-        currentLocation={currentLocation}
+      {/* Dashboard with tabs */}
+      <DashboardTabs
+        operationsContent={
+          <>
+            {/* Main dashboard grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* First column */}
+              <div className="space-y-6">
+                <ServiceAreasPanel serviceAreas={serviceAreas} />
+                <QuickActionsPanel />
+              </div>
+              
+              {/* Second column */}
+              <div className="space-y-6">
+                <EmployeeStatusPanel employees={employeeLocations} />
+                <ActivityLogsPanel logs={activityLogs} />
+              </div>
+              
+              {/* Third column */}
+              <div className="space-y-6">
+                <ScheduledJobsPanel jobs={scheduledJobs} />
+              </div>
+              
+              {/* Fourth column */}
+              <div className="space-y-6">
+                <MaintenanceSchedulePanel schedules={maintenanceSchedules} />
+              </div>
+            </div>
+            
+            {/* Full-width map section */}
+            <LiveGpsMap 
+              employeeLocations={employeeLocations} 
+              serviceAreas={serviceAreas}
+              currentLocation={currentLocation}
+            />
+          </>
+        }
+        employeesContent={
+          <div className="space-y-6">
+            <EmployeeStatusPanel employees={employeeLocations} />
+            <ActivityLogsPanel logs={activityLogs} />
+            <LiveGpsMap 
+              employeeLocations={employeeLocations} 
+              serviceAreas={serviceAreas}
+              currentLocation={currentLocation}
+            />
+          </div>
+        }
+        analyticsContent={
+          <RealAnalyticsDashboard />
+        }
+        usersContent={
+          <div className="p-6 text-center text-muted-foreground">
+            User management functionality coming soon.
+          </div>
+        }
       />
     </div>
   );

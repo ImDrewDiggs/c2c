@@ -16,9 +16,9 @@ import { Input } from "@/components/ui/input";
 import { 
   Calendar,
   Filter,
-  Search,
-  Plus
+  Search
 } from "lucide-react";
+import { NewPickupModal } from "@/components/admin/modals/NewPickupModal";
 
 export default function AdminSchedules() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,10 +81,7 @@ export default function AdminSchedules() {
               <Calendar className="mr-2 h-4 w-4" />
               Calendar View
             </Button>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Pickup
-            </Button>
+            <NewPickupModal onSuccess={() => window.location.reload()} />
           </div>
         </div>
         
