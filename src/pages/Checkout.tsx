@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { CreditCard, DollarSign, Smartphone, Phone, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
+import { validateAndSanitizeCustomerInfo } from "@/utils/inputValidation";
+import { useSecureErrorHandler } from "@/utils/secureErrorHandler";
 
 interface CheckoutData {
   subscriptionType: string;
@@ -43,6 +45,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { handleError } = useSecureErrorHandler();
   
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
@@ -86,28 +89,28 @@ export default function Checkout() {
   };
 
   const validateForm = () => {
-    const required = ['firstName', 'lastName', 'email', 'phone', 'serviceAddress', 'billingAddress', 'city', 'state', 'zipCode'];
-    const missing = required.filter(field => !customerInfo[field as keyof CustomerInfo]);
-    
-    if (missing.length > 0) {
+    try {
+      // Validate and sanitize customer information
+      validateAndSanitizeCustomerInfo(customerInfo);
+
+      if (!selectedPaymentMethod) {
+        toast({
+          variant: "destructive",
+          title: "Payment Method Required",
+          description: "Please select a payment method.",
+        });
+        return false;
+      }
+
+      return true;
+    } catch (validationError: any) {
       toast({
         variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
+        title: "Invalid Information",
+        description: validationError.message || "Please check your information and try again.",
       });
       return false;
     }
-
-    if (!selectedPaymentMethod) {
-      toast({
-        variant: "destructive",
-        title: "Payment Method Required",
-        description: "Please select a payment method.",
-      });
-      return false;
-    }
-
-    return true;
   };
 
   const handlePlaceOrder = async () => {
@@ -133,11 +136,7 @@ export default function Checkout() {
       
     } catch (error) {
       console.error('Error placing order:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to place order. Please try again.",
-      });
+      handleError(error, 'order_placement');
     } finally {
       setIsProcessing(false);
     }

@@ -28,6 +28,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { validateAndSanitizePickupData } from "@/utils/inputValidation";
+import { useSecureErrorHandler } from "@/utils/secureErrorHandler";
 
 interface NewPickupModalProps {
   onSuccess?: () => void;
@@ -49,64 +51,80 @@ export function NewPickupModal({ onSuccess }: NewPickupModalProps) {
   const [priority, setPriority] = useState("normal");
 
   const { toast } = useToast();
+  const { handleError } = useSecureErrorHandler();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!customerName || !address || !date || !time || !serviceType) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    
+    // Validate and sanitize input data
     try {
-      // Create assignment record
-      const assignmentData = {
-        house_id: null, // Will need to be linked to a house in the future
-        employee_id: null, // Will need to be assigned to an employee
-        status: 'pending',
-        assigned_date: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from('assignments')
-        .insert([assignmentData]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Pickup Scheduled",
-        description: "New pickup has been successfully scheduled.",
+      const pickupData = validateAndSanitizePickupData({
+        customerName,
+        customerEmail,
+        customerPhone,
+        address,
+        serviceType,
+        notes,
+        priority
       });
 
-      // Reset form
-      setCustomerName("");
-      setCustomerEmail("");
-      setCustomerPhone("");
-      setAddress("");
-      setServiceType("");
-      setNotes("");
-      setTime("");
-      setPriority("normal");
-      setDate(undefined);
-      setOpen(false);
+      if (!date || !time) {
+        toast({
+          title: "Missing Information",
+          description: "Please select a pickup date and time.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setLoading(true);
       
-      onSuccess?.();
-      
-    } catch (error: any) {
-      console.error('Error creating pickup:', error);
+      try {
+        // Create assignment record
+        const assignmentData = {
+          house_id: null, // Will need to be linked to a house in the future
+          employee_id: null, // Will need to be assigned to an employee
+          status: 'pending',
+          assigned_date: new Date().toISOString(),
+        };
+
+        const { error } = await supabase
+          .from('assignments')
+          .insert([assignmentData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Pickup Scheduled",
+          description: "New pickup has been successfully scheduled.",
+        });
+
+        // Reset form
+        setCustomerName("");
+        setCustomerEmail("");
+        setCustomerPhone("");
+        setAddress("");
+        setServiceType("");
+        setNotes("");
+        setTime("");
+        setPriority("normal");
+        setDate(undefined);
+        setOpen(false);
+        
+        onSuccess?.();
+        
+      } catch (error: any) {
+        console.error('Error creating pickup:', error);
+        handleError(error, 'pickup_creation');
+      } finally {
+        setLoading(false);
+      }
+    } catch (validationError: any) {
       toast({
-        title: "Error",
-        description: "Failed to schedule pickup. Please try again.",
+        title: "Invalid Input",
+        description: validationError.message || "Please check your input and try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

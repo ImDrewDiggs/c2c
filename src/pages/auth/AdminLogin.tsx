@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useFormState } from "@/hooks/use-form-state";
 import Loading from "@/components/ui/Loading";
-import { createAdminUser, ADMIN_CREDENTIALS } from "@/utils/adminSetup";
+import { createSecureAdminUser } from "@/utils/secureAdminSetup";
 import { validateEmail } from "@/utils/validation";
 
 export default function AdminLogin() {
@@ -77,13 +77,13 @@ export default function AdminLogin() {
     }
   };
 
-  const handleCreateAdminUser = async (adminEmail?: string) => {
+  const handleCreateAdminUser = async (adminEmail: string, adminPassword: string) => {
     setAdminCreationResult(null);
     
     try {
       await adminCreationForm.handleSubmit(async () => {
-        console.log('[AdminLogin] Creating admin user:', adminEmail || 'default');
-        const result = await createAdminUser(adminEmail);
+        console.log('[AdminLogin] Creating admin user:', adminEmail);
+        const result = await createSecureAdminUser(adminEmail, adminPassword);
         
         if (result.success) {
           setAdminCreationResult(result.message);
@@ -93,14 +93,8 @@ export default function AdminLogin() {
           });
           
           // Pre-fill the form with the created admin credentials
-          const targetAdmin = adminEmail 
-            ? ADMIN_CREDENTIALS.find(admin => admin.email === adminEmail)
-            : ADMIN_CREDENTIALS[0];
-          
-          if (targetAdmin) {
-            setEmail(targetAdmin.email);
-            setPassword(targetAdmin.password);
-          }
+          setEmail(adminEmail);
+          setPassword(adminPassword);
         } else {
           setAdminCreationResult(result.message);
           throw new Error(result.message);
@@ -269,7 +263,10 @@ export default function AdminLogin() {
                 type="button" 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => handleCreateAdminUser('diggs844037@yahoo.com')}
+                onClick={() => {
+                  const password = prompt('Enter admin password:');
+                  if (password) handleCreateAdminUser('diggs844037@yahoo.com', password);
+                }}
                 disabled={isFormDisabled}
               >
                 {adminCreationForm.isLoading ? (
@@ -289,7 +286,10 @@ export default function AdminLogin() {
                 type="button" 
                 variant="outline" 
                 className="w-full" 
-                onClick={() => handleCreateAdminUser('drewdiggs844037@gmail.com')}
+                onClick={() => {
+                  const password = prompt('Enter admin password:');
+                  if (password) handleCreateAdminUser('drewdiggs844037@gmail.com', password);
+                }}
                 disabled={isFormDisabled}
               >
                 {adminCreationForm.isLoading ? (

@@ -1,50 +1,50 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
-export const ADMIN_CREDENTIALS = [
-  {
-    email: 'diggs844037@yahoo.com',
-    password: '1Lilwayne!!'
-  },
-  {
-    email: 'drewdiggs844037@gmail.com',
-    password: '1Lilwayne!!'
-  }
-];
+/**
+ * Secure admin user setup without hardcoded credentials
+ * This replaces the insecure adminSetup.ts file
+ */
 
-export async function createAdminUser(adminEmail?: string) {
+export async function createSecureAdminUser(adminEmail: string, adminPassword: string) {
   try {
-    // Use provided email or default to first admin
-    const targetAdmin = adminEmail 
-      ? ADMIN_CREDENTIALS.find(admin => admin.email === adminEmail)
-      : ADMIN_CREDENTIALS[0];
+    console.log('Creating secure admin user for:', adminEmail);
     
-    if (!targetAdmin) {
-      return { success: false, message: 'Invalid admin email provided' };
+    // Validate admin email is approved
+    const approvedEmails = ['diggs844037@yahoo.com', 'drewdiggs844037@gmail.com'];
+    if (!approvedEmails.includes(adminEmail)) {
+      return { success: false, message: 'Email not authorized for admin access' };
     }
 
-    console.log('Creating admin user account for:', targetAdmin.email);
-    
-    // First, try to sign in to see if user already exists and can authenticate
+    // First, try to sign in to see if user already exists
     const { data: existingSignIn, error: existingSignInError } = await supabase.auth.signInWithPassword({
-      email: targetAdmin.email,
-      password: targetAdmin.password,
+      email: adminEmail,
+      password: adminPassword,
     });
 
     if (!existingSignInError && existingSignIn.user) {
       console.log('Admin user already exists and can sign in');
-      // User exists and credentials work, ensure profile exists
-      await ensureAdminProfileSafe(existingSignIn.user.id, targetAdmin.email);
+      // Use secure function to create/update profile
+      const { data: result, error: profileError } = await supabase.rpc('create_secure_admin_profile', {
+        admin_user_id: existingSignIn.user.id,
+        admin_email: adminEmail
+      });
+      
       // Sign out after verification
       await supabase.auth.signOut();
+      
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        return { success: false, message: 'Failed to create admin profile' };
+      }
+      
       return { success: true, message: 'Admin user verified and profile updated. You can now sign in.' };
     }
 
     // If sign in failed, try to create new user
     console.log('Attempting to create new admin user...');
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: targetAdmin.email,
-      password: targetAdmin.password,
+      email: adminEmail,
+      password: adminPassword,
       options: {
         data: {
           full_name: 'Administrator'
@@ -56,18 +56,16 @@ export async function createAdminUser(adminEmail?: string) {
     if (signUpError) {
       console.error('Sign up error:', signUpError);
       
-      // If user already exists but password is wrong or user is unconfirmed
       if (signUpError.message.includes('already registered')) {
         return { 
           success: false, 
-          message: 'Admin user exists but may need email confirmation. Please check your email and confirm the account, or contact support if the password is incorrect.' 
+          message: 'Admin user exists but may need email confirmation. Please check your email and confirm the account, or verify the password is correct.' 
         };
       }
       
       throw signUpError;
     }
 
-    // Check if user was created successfully
     if (!signUpData.user) {
       return { success: false, message: 'Failed to create admin user - no user data returned' };
     }
@@ -83,13 +81,18 @@ export async function createAdminUser(adminEmail?: string) {
       };
     }
 
-    // If we have a session, the user is confirmed and ready to use
+    // Use secure function to create admin profile
     try {
-      await ensureAdminProfileSafe(signUpData.user.id, targetAdmin.email);
+      const { data: result, error: profileError } = await supabase.rpc('create_secure_admin_profile', {
+        admin_user_id: signUpData.user.id,
+        admin_email: adminEmail
+      });
+      
+      if (profileError) throw profileError;
+      
       console.log('Admin profile created successfully');
     } catch (profileError) {
       console.warn('Profile creation failed, but user was created:', profileError);
-      // Continue anyway - the profile can be created on first login
     }
     
     // Sign out the newly created user
@@ -102,24 +105,7 @@ export async function createAdminUser(adminEmail?: string) {
   }
 }
 
-async function ensureAdminProfileSafe(userId: string, email: string) {
-  try {
-    console.log('Creating admin profile using safe function for user ID:', userId);
-    
-    // Use the security definer function that bypasses RLS
-    const { error } = await supabase.rpc('create_admin_profile_safe', {
-      admin_user_id: userId,
-      admin_email: email
-    });
-
-    if (error) {
-      console.error('Error calling create_admin_profile_safe:', error);
-      throw error;
-    }
-
-    console.log('Admin profile created/updated successfully using safe function');
-  } catch (error) {
-    console.error('Failed to ensure admin profile:', error);
-    throw error;
-  }
+export function isAdminEmail(email: string): boolean {
+  const approvedEmails = ['diggs844037@yahoo.com', 'drewdiggs844037@gmail.com'];
+  return approvedEmails.includes(email);
 }
