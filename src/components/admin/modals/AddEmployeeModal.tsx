@@ -27,6 +27,10 @@ const formSchema = z.object({
   email: z.string()
     .email("Please enter a valid email address")
     .max(255, "Email must be less than 255 characters"),
+
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Password must include letters and numbers"),
   
   phone: z.string()
     .min(6, "Please enter a valid phone number")
@@ -66,6 +70,7 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
     defaultValues: {
       fullName: "",
       email: "",
+      password: "",
       phone: "",
       address: "",
       driversLicense: "",
@@ -78,38 +83,27 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
     try {
       setIsSubmitting(true);
       setGeneralError(null);
-      console.log("Submitting employee data:", values);
 
-      // Additional validation before submitting
       if (parseFloat(values.payRate) <= 0) {
         throw new Error("Pay rate must be greater than zero");
       }
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .insert({
-            full_name: values.fullName, 
-            email: values.email,
-            phone: values.phone,
-            address: values.address,
-            drivers_license: values.driversLicense,
-            pay_rate: parseFloat(values.payRate),
-            job_title: values.jobTitle,
-            role: 'employee',
-            status: 'active'
-        });
-
-      if (error) {
-        console.error("Supabase error:", error);
-        
-        // Check for specific error types
-        if (error.code === '23505') {
-          throw new Error("An employee with this email already exists");
-        } else if (error.code === '23503') {
-          throw new Error("Invalid reference in employee data");
-        } else {
-          throw error;
+      const { data, error } = await supabase.functions.invoke('admin-create-employee', {
+        body: {
+          email: values.email,
+          password: values.password,
+          fullName: values.fullName,
+          phone: values.phone,
+          address: values.address,
+          driversLicense: values.driversLicense,
+          payRate: parseFloat(values.payRate),
+          jobTitle: values.jobTitle
         }
+      });
+
+      if ((error as any) || (data && (data as any).error)) {
+        const message = (error as any)?.message || (data as any)?.error || 'Failed to create employee';
+        throw new Error(message);
       }
 
       toast({
@@ -119,10 +113,7 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
       
       form.reset();
       onOpenChange(false);
-      
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
     } catch (error: any) {
       console.error("Error adding employee:", error);
       setGeneralError(error.message || "An error occurred while adding the employee");
@@ -186,7 +177,21 @@ export function AddEmployeeModal({ open, onOpenChange, onSuccess }: AddEmployeeM
                 </FormItem>
               )}
             />
-            
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel className="text-right">Password</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" className="col-span-3" />
+                  </FormControl>
+                  <FormMessage className="col-span-3 col-start-2" />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="phone"

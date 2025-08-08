@@ -105,28 +105,26 @@ export function UserManagement() {
   };
 
   const handleDelete = async (userId: string, userType: 'employee' | 'customer' | 'admin') => {
-    if (confirm(`Are you sure you want to delete this ${userType}?`)) {
+    if (confirm(`Are you sure you want to delete this ${userType}? This action cannot be undone.`)) {
       try {
-        const { error } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', userId);
-          
+        const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+          body: { userId }
+        });
+
         if (error) throw error;
-        
+
         toast({
           title: "User Deleted",
           description: `The ${userType} has been deleted successfully.`,
         });
-        
+
         // Refresh user lists
         fetchUsers();
-        
       } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Delete Failed",
-          description: error.message,
+          description: error.message || 'Failed to delete user',
         });
       }
     }
