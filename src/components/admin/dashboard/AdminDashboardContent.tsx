@@ -14,6 +14,7 @@ import { DashboardTabs } from "./DashboardTabs";
 import { RealAnalyticsDashboard } from "../analytics/RealAnalyticsDashboard";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UserManagement } from "../UserManagement";
 import React from "react";
 
 export function AdminDashboardContent() {
@@ -135,9 +136,7 @@ export function AdminDashboardContent() {
           <RealAnalyticsDashboard />
         }
         usersContent={
-          <div className="p-6 text-center text-muted-foreground">
-            User management functionality coming soon.
-          </div>
+          <UserManagement />
         }
       />
     </div>

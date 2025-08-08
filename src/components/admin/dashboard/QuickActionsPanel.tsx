@@ -5,18 +5,27 @@ import {
   Users, 
   MapPin, 
   Calendar, 
-  MessageSquare
+  MessageSquare,
+  UserPlus
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { AddEmployeeModal } from "@/components/admin/modals/AddEmployeeModal";
 
 export function QuickActionsPanel() {
   const navigate = useNavigate();
+  const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
   
   const quickActions = [
     {
+      title: "Add Employee",
+      icon: <UserPlus className="h-4 w-4 mr-2" />,
+      action: () => setAddEmployeeOpen(true)
+    },
+    {
       title: "Analytics",
       icon: <Users className="h-4 w-4 mr-2" />,
-      action: () => navigate("/admin/analytics")
+      action: () => navigate("/admin/advanced-analytics")
     },
     {
       title: "Fleet Management",
@@ -36,25 +45,36 @@ export function QuickActionsPanel() {
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-2">
-          {quickActions.map((action) => (
-            <Button
-              key={action.title}
-              variant="outline"
-              className="h-auto py-4 justify-start"
-              onClick={action.action}
-            >
-              {action.icon}
-              <span>{action.title}</span>
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2">
+            {quickActions.map((action) => (
+              <Button
+                key={action.title}
+                variant="outline"
+                className="h-auto py-4 justify-start"
+                onClick={action.action}
+              >
+                {action.icon}
+                <span>{action.title}</span>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <AddEmployeeModal
+        open={addEmployeeOpen}
+        onOpenChange={setAddEmployeeOpen}
+        onSuccess={() => {
+          setAddEmployeeOpen(false);
+          navigate("/admin/employees");
+        }}
+      />
+    </>
   );
 }
