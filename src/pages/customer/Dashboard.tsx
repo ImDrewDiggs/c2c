@@ -55,6 +55,12 @@ export default function CustomerDashboard() {
                 Service History
               </Button>
               <Button 
+                onClick={() => navigate("/customer/billing")}
+                variant="outline"
+              >
+                Billing
+              </Button>
+              <Button 
                 onClick={() => navigate("/subscription")}
                 variant="outline"
               >

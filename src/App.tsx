@@ -42,6 +42,11 @@ const AdminAnalytics = lazy(() => import('./pages/admin/Analytics'));
 const AdminNotifications = lazy(() => import('./pages/admin/Notifications'));
 const AdminKnowledgeBase = lazy(() => import('./pages/admin/KnowledgeBase'));
 const AdminSupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
+const AdminOrders = lazy(() => import('./pages/admin/Orders'));
+const AdminSubscriptions = lazy(() => import('./pages/admin/Subscriptions'));
+
+// Customer billing
+const CustomerBilling = lazy(() => import('./pages/customer/Billing'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
@@ -81,6 +86,7 @@ const App = () => {
                 <Route path="/customer/login" element={<CustomerLogin />} />
                 <Route path="/customer/register" element={<CustomerRegister />} />
                 <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+                <Route path="/customer/billing" element={<CustomerBilling />} />
                 <Route path="/employee/login" element={<EmployeeLogin />} />
                 <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -101,6 +107,8 @@ const App = () => {
                 <Route path="/admin/notifications" element={<AdminNotifications />} />
                 <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
                 <Route path="/admin/support-tickets" element={<AdminSupportTickets />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
