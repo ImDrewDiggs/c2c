@@ -32,10 +32,37 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
-    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SERVICE_ROLE_KEY || !ANON_KEY) {
       return new Response(JSON.stringify({ error: "Missing Supabase environment variables" }), {
         status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+      });
+    }
+
+    // Client bound to the caller's JWT for authorization checks
+    const supabaseUser = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: req.headers.get("authorization") ?? "" } },
+    });
+
+    // Verify requester is authenticated
+    const { data: userDataAuth, error: userAuthError } = await supabaseUser.auth.getUser();
+    if (userAuthError || !userDataAuth?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+      });
+    }
+
+    // Verify requester is admin
+    const { data: isAdmin, error: roleError } = await supabaseUser.rpc("has_role", {
+      _user_id: userDataAuth.user.id,
+      _role: "admin",
+    });
+    if (roleError || !isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden: admin role required" }), {
+        status: 403,
         headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
       });
     }
@@ -91,6 +118,17 @@ serve(async (req) => {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
       });
+    }
+
+    // Attempt to log security audit event (non-fatal)
+    try {
+      await supabaseAdmin.from("security_audit_logs").insert({
+        user_id: userDataAuth.user.id,
+        event_type: "admin_create_employee",
+        event_details: { target_user_id: userId, email },
+      });
+    } catch (_) {
+      // Ignore logging errors to not block primary action
     }
 
     return new Response(JSON.stringify({ success: true, userId }), {
