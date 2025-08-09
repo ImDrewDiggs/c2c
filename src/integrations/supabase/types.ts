@@ -363,6 +363,117 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          order_id: string
+          quantity: number
+          service_id: string | null
+          total_amount: number | null
+          unit_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id: string
+          quantity?: number
+          service_id?: string | null
+          total_amount?: number | null
+          unit_amount: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string
+          quantity?: number
+          service_id?: string | null
+          total_amount?: number | null
+          unit_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          billing_address: Json | null
+          created_at: string
+          currency: string
+          customer_email: string | null
+          id: string
+          metadata: Json
+          payment_method: string | null
+          service_address: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal: number
+          tax: number
+          total: number
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          id?: string
+          metadata?: Json
+          payment_method?: string | null
+          service_address?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal: number
+          tax?: number
+          total: number
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_address?: Json | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          id?: string
+          metadata?: Json
+          payment_method?: string | null
+          service_address?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+          tax?: number
+          total?: number
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -370,6 +481,7 @@ export type Database = {
           currency: string
           failure_reason: string | null
           id: string
+          order_id: string | null
           payment_method: string
           paypal_transaction_id: string | null
           processed_at: string | null
@@ -385,6 +497,7 @@ export type Database = {
           currency?: string
           failure_reason?: string | null
           id?: string
+          order_id?: string | null
           payment_method: string
           paypal_transaction_id?: string | null
           processed_at?: string | null
@@ -400,6 +513,7 @@ export type Database = {
           currency?: string
           failure_reason?: string | null
           id?: string
+          order_id?: string | null
           payment_method?: string
           paypal_transaction_id?: string | null
           processed_at?: string | null
@@ -563,6 +677,42 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
