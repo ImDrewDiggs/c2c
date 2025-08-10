@@ -51,16 +51,17 @@ export function QuickActionsPanel() {
           <CardTitle className="text-lg">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {quickActions.map((action) => (
               <Button
                 key={action.title}
-                variant="outline"
-                className="h-auto py-4 justify-start"
+                variant="tile"
+                className="h-28"
                 onClick={action.action}
               >
-                {action.icon}
-                <span>{action.title}</span>
+                {/* Larger icon to match mockup style */}
+                <span className="mr-3 [&>svg]:size-6">{action.icon}</span>
+                <span className="text-base font-semibold">{action.title}</span>
               </Button>
             ))}
           </div>

@@ -79,6 +79,22 @@ serve(async (req) => {
       });
     }
 
+    // Basic rate limiting: max 5 create requests per minute per admin
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const { count: reqCount, error: rateErr } = await supabaseAdmin
+      .from("security_audit_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userDataAuth.user.id)
+      .eq("event_type", "admin_create_employee")
+      .gte("created_at", oneMinuteAgo);
+
+    if (!rateErr && typeof reqCount === "number" && reqCount >= 5) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please wait a minute and try again." }), {
+        status: 429,
+        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+      });
+    }
+
     // Create auth user (email confirmed to allow immediate login)
     const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,

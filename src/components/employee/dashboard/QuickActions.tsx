@@ -14,22 +14,25 @@ export function QuickActions({ activeTab, setActiveTab }: QuickActionsProps) {
         <CardTitle>Quick Actions</CardTitle>
         <CardDescription>Manage your tasks and track your time</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-wrap gap-4">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Button
           onClick={() => setActiveTab("time-tracker")}
-          variant={activeTab === "time-tracker" ? "default" : "outline"}
+          variant={activeTab === "time-tracker" ? "default" : "tile"}
+          className="h-28"
         >
           Time Tracker
         </Button>
         <Button
           onClick={() => setActiveTab("job-assignments")}
-          variant={activeTab === "job-assignments" ? "default" : "outline"}
+          variant={activeTab === "job-assignments" ? "default" : "tile"}
+          className="h-28"
         >
           Job Assignments
         </Button>
         <Button
           onClick={() => setActiveTab("route-optimizer")}
-          variant={activeTab === "route-optimizer" ? "default" : "outline"}
+          variant={activeTab === "route-optimizer" ? "default" : "tile"}
+          className="h-28"
         >
           Route Optimizer
         </Button>
