@@ -80,7 +80,7 @@ export class AuthService {
       console.log('[AuthService] Ensuring admin profile for:', email);
       
       // Use the security definer function to safely create admin profile
-      const { error } = await supabase.rpc('create_admin_profile_safe', {
+      const { error } = await supabase.rpc('create_secure_admin_profile', {
         admin_user_id: userId,
         admin_email: email
       });

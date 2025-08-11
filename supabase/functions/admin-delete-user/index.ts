@@ -5,20 +5,43 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 interface DeleteUserPayload { userId: string }
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+];
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  try {
+    const u = new URL(origin);
+    const host = u.hostname.toLowerCase();
+    if (host.endsWith(".lovableproject.com")) return true;
+    return ALLOWED_ORIGINS.includes(origin);
+  } catch {
+    return false;
+  }
+}
+
 function corsHeaders(origin?: string) {
+  const allowed = origin && isAllowedOrigin(origin) ? origin : "*";
   return {
-    "Access-Control-Allow-Origin": origin || "*",
+    "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   } as Record<string, string>;
 }
 
 serve(async (req) => {
-  const origin = req.headers.get("origin") ?? "*";
+  const origin = req.headers.get("origin") ?? "";
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders(origin) });
   }
-
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    });
+  }
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -44,12 +67,13 @@ serve(async (req) => {
       });
     }
 
-    // Verify requester is admin
+    // Verify requester is admin (defense-in-depth)
     const { data: isAdmin, error: roleError } = await supabaseUser.rpc("has_role", {
       _user_id: userDataAuth.user.id,
       _role: "admin",
     });
-    if (roleError || !isAdmin) {
+    const { data: isAdminEmail, error: emailCheckError } = await supabaseUser.rpc("is_admin_by_email");
+    if (roleError || emailCheckError || !isAdmin || !isAdminEmail) {
       return new Response(JSON.stringify({ error: "Forbidden: admin role required" }), {
         status: 403,
         headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
@@ -61,8 +85,15 @@ serve(async (req) => {
     const body = (await req.json()) as DeleteUserPayload;
     const { userId } = body;
 
-    if (!userId) {
+    if (!userId || typeof userId !== "string") {
       return new Response(JSON.stringify({ error: "userId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+      });
+    }
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      return new Response(JSON.stringify({ error: "Invalid userId format" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
       });
