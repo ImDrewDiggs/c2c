@@ -27,6 +27,7 @@ const ContactUs = lazy(() => import('./pages/ContactUs'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutError = lazy(() => import('./pages/CheckoutError'));
+const Maintenance = lazy(() => import('./pages/Maintenance'));
 
 // Admin Pages
 const AdminEmployees = lazy(() => import('./pages/admin/Employees'));
