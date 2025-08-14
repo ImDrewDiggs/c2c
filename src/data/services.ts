@@ -14,7 +14,7 @@ export interface Service {
 
 export const serviceCategories: ServiceCategory[] = [
   {
-    name: "Waste Management Services",
+    name: "Single Family Residences",
     services: [
       {
         name: "Trash Can-to-Curb Service (1 can)",
@@ -32,75 +32,15 @@ export const serviceCategories: ServiceCategory[] = [
         price: "+$10/mo"
       },
       {
-        name: "Recycling Sorting Assistance",
-        pricingModel: "Per visit",
-        price: "$10–$15"
-      },
-      {
-        name: "Bulk Item Removal",
-        pricingModel: "Per item",
-        price: "$50–$150"
-      },
-      {
-        name: "Hazardous Waste Collection",
-        pricingModel: "Per load",
-        price: "$75–$200"
-      },
-      {
         name: "Trash Can Cleaning & Sanitizing",
         pricingModel: "Per can",
         price: "$15–$25"
-      },
-      {
-        name: "Overflow Trash Pickup",
-        pricingModel: "Per pickup",
-        price: "$15–$30"
       },
       {
         name: "Pet Waste Removal",
         pricingModel: "Weekly service",
         price: "$10–$20"
       },
-      {
-        name: "Trash Area Deep Cleaning",
-        pricingModel: "Per job",
-        price: "$50–$150"
-      },
-      {
-        name: "Seasonal Yard Waste Removal",
-        pricingModel: "Per load",
-        price: "$50–$120"
-      },
-      {
-        name: "Event Trash Service",
-        pricingModel: "Per event",
-        price: "$100–$400"
-      },
-      {
-        name: "Missed Pickup Recovery",
-        pricingModel: "Per job",
-        price: "$25–$50"
-      },
-      {
-        name: "Move-Out / Clean-Out Service",
-        pricingModel: "Per load",
-        price: "$100–$300"
-      },
-      {
-        name: "Recycling Drop-Off Runs",
-        pricingModel: "Per run",
-        price: "$25–$50"
-      },
-      {
-        name: "Storm Debris Cleanup",
-        pricingModel: "Per load",
-        price: "$100–$300"
-      }
-    ]
-  },
-  {
-    name: "Pressure Washing Services",
-    services: [
       {
         name: "Driveway Pressure Washing",
         pricingModel: "Flat or per sq ft",
@@ -132,30 +72,10 @@ export const serviceCategories: ServiceCategory[] = [
         price: "$100–$200"
       },
       {
-        name: "Trash Can/Dumpster Pad Cleaning",
-        pricingModel: "Flat",
-        price: "$50–$150"
-      },
-      {
-        name: "Parking Lot & Curb Cleaning",
-        pricingModel: "Per sq ft",
-        price: "$0.20–$0.35/sq ft"
-      },
-      {
         name: "Pool Deck Cleaning",
         pricingModel: "Flat",
         price: "$100–$200"
       },
-      {
-        name: "Graffiti Removal",
-        pricingModel: "Per job",
-        price: "$100–$300"
-      }
-    ]
-  },
-  {
-    name: "Gutter & Roof Services",
-    services: [
       {
         name: "Gutter Cleaning – 1 Story",
         pricingModel: "Flat",
@@ -165,11 +85,6 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Gutter Cleaning – 2 Story",
         pricingModel: "Flat",
         price: "$150–$250"
-      },
-      {
-        name: "Complex/Multi-Story Gutter Cleaning",
-        pricingModel: "Flat",
-        price: "$250–$400"
       },
       {
         name: "Downspout Clearing",
@@ -205,6 +120,91 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Gutter Guard Installation",
         pricingModel: "Per linear ft",
         price: "$5–$8/ft"
+      }
+    ]
+  },
+  {
+    name: "Living Communities",
+    services: [
+      {
+        name: "Trash Can/Dumpster Pad Cleaning",
+        pricingModel: "Flat",
+        price: "$50–$150"
+      },
+      {
+        name: "Parking Lot & Curb Cleaning",
+        pricingModel: "Per sq ft",
+        price: "$0.20–$0.35/sq ft"
+      },
+      {
+        name: "Complex/Multi-Story Gutter Cleaning",
+        pricingModel: "Flat",
+        price: "$250–$400"
+      },
+      {
+        name: "Trash Area Deep Cleaning",
+        pricingModel: "Per job",
+        price: "$50–$150"
+      },
+      {
+        name: "Event Trash Service",
+        pricingModel: "Per event",
+        price: "$100–$400"
+      },
+      {
+        name: "Storm Debris Cleanup",
+        pricingModel: "Per load",
+        price: "$100–$300"
+      },
+      {
+        name: "Graffiti Removal",
+        pricingModel: "Per job",
+        price: "$100–$300"
+      }
+    ]
+  },
+  {
+    name: "Add-on Services",
+    services: [
+      {
+        name: "Recycling Sorting Assistance",
+        pricingModel: "Per visit",
+        price: "$10–$15"
+      },
+      {
+        name: "Bulk Item Removal",
+        pricingModel: "Per item",
+        price: "$50–$150"
+      },
+      {
+        name: "Hazardous Waste Collection",
+        pricingModel: "Per load",
+        price: "$75–$200"
+      },
+      {
+        name: "Overflow Trash Pickup",
+        pricingModel: "Per pickup",
+        price: "$15–$30"
+      },
+      {
+        name: "Seasonal Yard Waste Removal",
+        pricingModel: "Per load",
+        price: "$50–$120"
+      },
+      {
+        name: "Missed Pickup Recovery",
+        pricingModel: "Per job",
+        price: "$25–$50"
+      },
+      {
+        name: "Move-Out / Clean-Out Service",
+        pricingModel: "Per load",
+        price: "$100–$300"
+      },
+      {
+        name: "Recycling Drop-Off Runs",
+        pricingModel: "Per run",
+        price: "$25–$50"
       }
     ]
   }
