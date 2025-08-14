@@ -1,92 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import PricingDisplay from "@/components/subscription/PricingDisplay";
-import SingleFamilyPlans, { ServiceTier } from "@/components/subscription/SingleFamilyPlans";
-import MultiFamilyPlans, { CommunityTier, ServiceType } from "@/components/subscription/MultiFamilyPlans";
+import SingleFamilyPlans from "@/components/subscription/SingleFamilyPlans";
+import MultiFamilyPlans, { ServiceType } from "@/components/subscription/MultiFamilyPlans";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
-
-const singleFamilyTiers: ServiceTier[] = [
-  {
-    id: "standard",
-    name: "Standard Service",
-    description: "Basic convenience for trash management",
-    price: 49.99,
-    features: [
-      "Moving one trash can and one recycling bin to and from the curb weekly",
-      "Additional cans: $5/month each",
-      "Driveways over 50 feet: Additional $10/month",
-      "No additional services included"
-    ],
-    perk: "Budget-conscious customers who want basic convenience for trash management"
-  },
-  {
-    id: "premium",
-    name: "Premium Service",
-    description: "Enhanced service with monthly cleaning",
-    price: 74.99,
-    features: [
-      "Moving one trash can and one recycling bin to and from the curb weekly",
-      "Monthly pressure washing of bins (exterior only)",
-      "Additional cans: $5/month each",
-      "Driveways over 50 feet: Additional $10/month"
-    ],
-    perk: "Customers who value cleanliness and want an enhanced experience"
-  },
-  {
-    id: "deluxe",
-    name: "Deluxe Service",
-    description: "Complete care with interior and exterior cleaning",
-    price: 99.99,
-    features: [
-      "Moving one trash can and one recycling bin to and from the curb weekly",
-      "Bi-weekly pressure washing of bins (interior and exterior)",
-      "Additional cans: $5/month each",
-      "Driveways over 50 feet: Additional $10/month"
-    ],
-    perk: "Premium customers who want the highest level of service and cleanliness"
-  }
-];
-
-const multiFamilyTiers: CommunityTier[] = [
-  {
-    id: "basic-community",
-    unitRange: "1-50 units",
-    rangeStart: 1,
-    rangeEnd: 50,
-    discount: 0,
-    standardPrice: 199.99,
-    premiumPrice: 299.99,
-    comprehensivePrice: 399.99,
-    premierePrice: 499.99
-  },
-  {
-    id: "standard-community",
-    unitRange: "51-100 units",
-    rangeStart: 51,
-    rangeEnd: 100,
-    discount: 10,
-    standardPrice: 179.99,
-    premiumPrice: 269.99,
-    comprehensivePrice: 359.99,
-    premierePrice: 449.99
-  },
-  {
-    id: "premium-community",
-    unitRange: "100+ units",
-    rangeStart: 101,
-    rangeEnd: null,
-    discount: 20,
-    standardPrice: 159.99,
-    premiumPrice: 239.99,
-    comprehensivePrice: 319.99,
-    premierePrice: 399.99
-  }
-];
+import { singleFamilyTiers, multiFamilyTiers, serviceCategories, ServiceTier, CommunityTier } from "@/data/services";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const serviceTypes: ServiceType[] = [
   {
@@ -243,9 +167,10 @@ export default function Subscription() {
 
       <div className="grid gap-8">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="single-family">Single Family</TabsTrigger>
             <TabsTrigger value="multi-family">Multi Family</TabsTrigger>
+            <TabsTrigger value="all-services">All Services</TabsTrigger>
           </TabsList>
 
           <TabsContent value="single-family" className="space-y-6">
@@ -271,28 +196,77 @@ export default function Subscription() {
               discount={0}
             />
           </TabsContent>
+
+          <TabsContent value="all-services" className="space-y-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold mb-2">Complete Service Catalog</h2>
+              <p className="text-muted-foreground">Browse all available services and their pricing</p>
+            </div>
+            
+            {serviceCategories.map((category) => (
+              <Card key={category.name}>
+                <CardHeader>
+                  <CardTitle className="text-xl">{category.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[300px]">Service</TableHead>
+                        <TableHead className="w-[200px]">Pricing Model</TableHead>
+                        <TableHead>Price</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {category.services.map((service) => (
+                        <TableRow key={service.name}>
+                          <TableCell className="font-medium">{service.name}</TableCell>
+                          <TableCell className="text-muted-foreground">{service.pricingModel}</TableCell>
+                          <TableCell className="font-semibold">{service.price}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            ))}
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Pricing Policy</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p><strong>Minimum service charge:</strong> $150 per job if stand-alone (excludes subscription-based trash concierge)</p>
+                <p><strong>Bundling discount:</strong> 10–15% off if customer books 3+ services in a single visit</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
-        <PricingDisplay
-          total={calculateTotal()}
-          discount={0}
-          subscriptionType={selectedTab}
-        />
+        {selectedTab !== "all-services" && (
+          <PricingDisplay
+            total={calculateTotal()}
+            discount={0}
+            subscriptionType={selectedTab}
+          />
+        )}
         
-        <div className="flex justify-center">
-          <Button 
-            size="lg"
-            onClick={handleContinueToCheckout}
-            disabled={
-              (selectedTab === "single-family" && !selectedTier) ||
-              (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
-              isProcessing
-            }
-            className="w-full max-w-md"
-          >
-            Continue to Checkout
-          </Button>
-        </div>
+        {selectedTab !== "all-services" && (
+          <div className="flex justify-center">
+            <Button 
+              size="lg"
+              onClick={handleContinueToCheckout}
+              disabled={
+                (selectedTab === "single-family" && !selectedTier) ||
+                (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
+                isProcessing
+              }
+              className="w-full max-w-md"
+            >
+              Continue to Checkout
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
