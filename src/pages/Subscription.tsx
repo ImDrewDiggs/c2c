@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { singleFamilyTiers, multiFamilyTiers, serviceCategories, ServiceTier, CommunityTier } from "@/data/services";
+import { singleFamilyTiers, multiFamilyTiers, businessTiers, singleFamilyServices, multiFamilyServices, businessServices, addOnServices, ServiceTier, CommunityTier, BusinessTier } from "@/data/services";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -167,10 +167,11 @@ export default function Subscription() {
 
       <div className="grid gap-8">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="single-family">Single Family</TabsTrigger>
             <TabsTrigger value="multi-family">Multi Family</TabsTrigger>
-            <TabsTrigger value="all-services">All Services</TabsTrigger>
+            <TabsTrigger value="business">Business</TabsTrigger>
+            <TabsTrigger value="add-ons">Add-Ons</TabsTrigger>
           </TabsList>
 
           <TabsContent value="single-family" className="space-y-6">
@@ -197,13 +198,13 @@ export default function Subscription() {
             />
           </TabsContent>
 
-          <TabsContent value="all-services" className="space-y-8">
+          <TabsContent value="business" className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-semibold mb-2">Complete Service Catalog</h2>
-              <p className="text-muted-foreground">Browse all available services and their pricing</p>
+              <h2 className="text-2xl font-semibold mb-2">Business Services</h2>
+              <p className="text-muted-foreground">Professional waste management solutions for businesses</p>
             </div>
             
-            {serviceCategories.map((category) => (
+            {businessServices.map((category) => (
               <Card key={category.name}>
                 <CardHeader>
                   <CardTitle className="text-xl">{category.name}</CardTitle>
@@ -214,7 +215,9 @@ export default function Subscription() {
                       <TableRow>
                         <TableHead className="w-[300px]">Service</TableHead>
                         <TableHead className="w-[200px]">Pricing Model</TableHead>
-                        <TableHead>Price</TableHead>
+                        <TableHead className="w-[150px]">Monthly Price</TableHead>
+                        <TableHead className="w-[150px]">One-Time Price</TableHead>
+                        <TableHead>Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -222,7 +225,9 @@ export default function Subscription() {
                         <TableRow key={service.name}>
                           <TableCell className="font-medium">{service.name}</TableCell>
                           <TableCell className="text-muted-foreground">{service.pricingModel}</TableCell>
-                          <TableCell className="font-semibold">{service.price}</TableCell>
+                          <TableCell className="font-semibold">{service.subscriptionPrice || "—"}</TableCell>
+                          <TableCell className="font-semibold">{service.oneTimePrice || "—"}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{service.description || "—"}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -230,20 +235,49 @@ export default function Subscription() {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="add-ons" className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold mb-2">Add-On Services</h2>
+              <p className="text-muted-foreground">Additional services for all customer types</p>
+            </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Pricing Policy</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p><strong>Minimum service charge:</strong> $150 per job if stand-alone (excludes subscription-based trash concierge)</p>
-                <p><strong>Bundling discount:</strong> 10–15% off if customer books 3+ services in a single visit</p>
-              </CardContent>
-            </Card>
+            {addOnServices.map((category) => (
+              <Card key={category.name}>
+                <CardHeader>
+                  <CardTitle className="text-xl">{category.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[300px]">Service</TableHead>
+                        <TableHead className="w-[200px]">Pricing Model</TableHead>
+                        <TableHead className="w-[150px]">Monthly Price</TableHead>
+                        <TableHead className="w-[150px]">One-Time Price</TableHead>
+                        <TableHead>Discounts</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {category.services.map((service) => (
+                        <TableRow key={service.name}>
+                          <TableCell className="font-medium">{service.name}</TableCell>
+                          <TableCell className="text-muted-foreground">{service.pricingModel}</TableCell>
+                          <TableCell className="font-semibold">{service.subscriptionPrice || "—"}</TableCell>
+                          <TableCell className="font-semibold">{service.oneTimePrice || "—"}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{service.description || "—"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
         </Tabs>
 
-        {selectedTab !== "all-services" && (
+        {(selectedTab === "single-family" || selectedTab === "multi-family") && (
           <PricingDisplay
             total={calculateTotal()}
             discount={0}
@@ -251,7 +285,7 @@ export default function Subscription() {
           />
         )}
         
-        {selectedTab !== "all-services" && (
+        {(selectedTab === "single-family" || selectedTab === "multi-family") && (
           <div className="flex justify-center">
             <Button 
               size="lg"

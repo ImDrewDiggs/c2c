@@ -9,222 +9,117 @@ export interface Service {
   name: string;
   pricingModel: string;
   price: string;
+  oneTimePrice?: string;
+  subscriptionPrice?: string;
   description?: string;
 }
 
-export const serviceCategories: ServiceCategory[] = [
+// Single Family Residence Services
+export const singleFamilyServices: ServiceCategory[] = [
   {
-    name: "Single Family Residences",
+    name: "Single Family Residence Plans",
     services: [
       {
-        name: "Trash Can-to-Curb Service (1 can)",
-        pricingModel: "Monthly subscription",
-        price: "$49.99/mo"
+        name: "Small",
+        pricingModel: "Monthly Base",
+        price: "$49.99",
+        oneTimePrice: "$99",
+        subscriptionPrice: "$49.99",
+        description: "3 mo: $47.49, 6 mo: $44.99, 12 mo: $42.49"
       },
       {
-        name: "Extra Trash Can",
-        pricingModel: "Per can",
-        price: "+$5/mo"
+        name: "Medium", 
+        pricingModel: "Monthly Base",
+        price: "$74.99",
+        oneTimePrice: "$149",
+        subscriptionPrice: "$74.99",
+        description: "3 mo: $71.24, 6 mo: $67.49, 12 mo: $63.74"
       },
       {
-        name: "Driveway Over 50 ft",
-        pricingModel: "Monthly add-on",
-        price: "+$10/mo"
+        name: "Large",
+        pricingModel: "Monthly Base", 
+        price: "$99.99",
+        oneTimePrice: "$199",
+        subscriptionPrice: "$99.99",
+        description: "3 mo: $94.99, 6 mo: $89.99, 12 mo: $84.99"
       },
       {
-        name: "Trash Can Cleaning & Sanitizing",
-        pricingModel: "Per can",
-        price: "$15–$25"
-      },
-      {
-        name: "Pet Waste Removal",
-        pricingModel: "Weekly service",
-        price: "$10–$20"
-      },
-      {
-        name: "Driveway Pressure Washing",
-        pricingModel: "Flat or per sq ft",
-        price: "$150–$250 or $0.20–$0.40/sq ft"
-      },
-      {
-        name: "Sidewalk & Walkway Cleaning",
-        pricingModel: "Per sq ft",
-        price: "$0.20–$0.35/sq ft"
-      },
-      {
-        name: "House Siding Wash (Soft Wash)",
-        pricingModel: "Per sq ft",
-        price: "$0.15–$0.25/sq ft"
-      },
-      {
-        name: "Deck & Patio Cleaning",
-        pricingModel: "Flat or per sq ft",
-        price: "$100–$250 or $0.30–$0.60/sq ft"
-      },
-      {
-        name: "Fence Cleaning",
-        pricingModel: "Per linear ft",
-        price: "$1–$2/ft"
-      },
-      {
-        name: "Garage Floor Cleaning",
-        pricingModel: "Flat",
-        price: "$100–$200"
-      },
-      {
-        name: "Pool Deck Cleaning",
-        pricingModel: "Flat",
-        price: "$100–$200"
-      },
-      {
-        name: "Gutter Cleaning – 1 Story",
-        pricingModel: "Flat",
-        price: "$100–$150"
-      },
-      {
-        name: "Gutter Cleaning – 2 Story",
-        pricingModel: "Flat",
-        price: "$150–$250"
-      },
-      {
-        name: "Downspout Clearing",
-        pricingModel: "Per downspout",
-        price: "$10–$20"
-      },
-      {
-        name: "Gutter Flushing",
-        pricingModel: "Per job",
-        price: "$20–$50"
-      },
-      {
-        name: "Gutter Whitening",
-        pricingModel: "Per linear ft",
-        price: "$1–$2/ft"
-      },
-      {
-        name: "Minor Gutter Repair",
-        pricingModel: "Per repair",
-        price: "$20–$75"
-      },
-      {
-        name: "Roof Debris Removal",
-        pricingModel: "Per job",
-        price: "$100–$300"
-      },
-      {
-        name: "Roof Soft Washing",
-        pricingModel: "Per sq ft",
-        price: "$0.30–$0.50/sq ft"
-      },
-      {
-        name: "Gutter Guard Installation",
-        pricingModel: "Per linear ft",
-        price: "$5–$8/ft"
-      }
-    ]
-  },
-  {
-    name: "Living Communities",
-    services: [
-      {
-        name: "Trash Can/Dumpster Pad Cleaning",
-        pricingModel: "Flat",
-        price: "$50–$150"
-      },
-      {
-        name: "Parking Lot & Curb Cleaning",
-        pricingModel: "Per sq ft",
-        price: "$0.20–$0.35/sq ft"
-      },
-      {
-        name: "Complex/Multi-Story Gutter Cleaning",
-        pricingModel: "Flat",
-        price: "$250–$400"
-      },
-      {
-        name: "Trash Area Deep Cleaning",
-        pricingModel: "Per job",
-        price: "$50–$150"
-      },
-      {
-        name: "Event Trash Service",
-        pricingModel: "Per event",
-        price: "$100–$400"
-      },
-      {
-        name: "Storm Debris Cleanup",
-        pricingModel: "Per load",
-        price: "$100–$300"
-      },
-      {
-        name: "Graffiti Removal",
-        pricingModel: "Per job",
-        price: "$100–$300"
-      }
-    ]
-  },
-  {
-    name: "Add-on Services",
-    services: [
-      {
-        name: "Recycling Sorting Assistance",
-        pricingModel: "Per visit",
-        price: "$10–$15"
-      },
-      {
-        name: "Bulk Item Removal",
-        pricingModel: "Per item",
-        price: "$50–$150"
-      },
-      {
-        name: "Hazardous Waste Collection",
-        pricingModel: "Per load",
-        price: "$75–$200"
-      },
-      {
-        name: "Overflow Trash Pickup",
-        pricingModel: "Per pickup",
-        price: "$15–$30"
-      },
-      {
-        name: "Seasonal Yard Waste Removal",
-        pricingModel: "Per load",
-        price: "$50–$120"
-      },
-      {
-        name: "Missed Pickup Recovery",
-        pricingModel: "Per job",
-        price: "$25–$50"
-      },
-      {
-        name: "Move-Out / Clean-Out Service",
-        pricingModel: "Per load",
-        price: "$100–$300"
-      },
-      {
-        name: "Recycling Drop-Off Runs",
-        pricingModel: "Per run",
-        price: "$25–$50"
+        name: "Premiere",
+        pricingModel: "Monthly Base",
+        price: "$149.99", 
+        oneTimePrice: "$299",
+        subscriptionPrice: "$149.99",
+        description: "3 mo: $142.49, 6 mo: $134.99, 12 mo: $127.49"
       }
     ]
   }
 ];
 
-export const pricingPolicy = {
-  minimumCharge: 150,
-  bundlingDiscount: "10–15%",
-  bundlingThreshold: 3,
-  description: "Minimum service charge: $150 per job if stand-alone (excludes subscription-based trash concierge). Bundling discount: 10–15% off if customer books 3+ services in a single visit."
-};
+// Multi-Family Properties Services  
+export const multiFamilyServices: ServiceCategory[] = [
+  {
+    name: "Multi-Family Properties",
+    services: [
+      {
+        name: "Small (5–25 units)",
+        pricingModel: "Per Unit",
+        price: "$25 / $50",
+        subscriptionPrice: "$25",
+        oneTimePrice: "$50",
+        description: "6 mo: $23.75, 12 mo: $22.50, 24 mo: $21.25"
+      }
+    ]
+  }
+];
 
-// Original service tiers for subscription plans  
+// Business Services
+export const businessServices: ServiceCategory[] = [
+  {
+    name: "Businesses",
+    services: [
+      {
+        name: "Small",
+        pricingModel: "Monthly Base",
+        price: "$199",
+        oneTimePrice: "$299",
+        subscriptionPrice: "$199",
+        description: "3 mo: $189, 6 mo: $179, 12 mo: $169"
+      }
+    ]
+  }
+];
+
+// Add-Ons Services
+export const addOnServices: ServiceCategory[] = [
+  {
+    name: "Add-Ons (All Customer Types)",
+    services: [
+      {
+        name: "Event handling",
+        pricingModel: "Monthly / One-Time",
+        price: "$200 / $350",
+        subscriptionPrice: "$200",
+        oneTimePrice: "$350",
+        description: "6 mo: $190, 12 mo: $180, 24 mo: $170, Referral: -$10"
+      }
+    ]
+  }
+];
+
+// Service tier interfaces
 export interface ServiceTier {
   id: string;
   name: string;
   description: string;
   price: number;
+  oneTimePrice?: number;
+  subscriptionPrices?: {
+    "3mo": number;
+    "6mo": number; 
+    "12mo": number;
+  };
   features: string[];
-  perk: string;
+  perk?: string;
 }
 
 export interface CommunityTier {
@@ -239,93 +134,177 @@ export interface CommunityTier {
   premierePrice: number;
 }
 
+export interface BusinessTier {
+  id: string;
+  name: string;
+  basePrice: number;
+  oneTimePrice: number;
+  contractPrices: {
+    "3mo": number;
+    "6mo": number;
+    "12mo": number;
+  };
+}
+
+// Single Family Residence Tiers
 export const singleFamilyTiers: ServiceTier[] = [
   {
-    id: "standard",
-    name: "Standard Service",
-    description: "Basic convenience for trash management",
+    id: "small",
+    name: "Small",
+    description: "Perfect for small households",
     price: 49.99,
+    oneTimePrice: 99,
+    subscriptionPrices: {
+      "3mo": 47.49,
+      "6mo": 44.99,
+      "12mo": 42.49
+    },
     features: [
-      "Moving one trash can and one recycling bin to and from the curb weekly",
-      "Additional cans: $5/month each",
-      "Driveways over 50 feet: Additional $10/month",
-      "No additional services included"
-    ],
-    perk: "Budget-conscious customers who want basic convenience for trash management"
+      "Basic trash can-to-curb service",
+      "Weekly pickup",
+      "Standard service hours"
+    ]
   },
   {
-    id: "premium",
-    name: "Premium Service",
-    description: "Enhanced service with monthly cleaning",
+    id: "medium",
+    name: "Medium", 
+    description: "Ideal for average families",
     price: 74.99,
+    oneTimePrice: 149,
+    subscriptionPrices: {
+      "3mo": 71.24,
+      "6mo": 67.49,
+      "12mo": 63.74
+    },
     features: [
-      "Everything in Standard Service",
-      "Trash can cleaning service once per month",
-      "Priority customer support for service requests or adjustments"
-    ],
-    perk: "Perfect for customers who value a clean and odor-free trash can with minimal effort"
+      "Enhanced trash management",
+      "Additional pickup options",
+      "Priority support"
+    ]
   },
   {
-    id: "comprehensive",
-    name: "Comprehensive Service",
-    description: "Complete care with additional services",
+    id: "large",
+    name: "Large",
+    description: "Comprehensive service for larger homes",
     price: 99.99,
+    oneTimePrice: 199,
+    subscriptionPrices: {
+      "3mo": 94.99,
+      "6mo": 89.99,
+      "12mo": 84.99
+    },
     features: [
-      "Everything in Premium Service",
-      "Bulk trash removal (up to 3 large items per quarter)",
-      "Pet waste pickup service once per week",
-      "Discounts on junk removal services (10% off standard rates)"
-    ],
-    perk: "Designed for busy households needing additional cleanup assistance and value-added services"
+      "Complete waste management",
+      "Multiple pickup options",
+      "Premium support"
+    ]
   },
   {
     id: "premiere",
-    name: "Premiere Service",
-    description: "Ultimate convenience and service",
+    name: "Premiere",
+    description: "Ultimate service package",
     price: 149.99,
+    oneTimePrice: 299,
+    subscriptionPrices: {
+      "3mo": 142.49,
+      "6mo": 134.99,
+      "12mo": 127.49
+    },
     features: [
-      "Everything in Comprehensive Service",
-      "Unlimited bulk trash removal (up to 1 item per week)",
-      "Twice-monthly trash can cleaning",
-      "Daily trash removal service (on demand, up to 5 pickups per week)",
-      "Access to a personal account manager for custom needs and special requests"
-    ],
-    perk: "Ultimate convenience for clients who prioritize time and an immaculate environment"
+      "All-inclusive service",
+      "Daily pickup availability",
+      "Dedicated account manager",
+      "Premium cleaning services"
+    ]
   }
 ];
 
+// Multi-Family Property Tiers
 export const multiFamilyTiers: CommunityTier[] = [
   {
-    id: "basic-community",
-    unitRange: "1-50 units",
-    rangeStart: 1,
-    rangeEnd: 50,
+    id: "small-community",
+    unitRange: "5–25 units",
+    rangeStart: 5,
+    rangeEnd: 25,
     discount: 0,
-    standardPrice: 199.99,
-    premiumPrice: 299.99,
-    comprehensivePrice: 399.99,
-    premierePrice: 499.99
+    standardPrice: 25,
+    premiumPrice: 30,
+    comprehensivePrice: 35,
+    premierePrice: 40
   },
   {
-    id: "standard-community",
-    unitRange: "51-100 units",
-    rangeStart: 51,
-    rangeEnd: 100,
+    id: "medium-community", 
+    unitRange: "26–75 units",
+    rangeStart: 26,
+    rangeEnd: 75,
     discount: 10,
-    standardPrice: 179.99,
-    premiumPrice: 269.99,
-    comprehensivePrice: 359.99,
-    premierePrice: 449.99
+    standardPrice: 20,
+    premiumPrice: 25,
+    comprehensivePrice: 30,
+    premierePrice: 35
   },
   {
-    id: "premium-community",
-    unitRange: "100+ units",
-    rangeStart: 101,
+    id: "large-community",
+    unitRange: "76+ units",
+    rangeStart: 76,
     rangeEnd: null,
     discount: 20,
-    standardPrice: 159.99,
-    premiumPrice: 239.99,
-    comprehensivePrice: 319.99,
-    premierePrice: 399.99
+    standardPrice: 15,
+    premiumPrice: 20,
+    comprehensivePrice: 25,
+    premierePrice: 30
   }
 ];
+
+// Business Tiers
+export const businessTiers: BusinessTier[] = [
+  {
+    id: "small-business",
+    name: "Small",
+    basePrice: 199,
+    oneTimePrice: 299,
+    contractPrices: {
+      "3mo": 189,
+      "6mo": 179,
+      "12mo": 169
+    }
+  },
+  {
+    id: "medium-business",
+    name: "Medium",
+    basePrice: 349,
+    oneTimePrice: 499,
+    contractPrices: {
+      "3mo": 331,
+      "6mo": 314,
+      "12mo": 297
+    }
+  },
+  {
+    id: "large-business",
+    name: "Large",
+    basePrice: 499,
+    oneTimePrice: 699,
+    contractPrices: {
+      "3mo": 474,
+      "6mo": 449,
+      "12mo": 424
+    }
+  }
+];
+
+// Combined service categories for backward compatibility
+export const serviceCategories: ServiceCategory[] = [
+  ...singleFamilyServices,
+  ...multiFamilyServices, 
+  ...businessServices,
+  ...addOnServices
+];
+
+export const pricingPolicy = {
+  minimumCharge: 150,
+  bundlingDiscount: "10–15%",
+  bundlingThreshold: 3,
+  referralCredit: 10,
+  description: "Minimum service charge: $150 per job if stand-alone (excludes subscription-based trash concierge). Bundling discount: 10–15% off if customer books 3+ services in a single visit. Referral credit: -$10/mo for applicable services."
+};
