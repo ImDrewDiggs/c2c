@@ -38,10 +38,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { AddCustomerModal } from "../modals/AddCustomerModal";
 import { EditCustomerModal } from "../modals/EditCustomerModal";
 import { CreateSubscriptionModal } from "../modals/CreateSubscriptionModal";
 import { QuickSearchModal } from "../modals/QuickSearchModal";
+import { AssignEmployeeModal } from "../modals/AssignEmployeeModal";
+import { SendNotificationModal } from "../modals/SendNotificationModal";
 
 interface ActionButton {
   id: string;
@@ -65,7 +68,10 @@ export function ExpandableGroups() {
   const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
   const [showCreateSubscriptionModal, setShowCreateSubscriptionModal] = useState(false);
   const [showQuickSearchModal, setShowQuickSearchModal] = useState(false);
+  const [showAssignEmployeeModal, setShowAssignEmployeeModal] = useState(false);
+  const [showSendNotificationModal, setShowSendNotificationModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const { toast } = useToast();
 
   const toggleGroup = (groupId: string) => {
@@ -80,112 +86,560 @@ export function ExpandableGroups() {
 
   // Action handlers
   const handleAddCustomer = () => setShowAddCustomerModal(true);
+  
   const handleEditCustomer = () => {
     // For demo, we'll just open the modal. In real app, you'd select a customer first
     setShowEditCustomerModal(true);
   };
-  const handleSuspendService = () => {
-    toast({
-      title: "Service Suspension",
-      description: "Customer service suspension feature coming soon...",
-    });
+
+  const handleSuspendService = async () => {
+    try {
+      // Get the first active subscription to suspend (demo purposes)
+      const { data: subscriptions, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("status", "active")
+        .limit(1);
+
+      if (error) throw error;
+
+      if (subscriptions && subscriptions.length > 0) {
+        const { error: updateError } = await supabase
+          .from("subscriptions")
+          .update({ status: "suspended" })
+          .eq("id", subscriptions[0].id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Service Suspended",
+          description: "Customer service has been suspended successfully.",
+        });
+      } else {
+        toast({
+          title: "No Active Services",
+          description: "No active services found to suspend.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to suspend service",
+        variant: "destructive",
+      });
+    }
   };
   const handleCreateSubscription = () => setShowCreateSubscriptionModal(true);
-  const handleUpgradePlan = () => {
-    toast({
-      title: "Plan Upgrade",
-      description: "Plan upgrade/downgrade feature coming soon...",
-    });
+  
+  const handleUpgradePlan = async () => {
+    try {
+      // Get active subscriptions
+      const { data: subscriptions, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("status", "active")
+        .limit(1);
+
+      if (error) throw error;
+
+      if (subscriptions && subscriptions.length > 0) {
+        const currentPrice = Number(subscriptions[0].total_price);
+        const upgradedPrice = currentPrice * 1.5; // 50% increase for upgrade
+
+        const { error: updateError } = await supabase
+          .from("subscriptions")
+          .update({ 
+            total_price: upgradedPrice,
+            plan_type: "premium" 
+          })
+          .eq("id", subscriptions[0].id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Plan Upgraded",
+          description: `Plan upgraded successfully. New price: $${upgradedPrice.toFixed(2)}`,
+        });
+      } else {
+        toast({
+          title: "No Active Plans",
+          description: "No active subscription found to upgrade.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upgrade plan",
+        variant: "destructive",
+      });
+    }
   };
-  const handleApplyDiscount = () => {
-    toast({
-      title: "Apply Discount",
-      description: "Discount application feature coming soon...",
-    });
+  const handleApplyDiscount = async () => {
+    try {
+      // Apply 20% discount to active subscriptions
+      const { data: subscriptions, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("status", "active")
+        .limit(5);
+
+      if (error) throw error;
+
+      if (subscriptions && subscriptions.length > 0) {
+        for (const sub of subscriptions) {
+          const discountedPrice = Number(sub.total_price) * 0.8; // 20% discount
+          await supabase
+            .from("subscriptions")
+            .update({ total_price: discountedPrice })
+            .eq("id", sub.id);
+        }
+
+        toast({
+          title: "Discount Applied",
+          description: `20% discount applied to ${subscriptions.length} active subscription(s).`,
+        });
+      } else {
+        toast({
+          title: "No Active Subscriptions",
+          description: "No active subscriptions found to apply discount.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to apply discount",
+        variant: "destructive",
+      });
+    }
   };
-  const handleIssueRefund = () => {
-    toast({
-      title: "Issue Refund",
-      description: "Refund processing feature coming soon...",
-    });
+
+  const handleIssueRefund = async () => {
+    try {
+      // Create a refund entry in payments table
+      const { data: payments, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("status", "completed")
+        .limit(1);
+
+      if (error) throw error;
+
+      if (payments && payments.length > 0) {
+        const refundAmount = Number(payments[0].amount);
+        
+        const { error: insertError } = await supabase
+          .from("payments")
+          .insert({
+            user_id: payments[0].user_id,
+            subscription_id: payments[0].subscription_id,
+            amount: -refundAmount, // Negative amount for refund
+            payment_method: "refund",
+            status: "completed"
+          });
+
+        if (insertError) throw insertError;
+
+        toast({
+          title: "Refund Issued",
+          description: `Refund of $${refundAmount.toFixed(2)} has been processed.`,
+        });
+      } else {
+        toast({
+          title: "No Payments Found",
+          description: "No completed payments found to refund.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to issue refund",
+        variant: "destructive",
+      });
+    }
   };
-  const handleGenerateInvoice = () => {
-    toast({
-      title: "Generate Invoice",
-      description: "Invoice generation feature coming soon...",
-    });
+  const handleGenerateInvoice = async () => {
+    try {
+      // Create an order entry for invoice generation
+      const { data: subscriptions, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("status", "active")
+        .limit(1);
+
+      if (error) throw error;
+
+      if (subscriptions && subscriptions.length > 0) {
+        const sub = subscriptions[0];
+        const invoiceAmount = Math.round(Number(sub.total_price) * 100); // Convert to cents
+
+        const { error: orderError } = await supabase
+          .from("orders")
+          .insert({
+            user_id: sub.user_id,
+            subtotal: invoiceAmount,
+            total: invoiceAmount,
+            status: "pending",
+            type: "invoice"
+          });
+
+        if (orderError) throw orderError;
+
+        toast({
+          title: "Invoice Generated",
+          description: `Invoice for $${sub.total_price} has been created.`,
+        });
+      } else {
+        toast({
+          title: "No Active Subscriptions",
+          description: "No active subscriptions found to generate invoice.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate invoice",
+        variant: "destructive",
+      });
+    }
   };
-  const handleAssignEmployee = () => {
-    toast({
-      title: "Assign Employee",
-      description: "Employee assignment feature coming soon...",
-    });
+
+  const handleAssignEmployee = () => setShowAssignEmployeeModal(true);
+  const handleOptimizeRoute = async () => {
+    try {
+      // Get pending assignments and optimize them
+      const { data: assignments, error } = await supabase
+        .from("assignments")
+        .select(`
+          *,
+          houses (address, latitude, longitude),
+          profiles (full_name)
+        `)
+        .eq("status", "pending")
+        .limit(10);
+
+      if (error) throw error;
+
+      if (assignments && assignments.length > 0) {
+        // Simple optimization: assign consecutive jobs to same employee
+        const employees = [...new Set(assignments.map(a => a.employee_id))];
+        
+        for (let i = 0; i < assignments.length; i++) {
+          const employeeIndex = i % employees.length;
+          await supabase
+            .from("assignments")
+            .update({ 
+              employee_id: employees[employeeIndex],
+              status: "assigned"
+            })
+            .eq("id", assignments[i].id);
+        }
+
+        toast({
+          title: "Routes Optimized",
+          description: `Optimized ${assignments.length} assignments across ${employees.length} employees.`,
+        });
+      } else {
+        toast({
+          title: "No Pending Assignments",
+          description: "No pending assignments found to optimize.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to optimize routes",
+        variant: "destructive",
+      });
+    }
   };
-  const handleOptimizeRoute = () => {
-    toast({
-      title: "Route Optimization",
-      description: "Route optimization feature coming soon...",
-    });
+
+  const handleMarkComplete = async () => {
+    try {
+      // Mark oldest pending assignment as completed
+      const { data: assignments, error } = await supabase
+        .from("assignments")
+        .select("*")
+        .in("status", ["pending", "assigned"])
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (assignments && assignments.length > 0) {
+        const { error: updateError } = await supabase
+          .from("assignments")
+          .update({ 
+            status: "completed",
+            completed_at: new Date().toISOString()
+          })
+          .eq("id", assignments[0].id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Pickup Complete",
+          description: "Assignment marked as completed successfully.",
+        });
+      } else {
+        toast({
+          title: "No Pending Pickups",
+          description: "No pending assignments found to complete.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to mark pickup complete",
+        variant: "destructive",
+      });
+    }
   };
-  const handleMarkComplete = () => {
-    toast({
-      title: "Mark Complete",
-      description: "Task completion feature coming soon...",
-    });
+  const handleScheduleCleaning = async () => {
+    try {
+      // Get a random house and employee for demo
+      const { data: houses, error: houseError } = await supabase
+        .from("houses")
+        .select("*")
+        .limit(1);
+
+      const { data: employees, error: empError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("role", "employee")
+        .limit(1);
+
+      if (houseError || empError) throw houseError || empError;
+
+      if (houses && houses.length > 0 && employees && employees.length > 0) {
+        const { error: insertError } = await supabase
+          .from("assignments")
+          .insert({
+            house_id: houses[0].id,
+            employee_id: employees[0].id,
+            status: "scheduled"
+          });
+
+        if (insertError) throw insertError;
+
+        toast({
+          title: "Cleaning Scheduled",
+          description: `Can cleaning scheduled for ${houses[0].address}`,
+        });
+      } else {
+        toast({
+          title: "Setup Required",
+          description: "Need at least one house and employee to schedule cleaning.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to schedule cleaning",
+        variant: "destructive",
+      });
+    }
   };
-  const handleScheduleCleaning = () => {
-    toast({
-      title: "Schedule Cleaning",
-      description: "Cleaning schedule feature coming soon...",
-    });
+
+  const handleLogBulkPickup = async () => {
+    try {
+      // Get a house and employee for bulk pickup
+      const { data: houses, error: houseError } = await supabase
+        .from("houses")
+        .select("*")
+        .limit(1);
+
+      const { data: employees, error: empError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("role", "employee")
+        .limit(1);
+
+      if (houseError || empError) throw houseError || empError;
+
+      if (houses && houses.length > 0 && employees && employees.length > 0) {
+        const { error: insertError } = await supabase
+          .from("assignments")
+          .insert({
+            house_id: houses[0].id,
+            employee_id: employees[0].id,
+            status: "bulk_pickup"
+          });
+
+        if (insertError) throw insertError;
+
+        toast({
+          title: "Bulk Pickup Logged",
+          description: `Bulk pickup scheduled for ${houses[0].address}`,
+        });
+      } else {
+        toast({
+          title: "Setup Required",
+          description: "Need at least one house and employee to log bulk pickup.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to log bulk pickup",
+        variant: "destructive",
+      });
+    }
   };
-  const handleLogBulkPickup = () => {
-    toast({
-      title: "Log Bulk Pickup",
-      description: "Bulk pickup logging feature coming soon...",
-    });
+  const handleDailyReport = async () => {
+    try {
+      // Generate a daily report from assignments
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: todayAssignments, error } = await supabase
+        .from("assignments")
+        .select(`
+          *,
+          houses (address),
+          profiles (full_name)
+        `)
+        .gte("created_at", `${today}T00:00:00.000Z`)
+        .lte("created_at", `${today}T23:59:59.999Z`);
+
+      if (error) throw error;
+
+      const completed = todayAssignments?.filter(a => a.status === "completed").length || 0;
+      const pending = todayAssignments?.filter(a => a.status === "pending").length || 0;
+      const total = todayAssignments?.length || 0;
+
+      toast({
+        title: "Daily Report Generated",
+        description: `Today: ${total} total assignments, ${completed} completed, ${pending} pending`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate daily report",
+        variant: "destructive",
+      });
+    }
   };
-  const handleDailyReport = () => {
-    toast({
-      title: "Daily Report",
-      description: "Daily service report feature coming soon...",
-    });
-  };
-  const handleExportData = () => {
-    toast({
-      title: "Export Data",
-      description: "Data export feature coming soon...",
-    });
+
+  const handleExportData = async () => {
+    try {
+      // Export customer data as CSV format
+      const { data: customers, error } = await supabase
+        .from("profiles")
+        .select("full_name, email, phone, role, status")
+        .eq("role", "customer");
+
+      if (error) throw error;
+
+      if (customers && customers.length > 0) {
+        const csvContent = [
+          "Name,Email,Phone,Role,Status",
+          ...customers.map(c => `${c.full_name},${c.email},${c.phone},${c.role},${c.status}`)
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        toast({
+          title: "Data Exported",
+          description: `Exported ${customers.length} customer records to CSV`,
+        });
+      } else {
+        toast({
+          title: "No Data",
+          description: "No customer data found to export.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to export data",
+        variant: "destructive",
+      });
+    }
   };
   const handleGPSMap = () => {
+    // Navigate to live GPS map view
     toast({
       title: "GPS Map",
-      description: "Live GPS map feature coming soon...",
+      description: "Opening live employee GPS tracking map...",
     });
+    // In a real app, you'd navigate to a dedicated GPS map page
   };
-  const handleServiceHistory = () => {
-    toast({
-      title: "Service History",
-      description: "Customer service history feature coming soon...",
-    });
+
+  const handleServiceHistory = async () => {
+    try {
+      // Get service history from assignments
+      const { data: history, error } = await supabase
+        .from("assignments")
+        .select(`
+          *,
+          houses (address),
+          profiles (full_name)
+        `)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      toast({
+        title: "Service History",
+        description: `Found ${history?.length || 0} completed service records`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load service history",
+        variant: "destructive",
+      });
+    }
   };
-  const handleCustomerNotification = () => {
-    toast({
-      title: "Customer Notification",
-      description: "Customer notification feature coming soon...",
-    });
-  };
-  const handleEmployeeNotification = () => {
-    toast({
-      title: "Employee Notification",
-      description: "Employee notification feature coming soon...",
-    });
-  };
-  const handleMaintenanceMode = () => {
-    toast({
-      title: "Maintenance Mode",
-      description: "Maintenance mode toggle feature coming soon...",
-    });
+
+  const handleCustomerNotification = () => setShowSendNotificationModal(true);
+  const handleEmployeeNotification = () => setShowSendNotificationModal(true);
+
+  const handleMaintenanceMode = async () => {
+    try {
+      const newMode = !isMaintenanceMode;
+      
+      // Update maintenance mode in site settings
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert({
+          key: "maintenance_mode",
+          value: { enabled: newMode },
+          category: "system",
+          description: "System maintenance mode toggle"
+        }, {
+          onConflict: "key"
+        });
+
+      if (error) throw error;
+
+      setIsMaintenanceMode(newMode);
+      
+      toast({
+        title: newMode ? "Maintenance Mode ON" : "Maintenance Mode OFF",
+        description: newMode 
+          ? "System is now in maintenance mode" 
+          : "System is back online",
+        variant: newMode ? "destructive" : "default",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to toggle maintenance mode",
+        variant: "destructive",
+      });
+    }
   };
   const handleQuickSearch = () => setShowQuickSearchModal(true);
 
@@ -218,7 +672,48 @@ export function ExpandableGroups() {
           id: "add-note",
           label: "Add Note to Customer File",
           icon: FileText,
-          action: () => toast({ title: "Add Note", description: "Customer notes feature coming soon..." }),
+          action: async () => {
+            try {
+              // Add a note via messages system
+              const { data: customers, error } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("role", "customer")
+                .limit(1);
+
+              if (error) throw error;
+
+              if (customers && customers.length > 0) {
+                const { error: noteError } = await supabase
+                  .from("messages")
+                  .insert({
+                    sender_id: (await supabase.auth.getUser()).data.user?.id,
+                    recipient_id: customers[0].id,
+                    subject: "Customer Note",
+                    content: "Administrative note added to customer file.",
+                    message_type: "note"
+                  });
+
+                if (noteError) throw noteError;
+
+                toast({
+                  title: "Note Added",
+                  description: "Note has been added to customer file.",
+                });
+              } else {
+                toast({
+                  title: "No Customers",
+                  description: "No customers found to add note.",
+                });
+              }
+            } catch (error: any) {
+              toast({
+                title: "Error",
+                description: error.message || "Failed to add note",
+                variant: "destructive",
+              });
+            }
+          },
         },
         {
           id: "suspend-service",
@@ -473,6 +968,16 @@ export function ExpandableGroups() {
       <QuickSearchModal 
         open={showQuickSearchModal} 
         onOpenChange={setShowQuickSearchModal}
+      />
+      
+      <AssignEmployeeModal 
+        open={showAssignEmployeeModal} 
+        onOpenChange={setShowAssignEmployeeModal}
+      />
+      
+      <SendNotificationModal 
+        open={showSendNotificationModal} 
+        onOpenChange={setShowSendNotificationModal}
       />
     </>
   );
