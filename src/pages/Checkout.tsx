@@ -15,6 +15,7 @@ import { CreditCard, DollarSign, Smartphone, Phone, Wallet } from "lucide-react"
 import { motion } from "framer-motion";
 import { validateAndSanitizeCustomerInfo } from "@/utils/inputValidation";
 import { useSecureErrorHandler } from "@/utils/secureErrorHandler";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CheckoutData {
   subscriptionType: string;
@@ -119,24 +120,53 @@ export default function Checkout() {
     setIsProcessing(true);
     
     try {
-      // Here we would process the payment and create subscription
-      // For now, we'll just show a success message
-      toast({
-        title: "Order Placed Successfully",
-        description: "Redirecting to confirmation page...",
-      });
-      
-      setTimeout(() => {
-        navigate('/checkout/success', { 
-          state: { 
-            orderData: { checkoutData, customerInfo, paymentMethod: selectedPaymentMethod, total: calculateTotal() }
+      // Use Stripe for payment processing
+      if (selectedPaymentMethod === "stripe") {
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+          body: {
+            subscriptionType: checkoutData?.subscriptionType,
+            selectedTier: checkoutData?.selectedTier,
+            selectedServiceTypes: checkoutData?.selectedServiceTypes || [],
+            unitCount: checkoutData?.unitCount || 1,
+            total: calculateTotal(),
+            isSubscription: true,
+            contractLength: "monthly",
+            selectedServices: [`${checkoutData?.subscriptionType} ${checkoutData?.selectedTier || ''} Plan`]
           }
         });
-      }, 2000);
+
+        if (error) throw error;
+
+        if (data?.url) {
+          // Open Stripe checkout in a new tab
+          window.open(data.url, '_blank');
+        } else {
+          throw new Error('No checkout URL received');
+        }
+      } else {
+        // For other payment methods, show success (simulated)
+        toast({
+          title: "Order Placed Successfully",
+          description: "Redirecting to confirmation page...",
+        });
+        
+        setTimeout(() => {
+          navigate('/checkout/success', { 
+            state: { 
+              orderData: { checkoutData, customerInfo, paymentMethod: selectedPaymentMethod, total: calculateTotal() }
+            }
+          });
+        }, 2000);
+      }
       
     } catch (error) {
       console.error('Error placing order:', error);
       handleError(error, 'order_placement');
+      toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: "There was an issue processing your payment. Please try again.",
+      });
     } finally {
       setIsProcessing(false);
     }

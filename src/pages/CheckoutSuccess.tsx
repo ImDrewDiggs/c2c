@@ -1,21 +1,58 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Home, FileText } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CheckoutSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [paymentData, setPaymentData] = useState<any>(null);
+  
   const orderData = location.state?.orderData;
+  const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
-    if (!orderData) {
-      navigate('/');
-    }
-  }, [orderData, navigate]);
+    const verifyPayment = async () => {
+      if (sessionId) {
+        try {
+          const { data, error } = await supabase.functions.invoke('verify-payment', {
+            body: { sessionId }
+          });
+
+          if (error) throw error;
+
+          setPaymentData(data);
+          setPaymentVerified(true);
+          
+          if (data.status === 'paid') {
+            toast({
+              title: "Payment Verified",
+              description: "Your payment has been processed successfully.",
+            });
+          }
+        } catch (error) {
+          console.error('Error verifying payment:', error);
+          toast({
+            variant: "destructive",
+            title: "Verification Error",
+            description: "Could not verify payment status.",
+          });
+        }
+      } else if (!orderData) {
+        navigate('/');
+      }
+    };
+
+    verifyPayment();
+  }, [sessionId, orderData, navigate, toast]);
 
   if (!orderData) {
     return <div className="container mx-auto py-10">Loading...</div>;
