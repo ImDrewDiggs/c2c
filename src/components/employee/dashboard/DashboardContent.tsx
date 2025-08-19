@@ -1,5 +1,6 @@
 
 import { TimeTracker } from "@/components/employee/TimeTracker";
+import { TimeCard } from "@/components/employee/TimeCard";
 import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
 import { FieldWorkerGroups } from "./FieldWorkerGroups";
 import { Assignment, Location } from "@/types/map";
@@ -100,7 +101,10 @@ export function DashboardContent({
 
       {/* Time Tracker can be integrated into the groups or shown separately */}
       {activeTab === "time-tracker" && (
-        <TimeTracker userId={userId || ''} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TimeTracker userId={userId || ''} />
+          <TimeCard userId={userId || ''} />
+        </div>
       )}
     </div>
   );

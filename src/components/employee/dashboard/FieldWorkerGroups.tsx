@@ -196,8 +196,8 @@ export function FieldWorkerGroups({
         {
           label: "Total Hours Worked ⏱️",
           icon: <Clock className="h-4 w-4" />,
-          onClick: () => toast({ title: "Hours Worked", description: `${todayHours.toFixed(1)} hours today` }),
-          badge: `${todayHours.toFixed(1)}h`
+          onClick: () => toast({ title: "Hours Worked", description: `${todayHours.toFixed(2)} hours today` }),
+          badge: `${todayHours.toFixed(2)}h`
         },
         {
           label: "Estimated Gross Pay 💵",

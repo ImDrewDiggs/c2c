@@ -32,33 +32,51 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   }, [userId]);
 
   const fetchWorkSessions = async () => {
+    if (!userId) return;
+    
+    setLoading(true);
     try {
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
       const { data, error } = await supabase
         .from('work_sessions')
         .select('*')
         .eq('employee_id', userId)
-        .order('created_at', { ascending: false });
+        .order('clock_in_time', { ascending: false })
+        .limit(10);
 
       if (error) throw error;
 
       setSessions(data || []);
       
-      // Calculate today's total hours
-      const today = new Date().toDateString();
-      const todaySessions = (data || []).filter(session => 
-        new Date(session.clock_in_time).toDateString() === today
-      );
-      const todayTotal = todaySessions.reduce((sum, session) => 
-        sum + (session.total_hours || 0), 0
-      );
-      setTotalHours(todayTotal);
-
-      // Check if there's an active session
-      const activeSession = (data || []).find(session => session.status === 'active');
-      if (activeSession) {
-        setCurrentSession(activeSession);
-        setIsWorking(true);
-      }
+      // Calculate today's total hours with 0.01 precision
+      const todaySessions = data?.filter(session => {
+        const sessionDate = new Date(session.clock_in_time);
+        return sessionDate >= startOfDay && sessionDate <= endOfDay;
+      }) || [];
+      
+      const totalMinutes = todaySessions.reduce((total, session) => {
+        if (session.total_hours) {
+          return total + (session.total_hours * 60);
+        } else if (session.clock_out_time) {
+          const clockIn = new Date(session.clock_in_time);
+          const clockOut = new Date(session.clock_out_time);
+          return total + ((clockOut.getTime() - clockIn.getTime()) / (1000 * 60));
+        }
+        return total;
+      }, 0);
+      
+      // Convert to hours with 0.01 precision
+      const hours = Math.round((totalMinutes / 60) * 100) / 100;
+      setTotalHours(hours);
+      
+      // Check for active session
+      const activeSession = data?.find(session => session.status === 'active');
+      setCurrentSession(activeSession || null);
+      setIsWorking(!!activeSession);
+      
     } catch (error) {
       console.error('Error fetching work sessions:', error);
     } finally {
@@ -138,12 +156,22 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
     try {
       // Get current location for clock-out
       navigator.geolocation.getCurrentPosition(async (position) => {
+        const clockOutTime = new Date().toISOString();
+        const clockInTime = new Date(currentSession.clock_in_time);
+        const clockOut = new Date(clockOutTime);
+        
+        // Calculate total hours with 0.01 precision
+        const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
+        const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+
         const { error } = await supabase
           .from('work_sessions')
           .update({
-            clock_out_time: new Date().toISOString(),
+            clock_out_time: clockOutTime,
             clock_out_location_lat: position.coords.latitude,
-            clock_out_location_lng: position.coords.longitude
+            clock_out_location_lng: position.coords.longitude,
+            total_hours: totalHours,
+            status: 'completed'
           })
           .eq('id', currentSession.id);
 
@@ -151,11 +179,12 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
         setCurrentSession(null);
         setIsWorking(false);
-        await fetchWorkSessions(); // Refresh sessions
         toast({
           title: "Clocked Out",
-          description: "Your work session has been completed.",
+          description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
         });
+        
+        await fetchWorkSessions();
       }, (error) => {
         // Clock out without location if geolocation fails
         clockOutWithoutLocation();
@@ -172,30 +201,41 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
   const clockOutWithoutLocation = async () => {
     if (!currentSession) return;
-
+    
     try {
+      const clockOutTime = new Date().toISOString();
+      const clockInTime = new Date(currentSession.clock_in_time);
+      const clockOut = new Date(clockOutTime);
+      
+      // Calculate total hours with 0.01 precision
+      const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
+      const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+      
       const { error } = await supabase
         .from('work_sessions')
-        .update({
-          clock_out_time: new Date().toISOString()
+        .update({ 
+          clock_out_time: clockOutTime,
+          total_hours: totalHours,
+          status: 'completed'
         })
         .eq('id', currentSession.id);
-
+        
       if (error) throw error;
-
+      
       setCurrentSession(null);
       setIsWorking(false);
-      await fetchWorkSessions(); // Refresh sessions
       toast({
         title: "Clocked Out",
-        description: "Your work session has been completed.",
+        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
       });
+      
+      await fetchWorkSessions();
     } catch (error) {
       console.error('Error clocking out without location:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to clock out. Please try again.",
+        description: "Failed to clock out. Please try again."
       });
     }
   };
@@ -240,8 +280,10 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
           {/* Today's Hours */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-muted rounded-lg">
-              <p className="text-2xl font-bold">{totalHours.toFixed(1)}</p>
-              <p className="text-sm text-muted-foreground">Hours Today</p>
+              <div className="text-2xl font-bold text-primary">
+                {totalHours.toFixed(2)}
+              </div>
+              <div className="text-sm text-muted-foreground">Hours Today</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <p className="text-2xl font-bold">{sessions.length}</p>
@@ -299,9 +341,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
                       {session.status}
                     </Badge>
                     {session.total_hours && (
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <div className="text-sm text-muted-foreground mt-1">
                         {session.total_hours.toFixed(2)} hours
-                      </p>
+                      </div>
                     )}
                   </div>
                 </div>
