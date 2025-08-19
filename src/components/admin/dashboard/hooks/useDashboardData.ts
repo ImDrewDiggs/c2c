@@ -245,10 +245,10 @@ export function useDashboardData() {
     },
   ];
 
-  return {
-    stats,
-    houses,
-    assignments,
+  return { 
+    stats, 
+    houses, 
+    assignments, 
     mockRevenueData,
     mockPickups
   };
