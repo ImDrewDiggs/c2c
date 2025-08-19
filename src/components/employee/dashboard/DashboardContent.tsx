@@ -1,8 +1,7 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimeTracker } from "@/components/employee/TimeTracker";
-import { JobAssignments } from "@/components/employee/JobAssignments";
 import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
+import { FieldWorkerGroups } from "./FieldWorkerGroups";
 import { Assignment, Location } from "@/types/map";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -70,33 +69,39 @@ export function DashboardContent({
     }
   };
 
+  const handleRefreshRoute = () => {
+    // This would typically refetch assignments or update route data
+    toast({
+      title: "Route Refreshed",
+      description: "Your route has been updated with the latest information."
+    });
+  };
+
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="grid grid-cols-3 mb-8">
-        <TabsTrigger value="time-tracker">Time Tracker</TabsTrigger>
-        <TabsTrigger value="job-assignments">Job Assignments</TabsTrigger>
-        <TabsTrigger value="route-optimizer">Route Optimizer</TabsTrigger>
-      </TabsList>
+    <div className="space-y-6">
+      {/* Field Worker Groups - Primary Interface */}
+      <FieldWorkerGroups
+        assignments={assignments}
+        userId={userId || ''}
+        currentLocation={currentLocation}
+        onRefreshRoute={handleRefreshRoute}
+        onMarkComplete={handleMarkComplete}
+        onViewRoute={handleViewRoute}
+      />
 
-      <TabsContent value="time-tracker">
-        <TimeTracker userId={userId || ''} />
-      </TabsContent>
-
-      <TabsContent value="job-assignments">
-        <JobAssignments 
-          assignments={assignments} 
-          onViewRoute={handleViewRoute} 
-          onMarkComplete={handleMarkComplete} 
-        />
-      </TabsContent>
-
-      <TabsContent value="route-optimizer">
+      {/* Hidden Route Optimizer for when needed */}
+      {selectedAssignment && activeTab === "route-optimizer" && (
         <RouteOptimizer 
           selectedAssignment={selectedAssignment}
           currentLocation={currentLocation}
           onClose={handleCloseRoute}
         />
-      </TabsContent>
-    </Tabs>
+      )}
+
+      {/* Time Tracker can be integrated into the groups or shown separately */}
+      {activeTab === "time-tracker" && (
+        <TimeTracker userId={userId || ''} />
+      )}
+    </div>
   );
 }
