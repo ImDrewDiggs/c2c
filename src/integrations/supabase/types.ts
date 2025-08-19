@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -940,11 +940,11 @@ export type Database = {
     }
     Functions: {
       create_admin_profile_safe: {
-        Args: { admin_user_id: string; admin_email: string }
+        Args: { admin_email: string; admin_user_id: string }
         Returns: undefined
       }
       create_secure_admin_profile: {
-        Args: { admin_user_id: string; admin_email: string }
+        Args: { admin_email: string; admin_user_id: string }
         Returns: Json
       }
       get_current_user_role: {
@@ -952,7 +952,7 @@ export type Database = {
         Returns: string
       }
       has_role: {
-        Args: { _user_id: string; _role: string }
+        Args: { _role: string; _user_id: string }
         Returns: boolean
       }
       is_admin_by_email: {

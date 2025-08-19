@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "./components/Navbar";
 import Loading from "./components/ui/Loading";
@@ -67,6 +68,7 @@ const App = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+          <SubscriptionProvider>
           <MaintenanceGate>
             <div className="min-h-screen bg-background">
               <Navbar />
@@ -122,6 +124,7 @@ const App = () => {
               <Toaster />
             </div>
           </MaintenanceGate>
+          </SubscriptionProvider>
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
