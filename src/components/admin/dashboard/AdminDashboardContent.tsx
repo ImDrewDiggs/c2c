@@ -15,6 +15,7 @@ import { RealAnalyticsDashboard } from "../analytics/RealAnalyticsDashboard";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserManagement } from "../UserManagement";
+import { ExpandableGroups } from "./ExpandableGroups";
 import React from "react";
 
 export function AdminDashboardContent() {
@@ -83,6 +84,12 @@ export function AdminDashboardContent() {
 
       {/* Key metrics overview */}
       <StatsOverview stats={transformedStats} activeEmployeesCount={employeeLocations.filter(emp => emp.is_online).length} />
+
+      {/* Quick access navigation groups */}
+      <div className="max-w-4xl">
+        <h2 className="text-xl font-semibold mb-4">Quick Access</h2>
+        <ExpandableGroups />
+      </div>
       
       {/* Dashboard with tabs */}
       <DashboardTabs
