@@ -219,7 +219,7 @@ export function FieldWorkerGroups({
       icon: <MessageSquare className="h-5 w-5" />,
       actions: [
         {
-          label: "Message Admin / Dispatcher 📩",
+          label: "Message Admin / Request Help 📩",
           icon: <MessageSquare className="h-4 w-4" />,
           onClick: () => setShowMessageAdmin(true)
         },
@@ -227,11 +227,6 @@ export function FieldWorkerGroups({
           label: "Receive Alerts / Announcements 📲",
           icon: <Bell className="h-4 w-4" />,
           onClick: () => toast({ title: "Notifications", description: "Checking for new alerts..." })
-        },
-        {
-          label: "Request Assistance 🔔",
-          icon: <HelpCircle className="h-4 w-4" />,
-          onClick: () => setShowMessageAdmin(true)
         },
         {
           label: "Request Time Off 📝",
