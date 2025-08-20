@@ -11,6 +11,7 @@ interface DashboardTabsProps {
   employeesContent: ReactNode;  // Content for employees tab
   analyticsContent: ReactNode;  // Content for analytics tab
   usersContent: ReactNode;      // Content for users management tab
+  documentationContent: ReactNode; // Content for documentation tab
 }
 
 /**
@@ -24,15 +25,17 @@ export function DashboardTabs({
   employeesContent,
   analyticsContent,
   usersContent,
+  documentationContent,
 }: DashboardTabsProps) {
   return (
     <Tabs defaultValue="operations" className="space-y-6">
       {/* Tab navigation buttons */}
-      <TabsList className="grid grid-cols-4 w-full">
+      <TabsList className="grid grid-cols-5 w-full">
         <TabsTrigger value="operations">Operations</TabsTrigger>
         <TabsTrigger value="employees">Employees</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>
         <TabsTrigger value="users">Users</TabsTrigger>
+        <TabsTrigger value="documentation">Documentation</TabsTrigger>
       </TabsList>
       
       {/* Tab content panels */}
@@ -50,6 +53,10 @@ export function DashboardTabs({
       
       <TabsContent value="users" className="space-y-6">
         {usersContent}
+      </TabsContent>
+      
+      <TabsContent value="documentation" className="space-y-6">
+        {documentationContent}
       </TabsContent>
     </Tabs>
   );

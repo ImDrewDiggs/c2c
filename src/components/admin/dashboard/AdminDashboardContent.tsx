@@ -16,6 +16,7 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserManagement } from "../UserManagement";
 import { ExpandableGroups } from "./ExpandableGroups";
+import { ComprehensiveDocumentation } from "../documentation/ComprehensiveDocumentation";
 import React from "react";
 
 export function AdminDashboardContent() {
@@ -144,6 +145,9 @@ export function AdminDashboardContent() {
         }
         usersContent={
           <UserManagement />
+        }
+        documentationContent={
+          <ComprehensiveDocumentation />
         }
       />
     </div>
