@@ -39,24 +39,20 @@ export function useDashboardData() {
         const activeEmployeeIds = new Set(employeeLocations?.map(loc => loc.employee_id) || []);
 
         return {
-          dailyPickups: dailyPickups || 0,
-          weeklyPickups: weeklyPickups || 0,
-          monthlyPickups: monthlyPickups || 0,
+          totalUsers: (dailyPickups || 0) + (weeklyPickups || 0), // Using combined as total users
+          newSignups: dailyPickups || 0,
           activeEmployees: activeEmployeeIds.size,
-          pendingPickups: pendingPickups || 0,
-          completedPickups: completedPickups || 0,
-          todayRevenue: 0, // Will be calculated from payments
+          completedJobs: completedPickups || 0,
+          pendingJobs: pendingPickups || 0,
         };
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
         return {
-          dailyPickups: 0,
-          weeklyPickups: 0,
-          monthlyPickups: 0,
+          totalUsers: 0,
+          newSignups: 0,
           activeEmployees: 0,
-          pendingPickups: 0,
-          completedPickups: 0,
-          todayRevenue: 0,
+          completedJobs: 0,
+          pendingJobs: 0,
         };
       }
     },
@@ -177,14 +173,12 @@ export function useDashboardData() {
 
   return { 
     stats: stats || {
-      dailyPickups: 0,
-      weeklyPickups: 0,
-      monthlyPickups: 0,
+      totalUsers: 0,
+      newSignups: 0,
       activeEmployees: 0,
-      pendingPickups: 0,
-      completedPickups: 0,
-      todayRevenue: 0,
-    }, 
+      completedJobs: 0,
+      pendingJobs: 0,
+    },
     houses, 
     assignments, 
     revenueData

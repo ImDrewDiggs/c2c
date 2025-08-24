@@ -110,9 +110,9 @@ export function useRealTimeStats() {
         // Return default values if there's an error
         return {
           totalUsers: 0,
-          newSignupsToday: 0,
+          newSignups: 0,
           activeEmployees: 0,
-          completedJobsToday: 0,
+          completedJobs: 0,
           pendingJobs: 0,
           todayRevenue: 0,
           totalCustomers: 0,
