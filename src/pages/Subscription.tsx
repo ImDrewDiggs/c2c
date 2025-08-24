@@ -8,7 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { singleFamilyTiers, multiFamilyTiers, businessTiers, singleFamilyServices, multiFamilyServices, businessServices, addOnServices, ServiceTier, CommunityTier, BusinessTier } from "@/data/services";
+import { singleFamilyTiers, multiFamilyTiers, businessTiers, singleFamilyServices, multiFamilyServices, businessServices, addOnServices, ServiceTier, CommunityTier, BusinessTier, multiFamilyServiceDetails, businessServiceDetails } from "@/data/services";
+import { Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -201,40 +202,39 @@ export default function Subscription() {
           <TabsContent value="business" className="space-y-6">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-semibold mb-2">Business Services</h2>
-              <p className="text-muted-foreground">Professional waste management solutions for businesses</p>
+              <p className="text-muted-foreground">Custom solutions for offices, retail, and restaurants with flexible pricing models</p>
             </div>
             
-            {businessServices.map((category) => (
-              <Card key={category.name}>
-                <CardHeader>
-                  <CardTitle className="text-xl">{category.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[300px]">Service</TableHead>
-                        <TableHead className="w-[200px]">Pricing Model</TableHead>
-                        <TableHead className="w-[150px]">Monthly Price</TableHead>
-                        <TableHead className="w-[150px]">One-Time Price</TableHead>
-                        <TableHead>Notes</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {category.services.map((service) => (
-                        <TableRow key={service.name}>
-                          <TableCell className="font-medium">{service.name}</TableCell>
-                          <TableCell className="text-muted-foreground">{service.pricingModel}</TableCell>
-                          <TableCell className="font-semibold">{service.subscriptionPrice || "—"}</TableCell>
-                          <TableCell className="font-semibold">{service.oneTimePrice || "—"}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{service.description || "—"}</TableCell>
-                        </TableRow>
+            <div className="space-y-4">
+              {businessServiceDetails.map((service) => (
+                <Card key={service.tier}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl">{service.tier}</CardTitle>
+                        <CardDescription>{service.description}</CardDescription>
+                      </div>
+                      <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded">
+                        Contact for Quote
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 mb-4">
+                      {service.services.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
                       ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            ))}
+                    </ul>
+                    <p className="text-xs text-muted-foreground italic">
+                      {service.pricing}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
           <TabsContent value="add-ons" className="space-y-6">

@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { serviceCategories, pricingPolicy, singleFamilyTiers } from "@/data/services";
+import { serviceCategories, pricingPolicy, singleFamilyTiers, multiFamilyServiceDetails, businessServiceDetails } from "@/data/services";
 
 export default function ServicesAndPrices() {
   return (
@@ -33,41 +33,128 @@ export default function ServicesAndPrices() {
         </TabsList>
 
         <TabsContent value="subscription-plans">
-          <div className="space-y-8">
-            <h2 className="text-3xl font-semibold text-center mb-6">Single Family Plans</h2>
-            <div className="rounded-lg border">
-              <Table>
-                <TableCaption>Complete pricing for single-family residences</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">Service Tier</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead className="w-[400px]">Features</TableHead>
-                    <TableHead className="w-[300px]">Target Customer</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {singleFamilyTiers.map((tier) => (
-                    <TableRow key={tier.name}>
-                      <TableCell className="font-medium">{tier.name}</TableCell>
-                      <TableCell>${tier.price}/month</TableCell>
-                      <TableCell>
-                        <ul className="list-none space-y-1">
-                          {tier.features.map((feature) => (
-                            <li key={feature} className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                              <span className="text-sm">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {tier.perk}
-                      </TableCell>
+          <div className="space-y-12">
+            {/* Single Family Plans */}
+            <div className="space-y-6">
+              <h2 className="text-3xl font-semibold text-center mb-6">Single Family Plans</h2>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableCaption>Complete pricing for single-family residences</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Service Tier</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead className="w-[400px]">Features</TableHead>
+                      <TableHead className="w-[300px]">Competitive Edge & Profit Notes</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {singleFamilyTiers.map((tier) => (
+                      <TableRow key={tier.name}>
+                        <TableCell className="font-medium">{tier.name}</TableCell>
+                        <TableCell>${tier.price}/month</TableCell>
+                        <TableCell>
+                          <ul className="list-none space-y-1">
+                            {tier.features.map((feature) => (
+                              <li key={feature} className="flex items-start gap-2">
+                                <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                <span className="text-sm" dangerouslySetInnerHTML={{ __html: feature }} />
+                              </li>
+                            ))}
+                          </ul>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {tier.perk}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Multi-Family Plans */}
+            <div className="space-y-6">
+              <h2 className="text-3xl font-semibold text-center mb-6">Multi-Family Plans</h2>
+              <p className="text-center text-muted-foreground mb-4">
+                Targets apartment/condo complexes (50+ units; per-unit pricing for property managers)
+              </p>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableCaption>Pricing for multi-family properties (per unit pricing)</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Service Tier</TableHead>
+                      <TableHead>Monthly Pricing (Per Unit)</TableHead>
+                      <TableHead className="w-[400px]">Services Included</TableHead>
+                      <TableHead className="w-[300px]">Key Competitive Edge & Profit Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {multiFamilyServiceDetails.map((service) => (
+                      <TableRow key={service.tier}>
+                        <TableCell className="font-medium">{service.tier}</TableCell>
+                        <TableCell className="font-semibold">{service.price}</TableCell>
+                        <TableCell>
+                          <ul className="list-none space-y-1">
+                            {service.services.map((feature, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                <span className="text-sm" dangerouslySetInnerHTML={{ __html: feature }} />
+                              </li>
+                            ))}
+                          </ul>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {service.competitiveEdge}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Business/Commercial Plans */}
+            <div className="space-y-6">
+              <h2 className="text-3xl font-semibold text-center mb-6">Business/Commercial Plans</h2>
+              <p className="text-center text-muted-foreground mb-4">
+                Targets offices, retail, restaurants (custom quotes; per location or sq ft)
+              </p>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableCaption>Custom business solutions with flexible pricing</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Business Size</TableHead>
+                      <TableHead>Starting Price</TableHead>
+                      <TableHead className="w-[400px]">Services Included</TableHead>
+                      <TableHead className="w-[300px]">Pricing Model</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {businessServiceDetails.map((service) => (
+                      <TableRow key={service.tier}>
+                        <TableCell className="font-medium">{service.tier}</TableCell>
+                        <TableCell className="font-semibold">Contact for Quote</TableCell>
+                        <TableCell>
+                          <ul className="list-none space-y-1">
+                            {service.services.map((feature, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                <span className="text-sm">{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {service.pricing}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
         </TabsContent>
