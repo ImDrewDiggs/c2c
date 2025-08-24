@@ -7,9 +7,10 @@ import { StatsCard } from "./StatsCard";
  */
 interface StatsOverviewProps {
   stats: {
-    dailyPickups: number;    // Number of pickups scheduled for today
-    pendingPickups: number;   // Number of pickups not yet completed
-    todayRevenue: number;     // Revenue generated today
+    completedJobsToday?: number;    // Number of pickups completed today
+    pendingJobs?: number;   // Number of pickups not yet completed
+    todayRevenue?: number;     // Revenue generated today
+    totalCustomers?: number;   // Total number of customers
   };
   activeEmployeesCount: number; // Number of employees currently active/online
 }
@@ -23,11 +24,11 @@ interface StatsOverviewProps {
 export function StatsOverview({ stats, activeEmployeesCount }: StatsOverviewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Daily Pickups stat */}
+      {/* Completed Jobs Today stat */}
       <StatsCard
         icon={Calendar}
-        label="Today's Pickups"
-        value={stats?.dailyPickups}
+        label="Completed Today"
+        value={stats?.completedJobsToday || 0}
       />
       {/* Active Employees stat */}
       <StatsCard
@@ -35,17 +36,17 @@ export function StatsOverview({ stats, activeEmployeesCount }: StatsOverviewProp
         label="Active Employees"
         value={activeEmployeesCount}
       />
-      {/* Pending Pickups stat */}
+      {/* Pending Jobs stat */}
       <StatsCard
         icon={Clock}
-        label="Pending Pickups"
-        value={stats?.pendingPickups}
+        label="Pending Jobs"
+        value={stats?.pendingJobs || 0}
       />
       {/* Today's Revenue stat */}
       <StatsCard
         icon={DollarSign}
         label="Today's Revenue"
-        value={`$${stats?.todayRevenue}`}
+        value={`$${stats?.todayRevenue?.toFixed(2) || '0.00'}`}
       />
     </div>
   );

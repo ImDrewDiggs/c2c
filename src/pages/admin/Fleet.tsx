@@ -21,33 +21,16 @@ import {
   AlertTriangle
 } from "lucide-react";
 
+import { useVehicles, useMaintenanceSchedule } from "@/hooks/admin/useVehicles";
+
 export default function AdminFleet() {
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Mock data for fleet vehicles
-  const vehicles = [
-    { id: 1, name: "Truck 101", type: "Compactor", model: "Mack TerraPro", year: "2023", status: "Active", lastMaintenance: "2025-03-15", nextMaintenance: "2025-05-15" },
-    { id: 2, name: "Truck 102", type: "Compactor", model: "Mack TerraPro", year: "2023", status: "Active", lastMaintenance: "2025-03-10", nextMaintenance: "2025-05-10" },
-    { id: 3, name: "Truck 103", type: "Roll-Off", model: "Peterbilt 520", year: "2022", status: "Active", lastMaintenance: "2025-02-28", nextMaintenance: "2025-04-28" },
-    { id: 4, name: "Truck 104", type: "Rear Loader", model: "Freightliner M2", year: "2021", status: "Maintenance", lastMaintenance: "2025-04-01", nextMaintenance: "2025-06-01" },
-    { id: 5, name: "Truck 105", type: "Front Loader", model: "Peterbilt 520", year: "2022", status: "Active", lastMaintenance: "2025-03-20", nextMaintenance: "2025-05-20" },
-  ];
+  // Use real data from database
+  const { data: vehicles = [], isLoading: vehiclesLoading } = useVehicles(searchTerm);
+  const { data: maintenanceSchedule = [], isLoading: maintenanceLoading } = useMaintenanceSchedule();
   
-  // Mock data for maintenance schedule
-  const maintenanceSchedule = [
-    { id: 1, vehicleId: 4, vehicleName: "Truck 104", type: "Routine Service", scheduled: "2025-04-04", status: "In Progress", assignedTo: "Service Center A" },
-    { id: 2, vehicleId: 2, vehicleName: "Truck 102", type: "Oil Change", scheduled: "2025-05-10", status: "Scheduled", assignedTo: "Service Center B" },
-    { id: 3, vehicleId: 1, vehicleName: "Truck 101", type: "Brake Inspection", scheduled: "2025-05-15", status: "Scheduled", assignedTo: "Service Center A" },
-    { id: 4, vehicleId: 3, vehicleName: "Truck 103", type: "Hydraulic System", scheduled: "2025-04-28", status: "Scheduled", assignedTo: "Service Center C" },
-    { id: 5, vehicleId: 5, vehicleName: "Truck 105", type: "Tire Rotation", scheduled: "2025-05-20", status: "Scheduled", assignedTo: "Service Center B" },
-  ];
-  
-  const filteredVehicles = vehicles.filter(
-    (vehicle) =>
-      vehicle.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.model.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredVehicles = vehicles;
   
   return (
     <AdminPageLayout 
@@ -95,23 +78,33 @@ export default function AdminFleet() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredVehicles.length > 0 ? (
+                    {vehiclesLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                          Loading vehicles...
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredVehicles.length > 0 ? (
                       filteredVehicles.map((vehicle) => (
                         <TableRow key={vehicle.id}>
-                          <TableCell className="font-medium">{vehicle.name}</TableCell>
-                          <TableCell>{vehicle.type}</TableCell>
-                          <TableCell className="hidden md:table-cell">{vehicle.model}</TableCell>
+                          <TableCell className="font-medium">{vehicle.vehicle_number}</TableCell>
+                          <TableCell>{vehicle.vehicle_type}</TableCell>
+                          <TableCell className="hidden md:table-cell">{`${vehicle.make} ${vehicle.model}`}</TableCell>
                           <TableCell className="hidden md:table-cell">{vehicle.year}</TableCell>
                           <TableCell>
                             <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              vehicle.status === 'Active' 
+                              vehicle.status === 'active' 
                                 ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
+                                : vehicle.status === 'maintenance'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
                             }`}>
                               {vehicle.status}
                             </div>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">{vehicle.nextMaintenance}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {vehicle.next_maintenance_date ? new Date(vehicle.next_maintenance_date).toLocaleDateString() : 'Not scheduled'}
+                          </TableCell>
                           <TableCell className="text-right space-x-2">
                             <Button size="sm" variant="ghost">View</Button>
                             <Button size="sm" variant="ghost">Edit</Button>
@@ -160,28 +153,44 @@ export default function AdminFleet() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {maintenanceSchedule.map((maintenance) => (
-                      <TableRow key={maintenance.id}>
-                        <TableCell className="font-medium">{maintenance.vehicleName}</TableCell>
-                        <TableCell>{maintenance.type}</TableCell>
-                        <TableCell>{maintenance.scheduled}</TableCell>
-                        <TableCell className="hidden md:table-cell">{maintenance.assignedTo}</TableCell>
-                        <TableCell>
-                          <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            maintenance.status === 'Scheduled' 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : maintenance.status === 'In Progress'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-green-100 text-green-800'
-                          }`}>
-                            {maintenance.status}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="ghost">Edit</Button>
+                    {maintenanceLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">
+                          Loading maintenance schedule...
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : maintenanceSchedule.length > 0 ? (
+                      maintenanceSchedule.map((maintenance) => (
+                        <TableRow key={maintenance.id}>
+                          <TableCell className="font-medium">
+                            {maintenance.vehicles?.vehicle_number || 'Unknown Vehicle'}
+                          </TableCell>
+                          <TableCell>{maintenance.maintenance_type}</TableCell>
+                          <TableCell>{new Date(maintenance.scheduled_date).toLocaleDateString()}</TableCell>
+                          <TableCell className="hidden md:table-cell">{maintenance.vendor_name || 'Not assigned'}</TableCell>
+                          <TableCell>
+                            <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              maintenance.status === 'scheduled' 
+                                ? 'bg-blue-100 text-blue-800' 
+                                : maintenance.status === 'in_progress'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-green-100 text-green-800'
+                            }`}>
+                              {maintenance.status}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="ghost">Edit</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">
+                          No maintenance scheduled.
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>

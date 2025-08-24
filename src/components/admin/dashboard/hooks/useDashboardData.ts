@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { House, Assignment } from "@/types/map";
 import { HouseRow, AssignmentRow } from "@/lib/supabase-types";
-import { DashboardStats, RevenueDataPoint, MockPickup } from "../types/dashboardTypes";
+import { DashboardStats, RevenueDataPoint } from "../types/dashboardTypes";
 
 /**
  * Hook to fetch dashboard data including stats, houses, and assignments
@@ -11,29 +11,57 @@ import { DashboardStats, RevenueDataPoint, MockPickup } from "../types/dashboard
  */
 export function useDashboardData() {
   /**
-   * Query for dashboard stats
-   * Uses TanStack Query for data fetching with real-world-like values
+   * Query for dashboard stats from real database
    */
-  const { data: stats = {
-    dailyPickups: 37,
-    weeklyPickups: 224,
-    monthlyPickups: 843,
-    activeEmployees: 12,
-    pendingPickups: 18,
-    completedPickups: 19,
-    todayRevenue: 3850,
-  }} = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ["adminStats"],
-    queryFn: async () => ({
-      dailyPickups: 37,
-      weeklyPickups: 224,
-      monthlyPickups: 843,
-      activeEmployees: 12,
-      pendingPickups: 18,
-      completedPickups: 19,
-      todayRevenue: 3850,
-    }),
-  }) as { data: DashboardStats };
+    queryFn: async (): Promise<DashboardStats> => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      try {
+        const [
+          { count: dailyPickups },
+          { count: weeklyPickups },
+          { count: monthlyPickups },
+          { count: pendingPickups },
+          { count: completedPickups },
+          { data: employeeLocations }
+        ] = await Promise.all([
+          supabase.from('assignments').select('*', { count: 'exact', head: true }).gte('assigned_date', today.toISOString()),
+          supabase.from('assignments').select('*', { count: 'exact', head: true }).gte('assigned_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+          supabase.from('assignments').select('*', { count: 'exact', head: true }).gte('assigned_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+          supabase.from('assignments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+          supabase.from('assignments').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+          supabase.from('employee_locations').select('employee_id').eq('is_online', true).gte('last_seen_at', new Date(Date.now() - 30 * 60 * 1000).toISOString())
+        ]);
+
+        const activeEmployeeIds = new Set(employeeLocations?.map(loc => loc.employee_id) || []);
+
+        return {
+          dailyPickups: dailyPickups || 0,
+          weeklyPickups: weeklyPickups || 0,
+          monthlyPickups: monthlyPickups || 0,
+          activeEmployees: activeEmployeeIds.size,
+          pendingPickups: pendingPickups || 0,
+          completedPickups: completedPickups || 0,
+          todayRevenue: 0, // Will be calculated from payments
+        };
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        return {
+          dailyPickups: 0,
+          weeklyPickups: 0,
+          monthlyPickups: 0,
+          activeEmployees: 0,
+          pendingPickups: 0,
+          completedPickups: 0,
+          todayRevenue: 0,
+        };
+      }
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+  }) as { data: DashboardStats | undefined };
 
   /**
    * Query for houses data
@@ -59,44 +87,8 @@ export function useDashboardData() {
           })) || [];
         }
         
-        // Return mock data if no real data is available
-        return [
-          {
-            id: "550e8400-e29b-41d4-a716-446655440000",
-            address: "123 Main St, Boston, MA 02108",
-            latitude: 42.3601,
-            longitude: -71.0589,
-            created_at: "2024-05-01T12:00:00Z"
-          },
-          {
-            id: "550e8400-e29b-41d4-a716-446655440001",
-            address: "456 Park Ave, Boston, MA 02215",
-            latitude: 42.3475,
-            longitude: -71.0972,
-            created_at: "2024-05-02T14:30:00Z"
-          },
-          {
-            id: "550e8400-e29b-41d4-a716-446655440002",
-            address: "789 Washington St, Cambridge, MA 02139",
-            latitude: 42.3736,
-            longitude: -71.1097,
-            created_at: "2024-05-03T09:15:00Z"
-          },
-          {
-            id: "550e8400-e29b-41d4-a716-446655440003",
-            address: "101 Commonwealth Ave, Boston, MA 02116",
-            latitude: 42.3523,
-            longitude: -71.0748,
-            created_at: "2024-05-04T16:45:00Z"
-          },
-          {
-            id: "550e8400-e29b-41d4-a716-446655440004",
-            address: "222 Beacon St, Brookline, MA 02446",
-            latitude: 42.3412,
-            longitude: -71.1212,
-            created_at: "2024-05-05T11:30:00Z"
-          },
-        ];
+        // Return empty array if no real data
+        return [];
       } catch (error) {
         console.error("Error fetching houses:", error);
         return [];
@@ -131,59 +123,8 @@ export function useDashboardData() {
           })) || [];
         }
         
-        // Return mock data if no real data is available
-        return [
-          {
-            id: "650e8400-e29b-41d4-a716-446655440000",
-            house_id: "550e8400-e29b-41d4-a716-446655440000",
-            employee_id: "750e8400-e29b-41d4-a716-446655440000",
-            status: "completed",
-            assigned_date: "2025-05-10T09:00:00Z",
-            completed_at: "2025-05-10T10:15:00Z",
-            created_at: "2025-05-09T16:30:00Z",
-            house: undefined
-          },
-          {
-            id: "650e8400-e29b-41d4-a716-446655440001",
-            house_id: "550e8400-e29b-41d4-a716-446655440001",
-            employee_id: "750e8400-e29b-41d4-a716-446655440001",
-            status: "in_progress",
-            assigned_date: "2025-05-12T13:30:00Z",
-            completed_at: null,
-            created_at: "2025-05-11T08:45:00Z",
-            house: undefined
-          },
-          {
-            id: "650e8400-e29b-41d4-a716-446655440002",
-            house_id: "550e8400-e29b-41d4-a716-446655440002",
-            employee_id: "750e8400-e29b-41d4-a716-446655440002",
-            status: "pending",
-            assigned_date: "2025-05-13T14:00:00Z",
-            completed_at: null,
-            created_at: "2025-05-11T17:20:00Z",
-            house: undefined
-          },
-          {
-            id: "650e8400-e29b-41d4-a716-446655440003",
-            house_id: "550e8400-e29b-41d4-a716-446655440003",
-            employee_id: "750e8400-e29b-41d4-a716-446655440001",
-            status: "pending",
-            assigned_date: "2025-05-14T11:15:00Z",
-            completed_at: null,
-            created_at: "2025-05-11T19:45:00Z",
-            house: undefined
-          },
-          {
-            id: "650e8400-e29b-41d4-a716-446655440004",
-            house_id: "550e8400-e29b-41d4-a716-446655440004",
-            employee_id: "750e8400-e29b-41d4-a716-446655440000",
-            status: "pending",
-            assigned_date: "2025-05-15T09:30:00Z",
-            completed_at: null,
-            created_at: "2025-05-12T07:15:00Z",
-            house: undefined
-          },
-        ];
+        // Return empty array if no real data
+        return [];
       } catch (error) {
         console.error("Error fetching assignments:", error);
         return [];
@@ -192,64 +133,60 @@ export function useDashboardData() {
   });
 
   /**
-   * Realistic data for the revenue chart - used for visualization
+   * Real revenue data from database
    */
-  const mockRevenueData: RevenueDataPoint[] = [
-    { name: "Mon", amount: 3850 },
-    { name: "Tue", amount: 4200 },
-    { name: "Wed", amount: 3950 },
-    { name: "Thu", amount: 4400 },
-    { name: "Fri", amount: 5100 },
-    { name: "Sat", amount: 3600 },
-    { name: "Sun", amount: 3200 },
-  ];
+  const { data: revenueData = [] } = useQuery({
+    queryKey: ["revenueData"],
+    queryFn: async (): Promise<RevenueDataPoint[]> => {
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        return date;
+      });
 
-  /**
-   * Realistic data for pickup list - used for visualization
-   */
-  const mockPickups: MockPickup[] = [
-    {
-      id: 1,
-      address: "123 Main St, Boston, MA",
-      status: "Completed",
-      scheduledTime: "9:30 AM",
-      assignedTo: "Michael Johnson",
+      try {
+        const revenuePromises = last7Days.map(async (date) => {
+          const startOfDay = new Date(date);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(date);
+          endOfDay.setHours(23, 59, 59, 999);
+
+          const { data } = await supabase
+            .from('payments')
+            .select('amount')
+            .eq('status', 'completed')
+            .gte('processed_at', startOfDay.toISOString())
+            .lte('processed_at', endOfDay.toISOString());
+
+          const total = data?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
+
+          return {
+            name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            amount: total / 100, // Convert from cents to dollars
+          };
+        });
+
+        return await Promise.all(revenuePromises);
+      } catch (error) {
+        console.error('Error fetching revenue data:', error);
+        return [];
+      }
     },
-    {
-      id: 2,
-      address: "456 Park Ave, Boston, MA",
-      status: "In Progress",
-      scheduledTime: "11:15 AM",
-      assignedTo: "Sarah Williams",
-    },
-    {
-      id: 3,
-      address: "789 Washington St, Cambridge, MA",
-      status: "Pending",
-      scheduledTime: "1:30 PM",
-      assignedTo: "David Wilson",
-    },
-    {
-      id: 4,
-      address: "101 Commonwealth Ave, Boston, MA",
-      status: "Pending",
-      scheduledTime: "3:00 PM",
-      assignedTo: "Jennifer Brown",
-    },
-    {
-      id: 5,
-      address: "222 Beacon St, Brookline, MA",
-      status: "Pending",
-      scheduledTime: "4:45 PM",
-      assignedTo: "Michael Johnson",
-    },
-  ];
+    refetchInterval: 30000,
+  });
 
   return { 
-    stats, 
+    stats: stats || {
+      dailyPickups: 0,
+      weeklyPickups: 0,
+      monthlyPickups: 0,
+      activeEmployees: 0,
+      pendingPickups: 0,
+      completedPickups: 0,
+      todayRevenue: 0,
+    }, 
     houses, 
     assignments, 
-    mockRevenueData,
-    mockPickups
+    revenueData
   };
 }

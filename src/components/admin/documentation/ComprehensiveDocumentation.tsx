@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   BookOpen, 
   Users, 
@@ -21,7 +22,21 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
-  ChevronRight
+  ChevronRight,
+  Database,
+  Key,
+  Eye,
+  Activity,
+  Clipboard,
+  Mail,
+  CreditCard,
+  MessageSquare,
+  HelpCircle,
+  Wrench,
+  Monitor,
+  Lock,
+  GitBranch,
+  RefreshCw
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -31,10 +46,14 @@ interface DocumentationSection {
   icon: React.ComponentType<any>;
   content: React.ReactNode;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
+  estimatedTime?: string;
+  category: string;
 }
 
 export function ComprehensiveDocumentation() {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const toggleSection = (sectionId: string) => {
     const newOpenSections = new Set(openSections);
@@ -46,173 +65,318 @@ export function ComprehensiveDocumentation() {
     setOpenSections(newOpenSections);
   };
 
+  const expandAll = () => {
+    const allSectionIds = new Set([
+      ...gettingStartedSections.map(s => s.id),
+      ...adminManagementSections.map(s => s.id),
+      ...customerManagementSections.map(s => s.id),
+      ...employeeManagementSections.map(s => s.id),
+      ...operationsManagementSections.map(s => s.id),
+      ...fleetManagementSections.map(s => s.id),
+      ...analyticsReportingSections.map(s => s.id),
+      ...securityAndAuditSections.map(s => s.id),
+      ...troubleshootingSections.map(s => s.id),
+      ...advancedFeaturesSections.map(s => s.id)
+    ]);
+    setOpenSections(allSectionIds);
+  };
+
+  const collapseAll = () => {
+    setOpenSections(new Set());
+  };
+
   const gettingStartedSections: DocumentationSection[] = [
     {
-      id: "dashboard-overview",
-      title: "Dashboard Overview & Navigation",
-      icon: BookOpen,
+      id: "system-overview",
+      title: "System Overview & Architecture",
+      icon: Monitor,
       difficulty: "Beginner",
+      estimatedTime: "10 minutes",
+      category: "getting-started",
       content: (
         <div className="space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-2">📋 What is the Admin Dashboard?</h4>
+            <h4 className="font-semibold text-blue-900 mb-2">🎯 System Purpose</h4>
             <p className="text-blue-800">
-              The Admin Dashboard is your central command center for managing all aspects of your waste management business. 
-              From here, you can track employees, manage customers, monitor operations, and analyze business performance.
+              Can2Curb is a comprehensive waste management platform designed to streamline operations, 
+              manage customers, track employees, and provide real-time analytics for waste collection businesses.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">🚀 Getting Started - Step by Step</h4>
+            <h4 className="font-semibold mb-3">🏗️ System Architecture</h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Frontend Components</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>React + TypeScript application</li>
+                  <li>Tailwind CSS for styling</li>
+                  <li>Supabase for real-time data</li>
+                  <li>Responsive design for all devices</li>
+                </ul>
+              </Card>
+              
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Backend Services</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Supabase PostgreSQL database</li>
+                  <li>Row Level Security (RLS) policies</li>
+                  <li>Edge functions for business logic</li>
+                  <li>Real-time subscriptions</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">👥 User Roles & Permissions</h4>
+            <div className="space-y-3">
+              <Card className="p-3 border-l-4 border-l-green-500">
+                <h5 className="font-medium text-green-700">Super Admin</h5>
+                <p className="text-sm text-green-600">Full system access, user management, security settings</p>
+              </Card>
+              <Card className="p-3 border-l-4 border-l-blue-500">
+                <h5 className="font-medium text-blue-700">Admin</h5>
+                <p className="text-sm text-blue-600">Operations management, customer service, analytics</p>
+              </Card>
+              <Card className="p-3 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium text-yellow-700">Employee</h5>
+                <p className="text-sm text-yellow-600">Time tracking, job assignments, route management</p>
+              </Card>
+              <Card className="p-3 border-l-4 border-l-purple-500">
+                <h5 className="font-medium text-purple-700">Customer</h5>
+                <p className="text-sm text-purple-600">Service requests, billing, account management</p>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "admin-login-setup",
+      title: "Admin Login & Initial Setup",
+      icon: Key,
+      difficulty: "Beginner",
+      estimatedTime: "15 minutes",
+      category: "getting-started",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <h4 className="font-semibold text-red-900 mb-2">🔐 Security Notice</h4>
+            <p className="text-red-800">
+              Currently, only <code>diggs844037@yahoo.com</code> has admin access. This is a security feature 
+              to prevent unauthorized access during initial setup.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">🚀 First Time Login</h4>
             <ol className="list-decimal list-inside space-y-3 ml-4">
               <li>
-                <strong>Login Process:</strong>
+                <strong>Navigate to Admin Login:</strong>
                 <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Navigate to <code>/admin/login</code></li>
-                  <li>Enter your admin credentials (email and password)</li>
-                  <li>Click "Sign In" - you'll be redirected to the dashboard</li>
-                  <li>If you have Super Admin access, you'll see additional features</li>
+                  <li>Go to <code>/admin/login</code> in your browser</li>
+                  <li>You'll see the admin login interface</li>
                 </ul>
               </li>
               
               <li>
-                <strong>Dashboard Layout:</strong>
+                <strong>Enter Credentials:</strong>
                 <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Header:</strong> Shows your name, refresh button, and logout option</li>
-                  <li><strong>Stats Overview:</strong> Key metrics (today's pickups, active employees, pending pickups, revenue)</li>
-                  <li><strong>Quick Access:</strong> Expandable groups for common tasks</li>
-                  <li><strong>Tab Navigation:</strong> Operations, Employees, Analytics, Users</li>
+                  <li>Email: <code>diggs844037@yahoo.com</code></li>
+                  <li>Password: [Your admin password]</li>
+                  <li>Click "Sign In"</li>
                 </ul>
               </li>
 
               <li>
-                <strong>Navigation Tabs:</strong>
+                <strong>Dashboard Access:</strong>
                 <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Operations Tab:</strong> Live map, service areas, scheduled jobs, maintenance</li>
-                  <li><strong>Employees Tab:</strong> Employee status, locations, and activity logs</li>
-                  <li><strong>Analytics Tab:</strong> Business metrics, charts, and reports</li>
-                  <li><strong>Users Tab:</strong> Manage employee, customer, and admin accounts</li>
+                  <li>Upon successful login, you'll be redirected to the admin dashboard</li>
+                  <li>You'll see the main navigation tabs: Operations, Employees, Analytics, Users</li>
+                  <li>The system will display real-time data (no mock data)</li>
                 </ul>
               </li>
             </ol>
           </div>
 
           <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <h4 className="font-semibold text-yellow-900 mb-2">💡 Pro Tips</h4>
+            <h4 className="font-semibold text-yellow-900 mb-2">⚠️ Password Security</h4>
             <ul className="list-disc list-inside text-yellow-800 space-y-1">
-              <li>Use the refresh button (↻) in the header to update real-time data</li>
-              <li>The Quick Access section groups related actions for faster workflow</li>
-              <li>Key metrics update automatically every few minutes</li>
-              <li>Super Admins have access to additional settings and user management</li>
+              <li>Passwords are securely hashed in the database</li>
+              <li>No plaintext passwords are stored anywhere in the system</li>
+              <li>Change default passwords immediately after first login</li>
+              <li>Use strong passwords with a mix of characters</li>
             </ul>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const adminManagementSections: DocumentationSection[] = [
+    {
+      id: "dashboard-overview",
+      title: "Admin Dashboard Complete Guide",
+      icon: Activity,
+      difficulty: "Intermediate",
+      estimatedTime: "20 minutes",
+      category: "admin-management",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h4 className="font-semibold text-blue-900 mb-2">📊 Dashboard Overview</h4>
+            <p className="text-blue-800">
+              The admin dashboard provides real-time insights into your business operations, 
+              employee activity, customer management, and financial performance.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">🎛️ Dashboard Components</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Stats Overview Panel</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Today's Pickups:</strong> Real-time count from assignments table</li>
+                  <li><strong>Active Employees:</strong> Live GPS tracking data</li>
+                  <li><strong>Pending Pickups:</strong> Assignments with 'pending' status</li>
+                  <li><strong>Today's Revenue:</strong> Calculated from completed orders</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Quick Access Groups</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Customer Management:</strong> Add customers, create subscriptions</li>
+                  <li><strong>Employee Management:</strong> Add employees, assign vehicles</li>
+                  <li><strong>Fleet Management:</strong> Vehicle tracking, maintenance scheduling</li>
+                  <li><strong>Operations:</strong> New pickups, notifications, search</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-purple-500">
+                <h5 className="font-medium mb-2">Navigation Tabs</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Operations:</strong> Live map, service areas, scheduled jobs</li>
+                  <li><strong>Employees:</strong> Employee status, GPS locations, activity logs</li>
+                  <li><strong>Analytics:</strong> Business metrics, revenue charts, KPIs</li>
+                  <li><strong>Users:</strong> Complete user management for all roles</li>
+                  <li><strong>Documentation:</strong> This comprehensive guide</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">🔄 Real-Time Updates</h4>
+            <div className="space-y-3">
+              <p>All dashboard data updates automatically every 30 seconds, including:</p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li>Employee GPS locations and online status</li>
+                <li>Assignment status changes and completions</li>
+                <li>New customer registrations and orders</li>
+                <li>Revenue calculations and financial metrics</li>
+              </ul>
+            </div>
           </div>
         </div>
       )
     },
     {
-      id: "first-login-setup",
-      title: "First Login Setup & Initial Configuration",
-      icon: Settings,
-      difficulty: "Beginner",
+      id: "user-management-complete",
+      title: "Complete User Management System",
+      icon: Users,
+      difficulty: "Advanced",
+      estimatedTime: "30 minutes",
+      category: "admin-management",
       content: (
         <div className="space-y-6">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-900 mb-2">🎯 What You'll Accomplish</h4>
+            <h4 className="font-semibold text-green-900 mb-2">👥 User Management Features</h4>
             <p className="text-green-800">
-              Set up your business for operations by configuring initial settings, adding employees, 
-              and establishing service areas.
+              Comprehensive user management with role-based access control, secure authentication, 
+              and detailed audit logging for all user actions.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📋 Initial Setup Checklist</h4>
+            <h4 className="font-semibold mb-3">🔧 Adding New Users</h4>
             <div className="space-y-4">
               
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2">✅ Step 1: Add Your First Employee</h5>
-                <ol className="list-decimal list-inside space-y-2 ml-4">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Employee Management</strong> group</li>
-                  <li>Click <strong>"Add Employee"</strong></li>
-                  <li>Fill in the form:
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">👨‍💼 Adding Employees</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Navigate to <strong>Users Tab</strong> → <strong>Employees</strong></li>
+                  <li>Click <strong>"Add Employee"</strong> button</li>
+                  <li>Fill required information:
                     <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Email address (required)</li>
-                      <li>Full name</li>
+                      <li>Full name (required)</li>
+                      <li>Email address (must be unique)</li>
                       <li>Phone number</li>
-                      <li>Job title (e.g., "Waste Collection Specialist")</li>
-                      <li>Pay rate (dollars per hour)</li>
-                      <li>Driver's license number (if applicable)</li>
+                      <li>Physical address</li>
+                      <li>Driver's license number</li>
+                      <li>Hourly pay rate</li>
+                      <li>Job title (Driver, Can Courier, Can Cleaner, Supervisor, Trainee)</li>
+                      <li>Employment status (Active, On Leave, Inactive)</li>
                     </ul>
                   </li>
-                  <li>Click <strong>"Add Employee"</strong> to save</li>
-                  <li>The employee will receive login credentials via email</li>
+                  <li>System automatically creates user account with temporary password</li>
+                  <li>Employee receives email with login credentials</li>
                 </ol>
-              </div>
+              </Card>
 
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2">🚛 Step 2: Add Your First Vehicle</h5>
-                <ol className="list-decimal list-inside space-y-2 ml-4">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Fleet Management</strong> group</li>
-                  <li>Click <strong>"Add Vehicle"</strong></li>
-                  <li>Enter vehicle details:
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Vehicle number (your internal ID)</li>
-                      <li>Make and model</li>
-                      <li>Year</li>
-                      <li>License plate</li>
-                      <li>VIN number</li>
-                      <li>Capacity (cubic yards)</li>
-                      <li>Fuel type</li>
-                    </ul>
-                  </li>
-                  <li>Set vehicle status to "Active"</li>
-                  <li>Click <strong>"Save Vehicle"</strong></li>
-                </ol>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2">🗺️ Step 3: Define Service Areas</h5>
-                <ol className="list-decimal list-inside space-y-2 ml-4">
-                  <li>Navigate to <strong>Operations Tab</strong></li>
-                  <li>Look at the <strong>Service Areas Panel</strong></li>
-                  <li>Click <strong>"Add Service Area"</strong></li>
-                  <li>Define your coverage zones:
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Area name (e.g., "Downtown District")</li>
-                      <li>Geographic boundaries</li>
-                      <li>Service frequency</li>
-                      <li>Assigned routes</li>
-                    </ul>
-                  </li>
-                </ol>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2">🏠 Step 4: Add Customer Locations</h5>
-                <ol className="list-decimal list-inside space-y-2 ml-4">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Customer Management</strong> group</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">🏠 Adding Customers</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Go to <strong>Quick Access</strong> → <strong>Customer Management</strong></li>
                   <li>Click <strong>"Add Customer"</strong></li>
-                  <li>Fill in customer information:
+                  <li>Complete customer profile:
                     <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Full name</li>
-                      <li>Email address</li>
-                      <li>Phone number</li>
+                      <li>Personal information (name, email, phone)</li>
                       <li>Service address (where pickup occurs)</li>
-                      <li>Service type (residential/commercial)</li>
+                      <li>Billing address (if different)</li>
+                      <li>Service preferences and special instructions</li>
                     </ul>
                   </li>
-                  <li>Click <strong>"Add Customer"</strong></li>
+                  <li>Customer account is created with email verification</li>
                 </ol>
-              </div>
+              </Card>
+
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">🛡️ Adding Admin Users (Super Admin Only)</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Only available to verified super admin accounts</li>
+                  <li>Navigate to <strong>Users Tab</strong> → <strong>Admins</strong></li>
+                  <li>Click <strong>"Add User"</strong></li>
+                  <li>Admin creation requires approval and verification process</li>
+                  <li>New admin accounts have limited privileges initially</li>
+                </ol>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">✏️ Editing User Information</h4>
+            <div className="space-y-3">
+              <p>All user information can be modified through the admin interface:</p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li><strong>Personal Information:</strong> Name, contact details, addresses</li>
+                <li><strong>Employment Details:</strong> Job title, pay rate, status changes</li>
+                <li><strong>Access Controls:</strong> Role modifications, permission updates</li>
+                <li><strong>Account Status:</strong> Active, inactive, or suspended states</li>
+              </ul>
             </div>
           </div>
 
           <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h4 className="font-semibold text-red-900 mb-2">⚠️ Important Security Notes</h4>
+            <h4 className="font-semibold text-red-900 mb-2">🗑️ User Deletion (Super Admin Only)</h4>
             <ul className="list-disc list-inside text-red-800 space-y-1">
-              <li>Only authorized personnel should have admin access</li>
-              <li>Change default passwords immediately</li>
-              <li>Regularly review user permissions</li>
-              <li>Enable two-factor authentication if available</li>
+              <li>User deletion is permanent and cannot be undone</li>
+              <li>All user data, assignments, and history are removed</li>
+              <li>Requires explicit confirmation and audit logging</li>
+              <li>Consider deactivation instead of deletion for data retention</li>
             </ul>
           </div>
         </div>
@@ -222,165 +386,194 @@ export function ComprehensiveDocumentation() {
 
   const customerManagementSections: DocumentationSection[] = [
     {
-      id: "customer-lifecycle",
+      id: "customer-lifecycle-complete",
       title: "Complete Customer Lifecycle Management",
       icon: Users,
       difficulty: "Intermediate",
+      estimatedTime: "25 minutes",
+      category: "customer-management",
       content: (
         <div className="space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <h4 className="font-semibold text-blue-900 mb-2">🎯 Customer Management Overview</h4>
             <p className="text-blue-800">
-              Manage your customers from initial signup through ongoing service delivery, 
-              including billing, service modifications, and support requests.
+              Comprehensive customer relationship management from initial contact through 
+              ongoing service delivery, billing, and support.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">👤 Adding New Customers</h4>
+            <h4 className="font-semibold mb-3">📋 Customer Onboarding Process</h4>
             <ol className="list-decimal list-inside space-y-3 ml-4">
               <li>
-                <strong>Access Customer Management:</strong>
+                <strong>Initial Customer Registration:</strong>
                 <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Customer Management</strong></li>
-                  <li>Click <strong>"Add Customer"</strong> button</li>
-                  <li>The Add Customer modal will open</li>
+                  <li>Customer completes online registration form</li>
+                  <li>System validates email and creates profile in database</li>
+                  <li>Email verification sent automatically</li>
+                  <li>Customer status set to "pending verification"</li>
                 </ul>
               </li>
               
               <li>
-                <strong>Fill Required Information:</strong>
+                <strong>Service Address Setup:</strong>
                 <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Full Name:</strong> Customer's legal name</li>
-                  <li><strong>Email:</strong> Primary contact email (will be used for login)</li>
-                  <li><strong>Phone:</strong> Primary contact number</li>
-                  <li><strong>Service Address:</strong> Where pickup/service occurs</li>
-                  <li><strong>Billing Address:</strong> If different from service address</li>
+                  <li>GPS coordinates captured for accurate routing</li>
+                  <li>Service area validation ensures coverage</li>
+                  <li>Special instructions and access notes recorded</li>
+                  <li>Pickup schedule preferences established</li>
                 </ul>
               </li>
 
               <li>
-                <strong>Set Service Preferences:</strong>
+                <strong>Subscription Configuration:</strong>
                 <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Select service tier (Basic, Premium, Commercial)</li>
-                  <li>Choose pickup frequency (Weekly, Bi-weekly, Monthly)</li>
-                  <li>Add special instructions or notes</li>
-                  <li>Set preferred pickup time windows</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Save and Activate:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Review all information for accuracy</li>
-                  <li>Click <strong>"Add Customer"</strong></li>
-                  <li>Customer will receive welcome email with login details</li>
-                  <li>Account status will be set to "Active"</li>
+                  <li>Service plan selection (Basic, Premium, Deluxe)</li>
+                  <li>Billing cycle setup (Monthly, Quarterly, Annual)</li>
+                  <li>Payment method configuration and verification</li>
+                  <li>First invoice generation and payment processing</li>
                 </ul>
               </li>
             </ol>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">✏️ Editing Customer Information</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Find the Customer:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Users Tab</strong> → <strong>Customers</strong></li>
-                  <li>Use the search box to find customer by name or email</li>
-                  <li>Or scroll through the customer list</li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">💳 Subscription Management</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Open Edit Mode:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Click the <strong>"Edit"</strong> button next to customer name</li>
-                  <li>The Edit Customer modal will open with current information</li>
-                </ul>
-              </li>
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Creating New Subscriptions</h5>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Access via <strong>Quick Access</strong> → <strong>Billing Management</strong></li>
+                  <li>Select customer from searchable dropdown</li>
+                  <li>Choose plan type: Single Family, Multi-Family, Commercial</li>
+                  <li>Configure service frequency and special features</li>
+                  <li>Set pricing and apply discounts if applicable</li>
+                  <li>Generate first invoice and process payment</li>
+                </ol>
+              </Card>
 
-              <li>
-                <strong>Make Changes:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Update any field that needs modification</li>
-                  <li>Add notes about the changes in the notes field</li>
-                  <li>Change service tier or frequency if needed</li>
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Subscription Modifications</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Plan Upgrades:</strong> Prorated billing adjustments</li>
+                  <li><strong>Service Changes:</strong> Frequency modifications, feature additions</li>
+                  <li><strong>Temporary Suspension:</strong> Vacation holds, temporary pauses</li>
+                  <li><strong>Address Changes:</strong> Service location updates with route reassignment</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Save Changes:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Click <strong>"Save Changes"</strong></li>
-                  <li>Customer will be notified of significant changes via email</li>
-                  <li>Changes are logged in the customer's history</li>
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium mb-2">Billing & Payment Processing</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Automated monthly billing with invoice generation</li>
+                  <li>Multiple payment methods: Credit card, ACH, check</li>
+                  <li>Failed payment handling with retry logic</li>
+                  <li>Late fee application and collection procedures</li>
                 </ul>
-              </li>
-            </ol>
+              </Card>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">💳 Creating Customer Subscriptions</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Subscription Creation:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Billing Management</strong></li>
-                  <li>Click <strong>"Create Subscription"</strong></li>
-                </ul>
-              </li>
-              
-              <li>
-                <strong>Select Customer:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Search for customer by name or email</li>
-                  <li>Select the customer from dropdown</li>
-                  <li>Verify service address is correct</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Configure Subscription:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Plan Type:</strong> Single Family, Multi-Family, Commercial</li>
-                  <li><strong>Service Level:</strong> Basic, Premium, Deluxe</li>
-                  <li><strong>Billing Cycle:</strong> Monthly, Quarterly, Annual</li>
-                  <li><strong>Start Date:</strong> When service begins</li>
-                  <li><strong>Special Features:</strong> Recycling, yard waste, bulk pickup</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Set Pricing:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Base price is calculated automatically</li>
-                  <li>Apply any discounts or promotions</li>
-                  <li>Add fees for special services</li>
-                  <li>Review total monthly cost</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Activate Subscription:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Review all details</li>
-                  <li>Click <strong>"Create Subscription"</strong></li>
-                  <li>Subscription becomes active on start date</li>
-                  <li>First invoice is generated automatically</li>
-                </ul>
-              </li>
-            </ol>
+            <h4 className="font-semibold mb-3">🎧 Customer Support Features</h4>
+            <div className="space-y-3">
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li><strong>Service Request Management:</strong> Missed pickup reports, special requests</li>
+                <li><strong>Billing Dispute Resolution:</strong> Credit applications, refund processing</li>
+                <li><strong>Communication Log:</strong> All customer interactions tracked and recorded</li>
+                <li><strong>Feedback Collection:</strong> Service ratings and improvement suggestions</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "billing-payment-system",
+      title: "Advanced Billing & Payment System",
+      icon: CreditCard,
+      difficulty: "Advanced",
+      estimatedTime: "35 minutes",
+      category: "customer-management",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h4 className="font-semibold text-green-900 mb-2">💰 Billing System Features</h4>
+            <p className="text-green-800">
+              Comprehensive billing and payment processing with automated invoicing, 
+              multiple payment methods, and detailed financial reporting.
+            </p>
           </div>
 
-          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <h4 className="font-semibold text-yellow-900 mb-2">🔄 Customer Service Workflows</h4>
-            <div className="text-yellow-800 space-y-2">
-              <p><strong>Service Suspension:</strong> Temporarily pause service while maintaining customer account</p>
-              <p><strong>Plan Upgrades:</strong> Move customers to higher service tiers with prorated billing</p>
-              <p><strong>Address Changes:</strong> Update service locations and route assignments</p>
-              <p><strong>Billing Disputes:</strong> Handle payment issues and apply credits/refunds</p>
+          <div>
+            <h4 className="font-semibold mb-3">🧾 Invoice Generation & Management</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Automated Billing Cycle</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>System automatically generates invoices based on subscription billing cycle</li>
+                  <li>Invoices include:
+                    <ul className="list-disc list-inside ml-6 mt-1">
+                      <li>Base service charges</li>
+                      <li>Additional service fees</li>
+                      <li>Applicable taxes and surcharges</li>
+                      <li>Previous balance and credits</li>
+                      <li>Payment due date and terms</li>
+                    </ul>
+                  </li>
+                  <li>PDF invoices automatically emailed to customers</li>
+                  <li>Customer portal access for invoice viewing and payment</li>
+                </ol>
+              </Card>
+
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Manual Invoice Adjustments</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Credits:</strong> Service disruptions, customer complaints</li>
+                  <li><strong>Additional Charges:</strong> Special pickups, excess waste</li>
+                  <li><strong>Discounts:</strong> Promotional pricing, loyalty programs</li>
+                  <li><strong>Pro-rated Billing:</strong> Mid-cycle plan changes</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">💳 Payment Processing</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Supported Payment Methods</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Credit/Debit Cards:</strong> Visa, MasterCard, American Express, Discover</li>
+                  <li><strong>ACH Bank Transfers:</strong> Direct bank account debits</li>
+                  <li><strong>Online Payments:</strong> Customer portal with saved payment methods</li>
+                  <li><strong>Manual Payments:</strong> Cash, check, money order processing</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Payment Security & Compliance</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>PCI DSS compliant payment processing through Stripe</li>
+                  <li>Encrypted payment data transmission and storage</li>
+                  <li>Fraud detection and prevention measures</li>
+                  <li>Secure customer payment method storage</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium mb-2">Failed Payment Handling</h5>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Automatic retry attempts with smart retry logic</li>
+                  <li>Customer notification of failed payments</li>
+                  <li>Grace period before service suspension</li>
+                  <li>Late fee application after specified timeframe</li>
+                  <li>Collections process for seriously delinquent accounts</li>
+                </ol>
+              </Card>
             </div>
           </div>
         </div>
@@ -390,172 +583,192 @@ export function ComprehensiveDocumentation() {
 
   const employeeManagementSections: DocumentationSection[] = [
     {
-      id: "employee-operations",
-      title: "Employee Management & Time Tracking",
-      icon: Clock,
+      id: "employee-lifecycle",
+      title: "Complete Employee Lifecycle Management",
+      icon: Users,
       difficulty: "Intermediate",
+      estimatedTime: "30 minutes",
+      category: "employee-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-900 mb-2">👥 Employee Management System</h4>
-            <p className="text-green-800">
-              Comprehensive employee lifecycle management including hiring, time tracking, 
-              route assignments, and performance monitoring.
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <h4 className="font-semibold text-purple-900 mb-2">👷 Employee Management Overview</h4>
+            <p className="text-purple-800">
+              Complete employee lifecycle management from hiring through performance tracking, 
+              scheduling, payroll, and offboarding processes.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">👤 Adding New Employees</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Employee Management:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Employee Management</strong></li>
-                  <li>Click <strong>"Add Employee"</strong></li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📝 Employee Onboarding</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Basic Information:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Email:</strong> Will be their login username</li>
-                  <li><strong>Full Name:</strong> Legal name for payroll</li>
-                  <li><strong>Phone Number:</strong> Primary contact</li>
-                  <li><strong>Address:</strong> Home address for records</li>
-                </ul>
-              </li>
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">New Employee Registration</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Navigate to <strong>Quick Access</strong> → <strong>Employee Management</strong></li>
+                  <li>Click <strong>"Add Employee"</strong> button</li>
+                  <li>Complete employee profile form:
+                    <ul className="list-disc list-inside ml-6 mt-1">
+                      <li><strong>Personal Information:</strong> Full name, email, phone</li>
+                      <li><strong>Address:</strong> Home address for records and emergency contact</li>
+                      <li><strong>Employment Details:</strong> Job title, department, start date</li>
+                      <li><strong>Compensation:</strong> Hourly rate, salary, commission structure</li>
+                      <li><strong>Credentials:</strong> Driver's license, certifications, training records</li>
+                    </ul>
+                  </li>
+                  <li>System generates unique employee ID and login credentials</li>
+                  <li>Welcome email sent with login instructions and company policies</li>
+                </ol>
+              </Card>
 
-              <li>
-                <strong>Employment Details:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Job Title:</strong> Role description (Driver, Collector, Supervisor)</li>
-                  <li><strong>Pay Rate:</strong> Hourly wage in dollars</li>
-                  <li><strong>Start Date:</strong> When employment begins</li>
-                  <li><strong>Employment Status:</strong> Full-time, Part-time, Contractor</li>
-                </ul>
-              </li>
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Job Roles & Responsibilities</h5>
+                <div className="space-y-2">
+                  <div><strong>Driver:</strong> Primary waste collection vehicle operator</div>
+                  <div><strong>Can Courier:</strong> Residential pickup specialist</div>
+                  <div><strong>Can Cleaner:</strong> Container washing and maintenance</div>
+                  <div><strong>Supervisor:</strong> Route oversight and quality control</div>
+                  <div><strong>Trainee:</strong> New employee in training period</div>
+                </div>
+              </Card>
+            </div>
+          </div>
 
-              <li>
-                <strong>Operational Info:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Driver's License:</strong> Required for vehicle operators</li>
-                  <li><strong>Certifications:</strong> Safety training, hazmat, etc.</li>
-                  <li><strong>Emergency Contact:</strong> Name and phone number</li>
+          <div>
+            <h4 className="font-semibold mb-3">📍 GPS Tracking & Location Management</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Real-Time Employee Tracking</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>GPS location updates every 30 seconds during work hours</li>
+                  <li>Clock-in/clock-out location verification</li>
+                  <li>Route compliance monitoring and alerts</li>
+                  <li>Emergency location services for employee safety</li>
+                  <li>Privacy controls for off-duty hours</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Save and Setup:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Click <strong>"Add Employee"</strong></li>
-                  <li>Employee account is created automatically</li>
-                  <li>Login credentials sent via email</li>
-                  <li>Employee can access their dashboard immediately</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Location Data Usage</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Route Optimization:</strong> Analyzing travel patterns for efficiency</li>
+                  <li><strong>Time Verification:</strong> Confirming work hours and job site presence</li>
+                  <li><strong>Safety Monitoring:</strong> Emergency response and check-ins</li>
+                  <li><strong>Performance Analytics:</strong> Productivity and efficiency metrics</li>
                 </ul>
-              </li>
-            </ol>
+              </Card>
+            </div>
           </div>
 
           <div>
             <h4 className="font-semibold mb-3">⏰ Time Tracking & Payroll</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>How Time Tracking Works:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Employees clock in/out using their mobile dashboard</li>
-                  <li>GPS location is recorded with each time stamp</li>
-                  <li>Time is calculated in 0.01 hour increments for accuracy</li>
-                  <li>All sessions are automatically logged to their timecard</li>
-                </ul>
-              </li>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Viewing Employee Time Cards:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Employees Tab</strong></li>
-                  <li>Click <strong>"View Time Card"</strong> next to employee name</li>
-                  <li>Or go to <strong>Quick Access</strong> → <strong>Employee Management</strong> → <strong>"View All Time Cards"</strong></li>
-                </ul>
-              </li>
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium mb-2">Automated Time Tracking</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Employees clock in/out using mobile app with GPS verification</li>
+                  <li>System automatically calculates:
+                    <ul className="list-disc list-inside ml-6 mt-1">
+                      <li>Regular hours vs. overtime (40+ hours/week)</li>
+                      <li>Break time deductions</li>
+                      <li>Travel time between job sites</li>
+                      <li>Total hours per day, week, pay period</li>
+                    </ul>
+                  </li>
+                  <li>Supervisors can review and approve time entries</li>
+                  <li>Payroll integration with automatic calculation</li>
+                </ol>
+              </Card>
 
-              <li>
-                <strong>Time Card Information Displayed:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Date & Time:</strong> Exact clock in/out times</li>
-                  <li><strong>Duration:</strong> Total hours worked (in 0.01 increments)</li>
-                  <li><strong>Location:</strong> Where they clocked in/out</li>
-                  <li><strong>Status:</strong> Active, Completed, or Break</li>
-                  <li><strong>Notes:</strong> Any employee-added comments</li>
-                  <li><strong>Total Pay:</strong> Hours × hourly rate</li>
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Payroll Processing</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Bi-weekly or monthly payroll cycles</li>
+                  <li>Automatic overtime calculation at 1.5x rate</li>
+                  <li>Tax withholding and benefits deductions</li>
+                  <li>Direct deposit setup and pay stub generation</li>
+                  <li>Year-end tax document preparation (W-2, 1099)</li>
                 </ul>
-              </li>
-
-              <li>
-                <strong>Payroll Processing:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Time cards automatically calculate total hours per pay period</li>
-                  <li>Overtime is flagged for hours over 40/week</li>
-                  <li>Export time card data for payroll software</li>
-                  <li>All time stamps are preserved for auditing</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Time Card Management:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Approve/Edit:</strong> Admins can modify incorrect entries</li>
-                  <li><strong>Add Notes:</strong> Document reasons for any changes</li>
-                  <li><strong>Export Reports:</strong> Generate pay period summaries</li>
-                  <li><strong>Audit Trail:</strong> All changes are logged with timestamps</li>
-                </ul>
-              </li>
-            </ol>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "performance-scheduling",
+      title: "Performance Tracking & Scheduling",
+      icon: Calendar,
+      difficulty: "Advanced",
+      estimatedTime: "25 minutes",
+      category: "employee-management",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+            <h4 className="font-semibold text-orange-900 mb-2">📈 Performance & Scheduling</h4>
+            <p className="text-orange-800">
+              Advanced performance monitoring, intelligent scheduling, and productivity analytics 
+              for optimal workforce management.
+            </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📍 Employee Location Tracking</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Real-Time GPS Tracking:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>View live employee locations on Operations map</li>
-                  <li>See who's currently online/offline</li>
-                  <li>Track route progress and completion</li>
-                  <li>Monitor break times and locations</li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📊 Performance Metrics</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Assignment Management:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Assign specific routes to employees</li>
-                  <li>Set pickup schedules and priorities</li>
-                  <li>Monitor assignment completion status</li>
-                  <li>Reassign jobs if needed</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Key Performance Indicators (KPIs)</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Route Completion Rate:</strong> Percentage of assigned pickups completed on time</li>
+                  <li><strong>Efficiency Score:</strong> Time per pickup compared to route standards</li>
+                  <li><strong>Customer Satisfaction:</strong> Ratings and feedback from customers</li>
+                  <li><strong>Safety Record:</strong> Incidents, accidents, and safety violations</li>
+                  <li><strong>Attendance:</strong> Punctuality, absenteeism, schedule adherence</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Performance Monitoring:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Track completion times for routes</li>
-                  <li>Monitor customer satisfaction scores</li>
-                  <li>Review safety incident reports</li>
-                  <li>Analyze productivity metrics</li>
-                </ul>
-              </li>
-            </ol>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Performance Review Process</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Monthly performance data collection and analysis</li>
+                  <li>Quarterly performance reviews with supervisors</li>
+                  <li>Goal setting and improvement plan development</li>
+                  <li>Annual performance evaluation and compensation review</li>
+                  <li>Recognition and reward programs for top performers</li>
+                </ol>
+              </Card>
+            </div>
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <h4 className="font-semibold text-orange-900 mb-2">⚖️ Labor Law Compliance</h4>
-            <ul className="list-disc list-inside text-orange-800 space-y-1">
-              <li>Time tracking includes break periods and meal breaks</li>
-              <li>Overtime calculations follow federal and state regulations</li>
-              <li>All time modifications require admin approval and documentation</li>
-              <li>GPS data ensures accurate on-site work verification</li>
-              <li>Export capabilities support payroll tax reporting</li>
-            </ul>
+          <div>
+            <h4 className="font-semibold mb-3">📅 Advanced Scheduling</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-purple-500">
+                <h5 className="font-medium mb-2">Intelligent Route Assignment</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>AI-powered route optimization based on historical data</li>
+                  <li>Employee skill matching to route requirements</li>
+                  <li>Vehicle availability and maintenance schedules</li>
+                  <li>Customer preferences and special requirements</li>
+                  <li>Dynamic reassignment for sick days and emergencies</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Schedule Management Tools</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Shift Planning:</strong> Weekly and monthly schedule creation</li>
+                  <li><strong>Time-Off Requests:</strong> Vacation, sick leave, personal time</li>
+                  <li><strong>Overtime Management:</strong> Fair distribution and cost control</li>
+                  <li><strong>On-Call Rotation:</strong> Emergency response coverage</li>
+                  <li><strong>Training Schedules:</strong> Mandatory and continuing education</li>
+                </ul>
+              </Card>
+            </div>
           </div>
         </div>
       )
@@ -564,181 +777,112 @@ export function ComprehensiveDocumentation() {
 
   const operationsManagementSections: DocumentationSection[] = [
     {
-      id: "route-scheduling",
-      title: "Route Planning & Scheduling Operations",
-      icon: MapPin,
-      difficulty: "Advanced",
+      id: "operations-overview",
+      title: "Operations Management Center",
+      icon: Activity,
+      difficulty: "Intermediate",
+      estimatedTime: "20 minutes",
+      category: "operations-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-2">🗺️ Operations Management</h4>
-            <p className="text-purple-800">
-              Efficient route planning, scheduling, and real-time operations monitoring 
-              to maximize productivity and customer satisfaction.
+          <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+            <h4 className="font-semibold text-indigo-900 mb-2">🎯 Operations Command Center</h4>
+            <p className="text-indigo-800">
+              Central hub for real-time operations management, route monitoring, 
+              service area coverage, and live GPS tracking of all field operations.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📅 Creating Scheduled Jobs</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Scheduling:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Operations Tab</strong></li>
-                  <li>Look at <strong>Scheduled Jobs Panel</strong></li>
-                  <li>Click <strong>"Add New Job"</strong></li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">🗺️ Live GPS Map & Tracking</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Job Details:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Service Type:</strong> Regular pickup, bulk collection, recycling</li>
-                  <li><strong>Customer/Location:</strong> Select from customer list</li>
-                  <li><strong>Scheduled Date:</strong> When service should occur</li>
-                  <li><strong>Time Window:</strong> Preferred pickup time range</li>
-                  <li><strong>Priority Level:</strong> Normal, High, Emergency</li>
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Real-Time Fleet Monitoring</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Live GPS locations of all active vehicles and employees</li>
+                  <li>Route progress indicators and completion status</li>
+                  <li>Traffic and weather conditions affecting operations</li>
+                  <li>Emergency alerts and incident notifications</li>
+                  <li>Customer location markers with service status</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Route Assignment:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Auto-Assign:</strong> System suggests best employee/route</li>
-                  <li><strong>Manual Assign:</strong> Choose specific employee</li>
-                  <li><strong>Route Optimization:</strong> System groups nearby jobs</li>
-                  <li><strong>Vehicle Assignment:</strong> Assign appropriate truck</li>
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Service Area Management</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Zone Coverage:</strong> Visual representation of service territories</li>
+                  <li><strong>Route Optimization:</strong> AI-powered efficient route planning</li>
+                  <li><strong>Capacity Planning:</strong> Vehicle load optimization and scheduling</li>
+                  <li><strong>Coverage Gaps:</strong> Identification of unserved or underserved areas</li>
                 </ul>
-              </li>
-
-              <li>
-                <strong>Special Instructions:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Gate codes or access instructions</li>
-                  <li>Special handling requirements</li>
-                  <li>Customer contact preferences</li>
-                  <li>Safety considerations</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Save and Deploy:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Review all job details</li>
-                  <li>Click <strong>"Schedule Job"</strong></li>
-                  <li>Job appears on assigned employee's mobile dashboard</li>
-                  <li>Customer receives service confirmation</li>
-                </ul>
-              </li>
-            </ol>
+              </Card>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">🚛 Route Optimization</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Route Optimizer:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Operations Management</strong></li>
-                  <li>Click <strong>"Optimize Routes"</strong></li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📋 Scheduled Jobs Management</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Select Parameters:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Date Range:</strong> Which days to optimize</li>
-                  <li><strong>Service Area:</strong> Geographic zones to include</li>
-                  <li><strong>Vehicle Types:</strong> Truck capacity requirements</li>
-                  <li><strong>Employee Constraints:</strong> Availability and skills</li>
-                </ul>
-              </li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Job Assignment System</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Automatic daily job generation based on customer schedules</li>
+                  <li>Intelligent assignment to available employees and vehicles</li>
+                  <li>Priority handling for special requests and time-sensitive pickups</li>
+                  <li>Real-time updates on job status and completion</li>
+                  <li>Exception handling for missed or incomplete pickups</li>
+                </ol>
+              </Card>
 
-              <li>
-                <strong>Optimization Factors:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Distance:</strong> Minimize total travel distance</li>
-                  <li><strong>Time Windows:</strong> Respect customer preferences</li>
-                  <li><strong>Vehicle Capacity:</strong> Don't exceed truck limits</li>
-                  <li><strong>Traffic Patterns:</strong> Account for rush hour delays</li>
-                  <li><strong>Employee Breaks:</strong> Schedule mandatory rest periods</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Review and Apply:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>System generates optimized route suggestions</li>
-                  <li>Review proposed changes and efficiency gains</li>
-                  <li>Make manual adjustments if needed</li>
-                  <li>Click <strong>"Apply Routes"</strong> to update assignments</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Monitor Results:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Track route completion times</li>
-                  <li>Monitor fuel savings and efficiency gains</li>
-                  <li>Collect employee feedback on route changes</li>
-                  <li>Adjust parameters for future optimizations</li>
-                </ul>
-              </li>
-            </ol>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Job Status Tracking</h5>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 bg-gray-400 rounded-full"></span>
+                    <span><strong>Pending:</strong> Job assigned but not yet started</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span><strong>In Progress:</strong> Employee en route or at location</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    <span><strong>Completed:</strong> Pickup completed successfully</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-3 h-3 bg-red-400 rounded-full"></span>
+                    <span><strong>Exception:</strong> Issue requiring attention</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">🗺️ Live Operations Monitoring</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Operations Map Overview:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>View live employee locations on interactive map</li>
-                  <li>See real-time progress on assigned routes</li>
-                  <li>Monitor service area coverage</li>
-                  <li>Track vehicle movements and stops</li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📊 Activity Logs & Monitoring</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Status Indicators:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Green Dots:</strong> Active employees on route</li>
-                  <li><strong>Red Dots:</strong> Employees needing attention</li>
-                  <li><strong>Blue Dots:</strong> Completed jobs today</li>
-                  <li><strong>Yellow Dots:</strong> Scheduled but not started</li>
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium mb-2">Real-Time Activity Feed</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Employee clock-in/clock-out events</li>
+                  <li>Job start and completion notifications</li>
+                  <li>Vehicle maintenance alerts and updates</li>
+                  <li>Customer service requests and complaints</li>
+                  <li>System errors and technical issues</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Real-Time Alerts:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Route delays or traffic issues</li>
-                  <li>Emergency requests from customers</li>
-                  <li>Vehicle breakdowns or maintenance needs</li>
-                  <li>Employee safety check-ins</li>
+              <Card className="p-4 border-l-4 border-l-red-500">
+                <h5 className="font-medium mb-2">Alert Management</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>High Priority:</strong> Emergency situations, safety incidents</li>
+                  <li><strong>Medium Priority:</strong> Route delays, vehicle issues</li>
+                  <li><strong>Low Priority:</strong> Schedule changes, routine notifications</li>
+                  <li>Customizable alert thresholds and notification preferences</li>
                 </ul>
-              </li>
-
-              <li>
-                <strong>Quick Actions from Map:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Click employee pin to see current status</li>
-                  <li>Reassign jobs between employees</li>
-                  <li>Send messages or instructions</li>
-                  <li>Add emergency pickups to routes</li>
-                </ul>
-              </li>
-            </ol>
-          </div>
-
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-2">📊 Operations Metrics</h4>
-            <div className="text-blue-800 space-y-2">
-              <p><strong>Route Efficiency:</strong> Compare planned vs actual completion times</p>
-              <p><strong>Customer Satisfaction:</strong> Track on-time service delivery rates</p>
-              <p><strong>Fuel Costs:</strong> Monitor vehicle efficiency and route optimization savings</p>
-              <p><strong>Employee Productivity:</strong> Analyze jobs completed per hour/day</p>
+              </Card>
             </div>
           </div>
         </div>
@@ -746,201 +890,125 @@ export function ComprehensiveDocumentation() {
     }
   ];
 
-  const fleetMaintenanceSections: DocumentationSection[] = [
+  const fleetManagementSections: DocumentationSection[] = [
     {
-      id: "fleet-maintenance",
-      title: "Fleet Management & Maintenance Scheduling",
+      id: "fleet-comprehensive",
+      title: "Comprehensive Fleet Management",
       icon: Truck,
       difficulty: "Advanced",
+      estimatedTime: "40 minutes",
+      category: "fleet-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-            <h4 className="font-semibold text-indigo-900 mb-2">🚛 Fleet Management System</h4>
-            <p className="text-indigo-800">
-              Comprehensive vehicle management including maintenance scheduling, 
-              cost tracking, and compliance monitoring for your waste collection fleet.
+          <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+            <h4 className="font-semibold text-teal-900 mb-2">🚛 Fleet Management Overview</h4>
+            <p className="text-teal-800">
+              Complete fleet lifecycle management including vehicle acquisition, maintenance scheduling, 
+              performance monitoring, and disposal planning.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">🚚 Adding Vehicles to Fleet</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Fleet Management:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Fleet Management</strong></li>
-                  <li>Click <strong>"Add Vehicle"</strong></li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">🚗 Vehicle Registration & Management</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Vehicle Identification:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Vehicle Number:</strong> Your internal fleet ID (e.g., "TRUCK-001")</li>
-                  <li><strong>Make & Model:</strong> Manufacturer and specific model</li>
-                  <li><strong>Year:</strong> Model year</li>
-                  <li><strong>License Plate:</strong> Current registration</li>
-                  <li><strong>VIN:</strong> Vehicle identification number</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Operational Specifications:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Vehicle Type:</strong> Front-loader, rear-loader, roll-off</li>
-                  <li><strong>Capacity:</strong> Cubic yards or weight capacity</li>
-                  <li><strong>Fuel Type:</strong> Diesel, gas, electric, hybrid</li>
-                  <li><strong>Status:</strong> Active, maintenance, retired</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Purchase & Financial Info:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Purchase Date:</strong> When vehicle was acquired</li>
-                  <li><strong>Purchase Price:</strong> Original cost for depreciation</li>
-                  <li><strong>Current Mileage:</strong> Starting odometer reading</li>
-                  <li><strong>Insurance Info:</strong> Policy numbers and coverage</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Save and Activate:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Review all information for accuracy</li>
-                  <li>Click <strong>"Add Vehicle"</strong></li>
-                  <li>Vehicle is now available for employee assignment</li>
-                  <li>Maintenance schedule is automatically initialized</li>
-                </ul>
-              </li>
-            </ol>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-3">🔧 Maintenance Scheduling</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Maintenance Panel:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Operations Tab</strong></li>
-                  <li>Look at <strong>Maintenance Schedule Panel</strong></li>
-                  <li>Click <strong>"Schedule Maintenance"</strong></li>
-                </ul>
-              </li>
-              
-              <li>
-                <strong>Select Vehicle & Service:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Choose vehicle from dropdown list</li>
-                  <li>Select maintenance type:
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Adding New Vehicles</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Navigate to <strong>Quick Access</strong> → <strong>Fleet Management</strong></li>
+                  <li>Click <strong>"Add Vehicle"</strong> button</li>
+                  <li>Complete vehicle registration form:
                     <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Routine Service (oil change, filters)</li>
-                      <li>Preventive Maintenance (scheduled inspections)</li>
-                      <li>Repair Work (fix specific issues)</li>
-                      <li>DOT Inspection (regulatory compliance)</li>
-                      <li>Emissions Testing (environmental compliance)</li>
+                      <li><strong>Basic Information:</strong> Make, model, year, VIN</li>
+                      <li><strong>Registration:</strong> License plate, registration number</li>
+                      <li><strong>Specifications:</strong> Capacity, fuel type, transmission</li>
+                      <li><strong>Purchase Details:</strong> Date acquired, cost, financing</li>
+                      <li><strong>Insurance:</strong> Policy numbers, coverage details</li>
                     </ul>
                   </li>
-                </ul>
-              </li>
+                  <li>Upload vehicle documentation (registration, insurance, inspection)</li>
+                  <li>Assign unique vehicle number for internal tracking</li>
+                </ol>
+              </Card>
 
-              <li>
-                <strong>Schedule Details:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Scheduled Date:</strong> When maintenance should occur</li>
-                  <li><strong>Service Description:</strong> Detailed work to be performed</li>
-                  <li><strong>Vendor Information:</strong> Shop name and contact info</li>
-                  <li><strong>Estimated Cost:</strong> Budget for the work</li>
-                  <li><strong>Priority Level:</strong> Routine, urgent, emergency</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Resource Planning:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Downtime Duration:</strong> How long vehicle will be unavailable</li>
-                  <li><strong>Backup Vehicle:</strong> Replacement truck if needed</li>
-                  <li><strong>Route Impact:</strong> Adjust schedules for affected routes</li>
-                  <li><strong>Parts Ordering:</strong> Pre-order required components</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Schedule and Track:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Click <strong>"Schedule Maintenance"</strong></li>
-                  <li>Maintenance appears in upcoming schedule</li>
-                  <li>Automatic reminders sent to fleet manager</li>
-                  <li>Vehicle status updated to "Scheduled for Maintenance"</li>
-                </ul>
-              </li>
-            </ol>
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Vehicle Types & Classifications</h5>
+                <div className="space-y-2">
+                  <div><strong>Compactor Trucks:</strong> Front-loading and rear-loading waste collection</div>
+                  <div><strong>Roll-Off Trucks:</strong> Large container pickup and delivery</div>
+                  <div><strong>Side-Loaders:</strong> Automated residential collection</div>
+                  <div><strong>Utility Vehicles:</strong> Maintenance and supervisory functions</div>
+                  <div><strong>Support Vehicles:</strong> Parts delivery, emergency response</div>
+                </div>
+              </Card>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📊 Maintenance Tracking & Costs</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Completing Maintenance:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>When service is finished, update maintenance record</li>
-                  <li>Enter actual completion date</li>
-                  <li>Input final cost and invoice details</li>
-                  <li>Upload receipts and service documentation</li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">🔧 Maintenance Management</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Cost Tracking:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Labor Costs:</strong> Shop time and rates</li>
-                  <li><strong>Parts Costs:</strong> Components and materials</li>
-                  <li><strong>Vendor Charges:</strong> Additional fees or services</li>
-                  <li><strong>Total Cost:</strong> Complete maintenance expense</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Preventive Maintenance Scheduling</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Time-Based:</strong> Oil changes, inspections, tire rotations</li>
+                  <li><strong>Mileage-Based:</strong> Engine service, transmission maintenance</li>
+                  <li><strong>Usage-Based:</strong> Hydraulic system checks, PTO maintenance</li>
+                  <li><strong>Condition-Based:</strong> Brake inspections, emissions testing</li>
+                  <li>Automated scheduling with email and SMS reminders</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Performance Metrics:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Track cost per mile for each vehicle</li>
-                  <li>Monitor maintenance frequency trends</li>
-                  <li>Compare vendor performance and pricing</li>
-                  <li>Identify vehicles with high maintenance costs</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Maintenance Record Keeping</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Complete maintenance history for each vehicle</li>
+                  <li>Parts inventory tracking and automatic reordering</li>
+                  <li>Service provider management and performance tracking</li>
+                  <li>Warranty tracking and claim management</li>
+                  <li>Cost analysis and budgeting for maintenance expenses</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Compliance Tracking:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>DOT inspection due dates</li>
-                  <li>Emissions testing schedules</li>
-                  <li>Commercial vehicle registrations</li>
-                  <li>Insurance coverage renewals</li>
-                </ul>
-              </li>
-
-              <li>
-                <strong>Reporting & Analysis:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Generate monthly maintenance reports</li>
-                  <li>Track fleet-wide maintenance costs</li>
-                  <li>Analyze preventive vs reactive maintenance ratios</li>
-                  <li>Plan vehicle replacement schedules</li>
-                </ul>
-              </li>
-            </ol>
+              <Card className="p-4 border-l-4 border-l-red-500">
+                <h5 className="font-medium mb-2">Emergency Maintenance</h5>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>24/7 breakdown reporting system</li>
+                  <li>Emergency service provider network</li>
+                  <li>Temporary vehicle allocation for route coverage</li>
+                  <li>Priority repair scheduling for critical vehicles</li>
+                  <li>Insurance claim processing for accident damage</li>
+                </ol>
+              </Card>
+            </div>
           </div>
 
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h4 className="font-semibold text-red-900 mb-2">⚠️ Safety & Compliance</h4>
-            <ul className="list-disc list-inside text-red-800 space-y-1">
-              <li>Never skip safety inspections or required maintenance</li>
-              <li>Keep detailed records for DOT audits and insurance claims</li>
-              <li>Remove unsafe vehicles from service immediately</li>
-              <li>Train employees on proper vehicle inspection procedures</li>
-              <li>Maintain current insurance and registration for all vehicles</li>
-            </ul>
+          <div>
+            <h4 className="font-semibold mb-3">📈 Fleet Performance Analytics</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-purple-500">
+                <h5 className="font-medium mb-2">Key Performance Metrics</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Utilization Rate:</strong> Percentage of time vehicles are in active use</li>
+                  <li><strong>Fuel Efficiency:</strong> Miles per gallon and cost per mile analysis</li>
+                  <li><strong>Maintenance Costs:</strong> Cost per mile and cost per hour operated</li>
+                  <li><strong>Downtime Analysis:</strong> Scheduled vs. unscheduled maintenance time</li>
+                  <li><strong>Driver Performance:</strong> Safety scores and efficiency ratings</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-orange-500">
+                <h5 className="font-medium mb-2">Fleet Optimization Recommendations</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Right-sizing fleet based on demand patterns</li>
+                  <li>Vehicle replacement timing optimization</li>
+                  <li>Route efficiency improvements</li>
+                  <li>Fuel cost reduction strategies</li>
+                  <li>Maintenance cost optimization</li>
+                </ul>
+              </Card>
+            </div>
           </div>
         </div>
       )
@@ -949,202 +1017,225 @@ export function ComprehensiveDocumentation() {
 
   const analyticsReportingSections: DocumentationSection[] = [
     {
-      id: "analytics-reporting",
-      title: "Analytics Dashboard & Business Reporting",
+      id: "analytics-comprehensive",
+      title: "Advanced Analytics & Business Intelligence",
       icon: BarChart3,
-      difficulty: "Intermediate",
+      difficulty: "Advanced",
+      estimatedTime: "35 minutes",
+      category: "analytics-reporting",
       content: (
         <div className="space-y-6">
-          <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
-            <h4 className="font-semibold text-teal-900 mb-2">📊 Business Analytics & Reporting</h4>
-            <p className="text-teal-800">
-              Comprehensive analytics tools to track business performance, 
-              identify trends, and make data-driven decisions for growth.
+          <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
+            <h4 className="font-semibold text-pink-900 mb-2">📊 Analytics & Reporting</h4>
+            <p className="text-pink-800">
+              Comprehensive business intelligence platform with real-time analytics, 
+              predictive insights, and customizable reporting for data-driven decision making.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📈 Understanding the Analytics Dashboard</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Access Analytics:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Click the <strong>Analytics Tab</strong> in the main dashboard</li>
-                  <li>The dashboard loads with current month data by default</li>
-                  <li>Use date filters to view different time periods</li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📈 Financial Analytics</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Key Performance Metrics:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Revenue Metrics:</strong>
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Total revenue for selected period</li>
-                      <li>Monthly recurring revenue (MRR)</li>
-                      <li>Revenue per customer</li>
-                      <li>Growth rate vs previous period</li>
-                    </ul>
-                  </li>
-                  <li><strong>Customer Metrics:</strong>
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Total active customers</li>
-                      <li>New customer acquisitions</li>
-                      <li>Customer churn rate</li>
-                      <li>Customer lifetime value</li>
-                    </ul>
-                  </li>
-                  <li><strong>Operational Metrics:</strong>
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Total pickups completed</li>
-                      <li>On-time delivery rate</li>
-                      <li>Employee productivity</li>
-                      <li>Vehicle utilization</li>
-                    </ul>
-                  </li>
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Revenue Analysis</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Daily Revenue:</strong> Real-time tracking of completed payments</li>
+                  <li><strong>Monthly Recurring Revenue (MRR):</strong> Subscription-based income analysis</li>
+                  <li><strong>Revenue by Service Type:</strong> Breakdown by plan tiers and services</li>
+                  <li><strong>Revenue Forecasting:</strong> Predictive modeling for future income</li>
+                  <li><strong>Seasonal Trends:</strong> Historical patterns and seasonal adjustments</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Chart Types & Analysis:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Line Charts:</strong> Track trends over time (revenue, customers)</li>
-                  <li><strong>Bar Charts:</strong> Compare categories (service types, regions)</li>
-                  <li><strong>Pie Charts:</strong> Show composition (service distribution)</li>
-                  <li><strong>Heatmaps:</strong> Geographic performance by service area</li>
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Cost & Profitability Analysis</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Operating Expenses:</strong> Fuel, maintenance, labor costs</li>
+                  <li><strong>Cost per Customer:</strong> Service delivery cost analysis</li>
+                  <li><strong>Route Profitability:</strong> Profit margins by geographic area</li>
+                  <li><strong>Vehicle ROI:</strong> Return on investment for fleet assets</li>
+                  <li><strong>Margin Analysis:</strong> Gross and net profit margins by service</li>
                 </ul>
-              </li>
-
-              <li>
-                <strong>Interactive Features:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Hover over data points for detailed information</li>
-                  <li>Click legend items to show/hide data series</li>
-                  <li>Use date range picker to focus on specific periods</li>
-                  <li>Export charts as images or data as CSV</li>
-                </ul>
-              </li>
-            </ol>
+              </Card>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📋 Generating Business Reports</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Standard Report Types:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li><strong>Daily Operations Report:</strong>
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Pickups completed vs scheduled</li>
-                      <li>Employee hours and productivity</li>
-                      <li>Vehicle utilization and fuel costs</li>
-                      <li>Customer service issues</li>
-                    </ul>
-                  </li>
-                  <li><strong>Weekly Financial Report:</strong>
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Revenue by service type</li>
-                      <li>New customer acquisitions</li>
-                      <li>Payment collection status</li>
-                      <li>Outstanding invoices</li>
-                    </ul>
-                  </li>
-                  <li><strong>Monthly Business Review:</strong>
-                    <ul className="list-disc list-inside ml-6 mt-1">
-                      <li>Overall business performance</li>
-                      <li>Growth metrics and trends</li>
-                      <li>Cost analysis and profitability</li>
-                      <li>Strategic recommendations</li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📊 Operational Analytics</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Creating Custom Reports:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Go to <strong>Quick Access</strong> → <strong>Analytics & Reporting</strong></li>
-                  <li>Click <strong>"Generate Custom Report"</strong></li>
-                  <li>Select data sources and metrics to include</li>
-                  <li>Choose date range and filtering criteria</li>
-                  <li>Preview report before finalizing</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Service Performance Metrics</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>On-Time Performance:</strong> Percentage of pickups completed on schedule</li>
+                  <li><strong>Route Efficiency:</strong> Time and fuel consumption per route</li>
+                  <li><strong>Customer Satisfaction:</strong> Service ratings and feedback analysis</li>
+                  <li><strong>Completion Rates:</strong> Successfully completed vs. missed pickups</li>
+                  <li><strong>Service Exceptions:</strong> Issues requiring special handling</li>
                 </ul>
-              </li>
+              </Card>
 
-              <li>
-                <strong>Report Scheduling:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Set up automatic report generation</li>
-                  <li>Choose delivery schedule (daily, weekly, monthly)</li>
-                  <li>Add email recipients for automatic distribution</li>
-                  <li>Configure report format (PDF, Excel, email)</li>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Employee Performance Analytics</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Productivity Metrics:</strong> Pickups per hour, route completion times</li>
+                  <li><strong>Attendance Tracking:</strong> Punctuality, absenteeism patterns</li>
+                  <li><strong>Safety Performance:</strong> Incident rates, safety violations</li>
+                  <li><strong>Training Compliance:</strong> Certification status and renewal tracking</li>
+                  <li><strong>Performance Trends:</strong> Individual and team performance over time</li>
                 </ul>
-              </li>
-
-              <li>
-                <strong>Report Distribution:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Download reports in various formats</li>
-                  <li>Email reports to stakeholders</li>
-                  <li>Share reports via secure links</li>
-                  <li>Print reports for physical distribution</li>
-                </ul>
-              </li>
-            </ol>
+              </Card>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">💡 Using Analytics for Business Decisions</h4>
-            <ol className="list-decimal list-inside space-y-3 ml-4">
-              <li>
-                <strong>Identifying Growth Opportunities:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Analyze service area performance to identify expansion zones</li>
-                  <li>Track customer acquisition costs by marketing channel</li>
-                  <li>Identify high-value customer segments</li>
-                  <li>Monitor competitor pricing and market share</li>
-                </ul>
-              </li>
+            <h4 className="font-semibold mb-3">📋 Custom Reporting</h4>
+            <div className="space-y-4">
               
-              <li>
-                <strong>Operational Efficiency:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Route optimization based on pickup density</li>
-                  <li>Employee productivity analysis for training needs</li>
-                  <li>Vehicle maintenance cost trends</li>
-                  <li>Fuel efficiency tracking and improvement</li>
-                </ul>
-              </li>
+              <Card className="p-4 border-l-4 border-l-purple-500">
+                <h5 className="font-medium mb-2">Report Generation</h5>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Navigate to <strong>Admin Dashboard</strong> → <strong>Analytics Tab</strong></li>
+                  <li>Select report type: Financial, Operations, Customers, Employees</li>
+                  <li>Configure report parameters:
+                    <ul className="list-disc list-inside ml-6 mt-1">
+                      <li>Date range selection</li>
+                      <li>Data filters and grouping options</li>
+                      <li>Visualization preferences (charts, tables, graphs)</li>
+                      <li>Export format (PDF, CSV, Excel)</li>
+                    </ul>
+                  </li>
+                  <li>Generate and download report</li>
+                  <li>Schedule automated report delivery via email</li>
+                </ol>
+              </Card>
 
-              <li>
-                <strong>Customer Satisfaction:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>On-time service delivery rates</li>
-                  <li>Customer complaint trends and resolution</li>
-                  <li>Service quality feedback analysis</li>
-                  <li>Customer retention and churn factors</li>
+              <Card className="p-4 border-l-4 border-l-orange-500">
+                <h5 className="font-medium mb-2">Dashboard Customization</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Drag-and-drop widget arrangement</li>
+                  <li>Custom KPI selection and thresholds</li>
+                  <li>Real-time vs. historical data views</li>
+                  <li>Color-coded status indicators and alerts</li>
+                  <li>Personal dashboard saves and sharing</li>
                 </ul>
-              </li>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
 
-              <li>
-                <strong>Financial Performance:</strong>
-                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
-                  <li>Profit margin analysis by service type</li>
-                  <li>Cash flow forecasting</li>
-                  <li>Cost structure optimization</li>
-                  <li>Pricing strategy effectiveness</li>
-                </ul>
-              </li>
-            </ol>
+  const securityAndAuditSections: DocumentationSection[] = [
+    {
+      id: "security-comprehensive",
+      title: "Security & Audit Management",
+      icon: Shield,
+      difficulty: "Advanced",
+      estimatedTime: "30 minutes",
+      category: "security-audit",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <h4 className="font-semibold text-red-900 mb-2">🔒 Security & Compliance</h4>
+            <p className="text-red-800">
+              Comprehensive security framework with role-based access control, 
+              audit logging, and compliance monitoring for data protection and operational security.
+            </p>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-900 mb-2">💰 ROI Tracking</h4>
-            <div className="text-green-800 space-y-2">
-              <p><strong>Marketing ROI:</strong> Track customer acquisition cost vs lifetime value</p>
-              <p><strong>Operational ROI:</strong> Measure efficiency improvements and cost savings</p>
-              <p><strong>Technology ROI:</strong> Analyze software and automation benefits</p>
-              <p><strong>Employee ROI:</strong> Training investment vs productivity gains</p>
+          <div>
+            <h4 className="font-semibold mb-3">🛡️ Access Control & Authentication</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-red-500">
+                <h5 className="font-medium mb-2">User Authentication System</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Secure Login:</strong> Email and password with encryption</li>
+                  <li><strong>Session Management:</strong> Automatic timeout and secure tokens</li>
+                  <li><strong>Password Policies:</strong> Complexity requirements and expiration</li>
+                  <li><strong>Account Lockout:</strong> Protection against brute force attacks</li>
+                  <li><strong>Password Recovery:</strong> Secure reset process via email verification</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Role-Based Access Control (RBAC)</h5>
+                <div className="space-y-2">
+                  <div><strong>Super Admin:</strong> Complete system access, user management, security settings</div>
+                  <div><strong>Admin:</strong> Operations, customer service, reporting (no user management)</div>
+                  <div><strong>Employee:</strong> Time tracking, assigned routes, personal data only</div>
+                  <div><strong>Customer:</strong> Personal account, billing, service requests only</div>
+                </div>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Row Level Security (RLS)</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Database-level access control for all sensitive data</li>
+                  <li>Users can only access their own records and authorized data</li>
+                  <li>Automatic enforcement at the database layer</li>
+                  <li>Protection against SQL injection and unauthorized access</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">📝 Audit Logging & Monitoring</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Comprehensive Activity Logging</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>User Actions:</strong> Login/logout, data access, modifications</li>
+                  <li><strong>Administrative Actions:</strong> User creation, role changes, system settings</li>
+                  <li><strong>Financial Transactions:</strong> Payments, billing changes, refunds</li>
+                  <li><strong>Operational Events:</strong> Job assignments, route changes, status updates</li>
+                  <li><strong>System Events:</strong> Errors, performance issues, security incidents</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Security Monitoring</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Failed Login Attempts:</strong> Automatic detection and alerting</li>
+                  <li><strong>Unusual Access Patterns:</strong> Time, location, and behavior analysis</li>
+                  <li><strong>Data Export/Download:</strong> Monitoring of sensitive data access</li>
+                  <li><strong>Permission Changes:</strong> Real-time alerts for role modifications</li>
+                  <li><strong>System Intrusion Detection:</strong> Automated threat response</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">🔍 Compliance & Data Protection</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium mb-2">Data Privacy Compliance</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Data Minimization:</strong> Collection of only necessary information</li>
+                  <li><strong>Consent Management:</strong> Clear consent for data collection and use</li>
+                  <li><strong>Right to Access:</strong> Customer access to their personal data</li>
+                  <li><strong>Right to Deletion:</strong> Secure data removal upon request</li>
+                  <li><strong>Data Portability:</strong> Export of customer data in standard formats</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-purple-500">
+                <h5 className="font-medium mb-2">Security Best Practices</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Regular security assessments and penetration testing</li>
+                  <li>Encrypted data transmission and storage</li>
+                  <li>Regular backup and disaster recovery testing</li>
+                  <li>Employee security training and awareness</li>
+                  <li>Third-party security audits and certifications</li>
+                </ul>
+              </Card>
             </div>
           </div>
         </div>
@@ -1154,191 +1245,130 @@ export function ComprehensiveDocumentation() {
 
   const troubleshootingSections: DocumentationSection[] = [
     {
-      id: "troubleshooting",
-      title: "Troubleshooting & Common Issues",
-      icon: AlertTriangle,
-      difficulty: "Beginner",
+      id: "troubleshooting-guide",
+      title: "Troubleshooting & Problem Resolution",
+      icon: Wrench,
+      difficulty: "Intermediate",
+      estimatedTime: "25 minutes",
+      category: "troubleshooting",
       content: (
         <div className="space-y-6">
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h4 className="font-semibold text-red-900 mb-2">🔧 Troubleshooting Guide</h4>
-            <p className="text-red-800">
-              Quick solutions to common problems and step-by-step troubleshooting 
-              for when things don't work as expected.
+          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <h4 className="font-semibold text-yellow-900 mb-2">🔧 Troubleshooting Guide</h4>
+            <p className="text-yellow-800">
+              Comprehensive troubleshooting guide for common issues, error resolution, 
+              and system maintenance procedures.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">🚫 Login & Access Issues</h4>
+            <h4 className="font-semibold mb-3">🚨 Common Issues & Solutions</h4>
             <div className="space-y-4">
               
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Can't log in to admin dashboard</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> Login page shows "Invalid credentials" or "Access denied"</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Verify you're using the correct email address</li>
-                    <li>Check if Caps Lock is on - passwords are case sensitive</li>
-                    <li>Try resetting your password using "Forgot Password" link</li>
-                    <li>Confirm your account has admin privileges</li>
-                    <li>Clear browser cookies and cache, then try again</li>
-                    <li>Try a different browser or incognito/private mode</li>
-                  </ol>
-                  <p><strong>If still not working:</strong> Contact your Super Admin to verify account status</p>
+              <Card className="p-4 border-l-4 border-l-red-500">
+                <h5 className="font-medium mb-2">Login & Authentication Issues</h5>
+                <div className="space-y-2">
+                  <div><strong>Problem:</strong> Cannot access admin dashboard</div>
+                  <div><strong>Solution:</strong>
+                    <ul className="list-disc list-inside ml-4 mt-1">
+                      <li>Verify email address is <code>diggs844037@yahoo.com</code></li>
+                      <li>Check password accuracy (case-sensitive)</li>
+                      <li>Clear browser cache and cookies</li>
+                      <li>Try incognito/private browsing mode</li>
+                      <li>Check internet connection stability</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Dashboard loads slowly or times out</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> White screen, loading indicators that never finish, timeout errors</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Check your internet connection speed</li>
-                    <li>Close other browser tabs to free up memory</li>
-                    <li>Refresh the page using Ctrl+F5 (hard refresh)</li>
-                    <li>Clear browser cache and reload</li>
-                    <li>Try a different browser</li>
-                    <li>Check if other users are experiencing the same issue</li>
-                  </ol>
+              <Card className="p-4 border-l-4 border-l-orange-500">
+                <h5 className="font-medium mb-2">Data Loading Issues</h5>
+                <div className="space-y-2">
+                  <div><strong>Problem:</strong> Dashboard shows loading indefinitely</div>
+                  <div><strong>Solution:</strong>
+                    <ul className="list-disc list-inside ml-4 mt-1">
+                      <li>Click the refresh button (↻) in the dashboard header</li>
+                      <li>Check browser console for JavaScript errors</li>
+                      <li>Verify internet connection is stable</li>
+                      <li>Clear browser cache and reload page</li>
+                      <li>Contact support if issue persists</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">GPS Tracking Issues</h5>
+                <div className="space-y-2">
+                  <div><strong>Problem:</strong> Employee locations not updating</div>
+                  <div><strong>Solution:</strong>
+                    <ul className="list-disc list-inside ml-4 mt-1">
+                      <li>Ensure employees have GPS enabled on mobile devices</li>
+                      <li>Check mobile app permissions for location access</li>
+                      <li>Verify employees are clocked in and active</li>
+                      <li>Restart mobile app if location is stale</li>
+                      <li>Check cellular/WiFi connectivity in field</li>
+                    </ul>
+                  </div>
+                </div>
+              </Card>
             </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">📊 Data & Display Issues</h4>
+            <h4 className="font-semibold mb-3">🔍 Diagnostic Tools</h4>
             <div className="space-y-4">
               
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Employee locations not showing on map</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> Map loads but no employee pins visible</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Click the refresh button (↻) in the dashboard header</li>
-                    <li>Check if employees are actually clocked in and online</li>
-                    <li>Verify employees have GPS enabled on their mobile devices</li>
-                    <li>Look at different zoom levels on the map</li>
-                    <li>Check the "Employees" tab to see if location data is being received</li>
-                  </ol>
-                </div>
-              </div>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">System Health Checks</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Database Connectivity:</strong> Verify Supabase connection status</li>
+                  <li><strong>Real-time Updates:</strong> Check WebSocket connections</li>
+                  <li><strong>Authentication Status:</strong> Validate user sessions and tokens</li>
+                  <li><strong>API Response Times:</strong> Monitor performance metrics</li>
+                  <li><strong>Error Logging:</strong> Review system error logs and patterns</li>
+                </ul>
+              </Card>
 
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Time cards showing incorrect hours</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> Hours don't match employee's actual work time</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Check if employee forgot to clock out (will show as still active)</li>
-                    <li>Verify employee clocked in/out in correct time zone</li>
-                    <li>Look for duplicate time entries that need to be removed</li>
-                    <li>Check if there are any pending time corrections to approve</li>
-                    <li>Ask employee if they had any issues with their mobile app</li>
-                  </ol>
-                  <p><strong>To fix:</strong> Edit the time card entry and add notes explaining the correction</p>
-                </div>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Customer information not saving</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> Form appears to save but changes don't persist</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Make sure all required fields (marked with *) are filled</li>
-                    <li>Check that email addresses are in valid format</li>
-                    <li>Verify phone numbers don't contain special characters</li>
-                    <li>Try saving with shorter text in description fields</li>
-                    <li>Refresh the page and try again</li>
-                  </ol>
-                </div>
-              </div>
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Performance Optimization</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Browser Cache:</strong> Clear cache regularly for optimal performance</li>
+                  <li><strong>Network Speed:</strong> Ensure adequate bandwidth for real-time features</li>
+                  <li><strong>Device Resources:</strong> Close unnecessary browser tabs and applications</li>
+                  <li><strong>Browser Updates:</strong> Use latest browser versions for compatibility</li>
+                  <li><strong>Mobile Optimization:</strong> Ensure mobile devices have sufficient storage</li>
+                </ul>
+              </Card>
             </div>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-3">🔔 Communication & Notification Issues</h4>
+            <h4 className="font-semibold mb-3">📞 Support & Escalation</h4>
             <div className="space-y-4">
               
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Employees not receiving job assignments</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> Jobs assigned but employees say they don't see them</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Verify employee mobile app is updated to latest version</li>
-                    <li>Check if employee is logged into their mobile dashboard</li>
-                    <li>Confirm assignment was saved properly (check Operations tab)</li>
-                    <li>Ask employee to refresh their mobile app</li>
-                    <li>Send a test message to verify communication is working</li>
-                  </ol>
-                </div>
-              </div>
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">When to Contact Support</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>System-wide outages or service disruptions</li>
+                  <li>Data inconsistencies or corruption</li>
+                  <li>Security concerns or suspicious activity</li>
+                  <li>Payment processing failures</li>
+                  <li>Integration issues with third-party services</li>
+                </ul>
+              </Card>
 
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-red-700">❌ Problem: Customers not receiving service confirmations</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Symptoms:</strong> Customers ask about services you've already scheduled</p>
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Check customer's email address is correct in their profile</li>
-                    <li>Ask customer to check spam/junk folder</li>
-                    <li>Verify email notifications are enabled in system settings</li>
-                    <li>Test by sending a manual notification</li>
-                    <li>Consider adding phone/SMS as backup notification method</li>
-                  </ol>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-3">⚡ Performance & Speed Issues</h4>
-            <div className="space-y-4">
-              
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-orange-700">⚠️ Problem: Dashboard running slowly</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Quick Fixes:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Close unnecessary browser tabs</li>
-                    <li>Use latest version of Chrome, Firefox, or Safari</li>
-                    <li>Clear browser cache and cookies</li>
-                    <li>Restart your browser</li>
-                    <li>Check available RAM (8GB+ recommended)</li>
-                  </ol>
-                </div>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg p-4">
-                <h5 className="font-medium mb-2 text-orange-700">⚠️ Problem: Reports taking too long to generate</h5>
-                <div className="text-sm space-y-2">
-                  <p><strong>Solutions:</strong></p>
-                  <ol className="list-decimal list-inside ml-4 space-y-1">
-                    <li>Use smaller date ranges for large reports</li>
-                    <li>Filter data to specific categories or regions</li>
-                    <li>Schedule reports to run during off-peak hours</li>
-                    <li>Export data in smaller segments</li>
-                  </ol>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-2">📞 When to Contact Support</h4>
-            <div className="text-blue-800 space-y-2">
-              <p><strong>Contact immediately for:</strong></p>
-              <ul className="list-disc list-inside ml-4">
-                <li>System-wide outages affecting multiple users</li>
-                <li>Data loss or corruption</li>
-                <li>Security concerns or unauthorized access</li>
-                <li>Payment processing failures</li>
-              </ul>
-              <p><strong>Include in your support request:</strong> Browser type/version, error messages, steps to reproduce the issue</p>
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Information to Provide</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Detailed description of the issue</li>
+                  <li>Steps taken to reproduce the problem</li>
+                  <li>Browser type and version</li>
+                  <li>Time and date when issue occurred</li>
+                  <li>Screenshots or error messages</li>
+                  <li>User account affected (if applicable)</li>
+                </ul>
+              </Card>
             </div>
           </div>
         </div>
@@ -1346,313 +1376,291 @@ export function ComprehensiveDocumentation() {
     }
   ];
 
+  const advancedFeaturesSections: DocumentationSection[] = [
+    {
+      id: "advanced-features",
+      title: "Advanced Features & Integrations",
+      icon: GitBranch,
+      difficulty: "Advanced",
+      estimatedTime: "45 minutes",
+      category: "advanced-features",
+      content: (
+        <div className="space-y-6">
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <h4 className="font-semibold text-purple-900 mb-2">🚀 Advanced Features</h4>
+            <p className="text-purple-800">
+              Advanced system features including API integrations, automation workflows, 
+              custom notifications, and third-party service connections.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">🔌 API & Integrations</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-blue-500">
+                <h5 className="font-medium mb-2">Payment Processing Integration</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Stripe Integration:</strong> Secure credit card and ACH processing</li>
+                  <li><strong>Webhook Handling:</strong> Real-time payment status updates</li>
+                  <li><strong>Subscription Management:</strong> Automated recurring billing</li>
+                  <li><strong>Refund Processing:</strong> Automated and manual refund handling</li>
+                  <li><strong>Tax Calculation:</strong> Automatic tax computation by location</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-green-500">
+                <h5 className="font-medium mb-2">Communication Services</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Email Service:</strong> Transactional and marketing emails</li>
+                  <li><strong>SMS Notifications:</strong> Real-time alerts and reminders</li>
+                  <li><strong>Push Notifications:</strong> Mobile app notifications</li>
+                  <li><strong>Customer Portal:</strong> Self-service account management</li>
+                  <li><strong>Feedback Collection:</strong> Automated survey and rating systems</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-yellow-500">
+                <h5 className="font-medium mb-2">Mapping & Navigation</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>GPS Tracking:</strong> Real-time vehicle and employee location</li>
+                  <li><strong>Route Optimization:</strong> AI-powered efficient route planning</li>
+                  <li><strong>Geocoding:</strong> Address validation and coordinate conversion</li>
+                  <li><strong>Traffic Integration:</strong> Real-time traffic and weather data</li>
+                  <li><strong>Service Area Mapping:</strong> Geographic coverage visualization</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">🤖 Automation & Workflows</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Automated Business Processes</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Customer Onboarding:</strong> Welcome emails, account setup, first service scheduling</li>
+                  <li><strong>Billing Automation:</strong> Invoice generation, payment processing, dunning procedures</li>
+                  <li><strong>Route Assignment:</strong> Intelligent job assignment based on location and capacity</li>
+                  <li><strong>Maintenance Scheduling:</strong> Automated vehicle maintenance reminders</li>
+                  <li><strong>Performance Monitoring:</strong> Automated KPI tracking and alerting</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4">
+                <h5 className="font-medium mb-2">Custom Notification Rules</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Service Alerts:</strong> Missed pickups, route delays, vehicle breakdowns</li>
+                  <li><strong>Financial Alerts:</strong> Payment failures, revenue thresholds, cost overruns</li>
+                  <li><strong>Operational Alerts:</strong> Employee tardiness, safety incidents, equipment issues</li>
+                  <li><strong>Customer Alerts:</strong> Service changes, billing updates, satisfaction surveys</li>
+                  <li><strong>Management Alerts:</strong> Performance metrics, compliance issues, system errors</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">📊 Business Intelligence & Reporting</h4>
+            <div className="space-y-4">
+              
+              <Card className="p-4 border-l-4 border-l-purple-500">
+                <h5 className="font-medium mb-2">Predictive Analytics</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Revenue Forecasting:</strong> Machine learning-based revenue predictions</li>
+                  <li><strong>Customer Churn Prediction:</strong> Early identification of at-risk customers</li>
+                  <li><strong>Demand Forecasting:</strong> Seasonal and trend-based demand planning</li>
+                  <li><strong>Equipment Failure Prediction:</strong> Predictive maintenance scheduling</li>
+                  <li><strong>Route Optimization:</strong> AI-powered efficiency improvements</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 border-l-4 border-l-teal-500">
+                <h5 className="font-medium mb-2">Custom Dashboard Creation</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li><strong>Drag-and-Drop Builder:</strong> Custom dashboard layout design</li>
+                  <li><strong>Widget Library:</strong> Charts, tables, KPIs, and custom visualizations</li>
+                  <li><strong>Real-Time Data:</strong> Live updating metrics and alerts</li>
+                  <li><strong>Role-Based Views:</strong> Customized dashboards by user role</li>
+                  <li><strong>Export Capabilities:</strong> PDF, Excel, and CSV export options</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  // Combine all sections
   const allSections = [
     ...gettingStartedSections,
+    ...adminManagementSections,
     ...customerManagementSections,
     ...employeeManagementSections,
     ...operationsManagementSections,
-    ...fleetMaintenanceSections,
+    ...fleetManagementSections,
     ...analyticsReportingSections,
-    ...troubleshootingSections
+    ...securityAndAuditSections,
+    ...troubleshootingSections,
+    ...advancedFeaturesSections
   ];
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Beginner": return "bg-green-100 text-green-800";
-      case "Intermediate": return "bg-yellow-100 text-yellow-800";
-      case "Advanced": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
+  // Filter sections based on search and category
+  const filteredSections = allSections.filter(section => {
+    const matchesSearch = searchTerm === "" || 
+      section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      section.id.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory === "all" || section.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = [
+    { id: "all", label: "All Sections" },
+    { id: "getting-started", label: "Getting Started" },
+    { id: "admin-management", label: "Admin Management" },
+    { id: "customer-management", label: "Customer Management" },
+    { id: "employee-management", label: "Employee Management" },
+    { id: "operations-management", label: "Operations Management" },
+    { id: "fleet-management", label: "Fleet Management" },
+    { id: "analytics-reporting", label: "Analytics & Reporting" },
+    { id: "security-audit", label: "Security & Audit" },
+    { id: "troubleshooting", label: "Troubleshooting" },
+    { id: "advanced-features", label: "Advanced Features" }
+  ];
+
+  const renderSection = (section: DocumentationSection) => (
+    <Card key={section.id} className="mb-4">
+      <Collapsible 
+        open={openSections.has(section.id)} 
+        onOpenChange={() => toggleSection(section.id)}
+      >
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <section.icon className="h-5 w-5 text-primary" />
+                <div className="flex-1">
+                  <CardTitle className="text-left">{section.title}</CardTitle>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Badge 
+                      variant={
+                        section.difficulty === "Beginner" ? "default" :
+                        section.difficulty === "Intermediate" ? "secondary" : "destructive"
+                      }
+                      className="text-xs"
+                    >
+                      {section.difficulty}
+                    </Badge>
+                    {section.estimatedTime && (
+                      <Badge variant="outline" className="text-xs">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {section.estimatedTime}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <ChevronRight 
+                className={`h-4 w-4 transition-transform ${
+                  openSections.has(section.id) ? "rotate-90" : ""
+                }`} 
+              />
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent>
+            {section.content}
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-        <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="h-8 w-8 text-blue-600" />
+      {/* Header with Search and Controls */}
+      <Card className="p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-blue-900">Complete App Documentation</h1>
-            <p className="text-blue-700">Step-by-step guides for every feature in your waste management system</p>
+            <h2 className="text-2xl font-bold">Comprehensive Documentation</h2>
+            <p className="text-muted-foreground">
+              Complete guide to Can2Curb system administration and operations
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" size="sm" onClick={expandAll}>
+              <ChevronRight className="w-4 h-4 mr-2" />
+              Expand All
+            </Button>
+            <Button variant="outline" size="sm" onClick={collapseAll}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Collapse All
+            </Button>
           </div>
         </div>
-        
-        <div className="grid grid-cols-3 gap-4 mt-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{allSections.length}</div>
-            <div className="text-sm text-blue-700">Total Guides</div>
+
+        {/* Search and Filter Controls */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search documentation..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{allSections.filter(s => s.difficulty === "Beginner").length}</div>
-            <div className="text-sm text-green-700">Beginner Guides</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{allSections.filter(s => s.difficulty === "Advanced").length}</div>
-            <div className="text-sm text-red-700">Advanced Guides</div>
-          </div>
+          
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3 py-2 border border-input bg-background rounded-md text-sm min-w-[200px]"
+          >
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.label}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Results Summary */}
+        <div className="mt-4 text-sm text-muted-foreground">
+          Showing {filteredSections.length} of {allSections.length} sections
+          {searchTerm && ` matching "${searchTerm}"`}
+        </div>
+      </Card>
+
+      {/* Documentation Sections */}
+      <div className="space-y-4">
+        {filteredSections.length > 0 ? (
+          filteredSections.map(renderSection)
+        ) : (
+          <Card className="p-8 text-center">
+            <div className="text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No sections found</h3>
+              <p>Try adjusting your search terms or category filter.</p>
+            </div>
+          </Card>
+        )}
       </div>
 
-      <Tabs defaultValue="getting-started" className="space-y-6">
-        <TabsList className="grid grid-cols-4 lg:grid-cols-7 w-full">
-          <TabsTrigger value="getting-started">Getting Started</TabsTrigger>
-          <TabsTrigger value="customers">Customers</TabsTrigger>
-          <TabsTrigger value="employees">Employees</TabsTrigger>
-          <TabsTrigger value="operations">Operations</TabsTrigger>
-          <TabsTrigger value="fleet">Fleet</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="troubleshooting">Troubleshooting</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="getting-started" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Getting Started Guides
-          </h2>
-          {gettingStartedSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="customers" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Customer Management
-          </h2>
-          {customerManagementSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="employees" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Employee Management
-          </h2>
-          {employeeManagementSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="operations" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Operations Management
-          </h2>
-          {operationsManagementSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="fleet" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Truck className="h-5 w-5" />
-            Fleet Management
-          </h2>
-          {fleetMaintenanceSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Analytics & Reporting
-          </h2>
-          {analyticsReportingSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="troubleshooting" className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            Troubleshooting & Support
-          </h2>
-          {troubleshootingSections.map((section) => (
-            <Card key={section.id}>
-              <Collapsible open={openSections.has(section.id)} onOpenChange={() => toggleSection(section.id)}>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <section.icon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg">{section.title}</CardTitle>
-                        <Badge className={getDifficultyColor(section.difficulty)}>
-                          {section.difficulty}
-                        </Badge>
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${openSections.has(section.id) ? 'rotate-90' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent>
-                    <ScrollArea className="h-auto max-h-96">
-                      {section.content}
-                    </ScrollArea>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
-
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center gap-2 mb-2">
-          <Info className="h-4 w-4 text-blue-600" />
-          <span className="font-semibold text-gray-900">Need More Help?</span>
+      {/* Footer */}
+      <Card className="p-4 bg-muted/30">
+        <div className="text-center text-sm text-muted-foreground">
+          <p>Documentation last updated: {new Date().toLocaleDateString()}</p>
+          <p className="mt-1">
+            For additional support, contact your system administrator or technical support team.
+          </p>
         </div>
-        <p className="text-gray-700 text-sm">
-          This documentation covers all major features of your waste management system. 
-          If you need additional assistance or have questions about specific use cases, 
-          contact your system administrator or support team.
-        </p>
-      </div>
+      </Card>
     </div>
   );
 }
