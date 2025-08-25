@@ -6,6 +6,7 @@ import { AdminDashboardContent } from "@/components/admin/dashboard/AdminDashboa
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/ui/Loading";
+import { useEffect, useState } from "react";
 
 /**
  * Error fallback component for the dashboard
@@ -78,18 +79,43 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
  * error boundaries, and the data provider context.
  */
 export default function AdminDashboard() {
+  const [isReady, setIsReady] = useState(false);
+  
   console.log('[AdminDashboard] Starting component render');
   
-  try {
-    return (
-      <AdminAccessCheck>
-        <SimpleDashboardProvider>
-          <AdminDashboardContent />
-        </SimpleDashboardProvider>
-      </AdminAccessCheck>
-    );
-  } catch (error) {
-    console.error('[AdminDashboard] Error in render:', error);
-    throw error;
+  // Add a small delay to ensure auth context is ready
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (!isReady) {
+    return <Loading fullscreen={true} size="medium" message="Initializing dashboard..." />;
   }
+  
+  return (
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={(error) => console.error('[AdminDashboard] Error boundary caught:', error)}
+    >
+      <AdminAccessCheck>
+        <ErrorBoundary
+          FallbackComponent={ErrorFallback}
+          onError={(error) => console.error('[AdminDashboard] Dashboard provider error:', error)}
+        >
+          <SimpleDashboardProvider>
+            <ErrorBoundary
+              FallbackComponent={ErrorFallback}
+              onError={(error) => console.error('[AdminDashboard] Dashboard content error:', error)}
+            >
+              <AdminDashboardContent />
+            </ErrorBoundary>
+          </SimpleDashboardProvider>
+        </ErrorBoundary>
+      </AdminAccessCheck>
+    </ErrorBoundary>
+  );
 }
