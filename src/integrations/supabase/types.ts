@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_security_logs: {
+        Row: {
+          action_details: Json | null
+          action_type: string
+          admin_user_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          security_level: string | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_details?: Json | null
+          action_type: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          security_level?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_details?: Json | null
+          action_type?: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          security_level?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
           assigned_date: string
@@ -409,6 +445,13 @@ export type Database = {
             foreignKeyName: "order_items_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
+            referencedRelation: "public_service_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
@@ -767,6 +810,13 @@ export type Database = {
             foreignKeyName: "subscriptions_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
+            referencedRelation: "public_service_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
@@ -936,7 +986,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_service_catalog: {
+        Row: {
+          category: string | null
+          description: string | null
+          features: Json | null
+          frequency: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          public_pricing_info: Json | null
+          sort_order: number | null
+        }
+        Insert: {
+          category?: string | null
+          description?: string | null
+          features?: Json | null
+          frequency?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          public_pricing_info?: never
+          sort_order?: number | null
+        }
+        Update: {
+          category?: string | null
+          description?: string | null
+          features?: Json | null
+          frequency?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          public_pricing_info?: never
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_admin_profile_safe: {
