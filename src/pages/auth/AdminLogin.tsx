@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, ArrowLeft, Loader2, UserPlus, HelpCircle, AlertCircle } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2, UserPlus, HelpCircle, AlertCircle, Shield } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useFormState } from "@/hooks/use-form-state";
@@ -77,37 +78,13 @@ export default function AdminLogin() {
     }
   };
 
-  const handleCreateAdminUser = async (adminEmail: string, adminPassword: string) => {
-    setAdminCreationResult(null);
-    
-    try {
-      await adminCreationForm.handleSubmit(async () => {
-        console.log('[AdminLogin] Creating admin user:', adminEmail);
-        const result = await createSecureAdminUser(adminEmail, adminPassword);
-        
-        if (result.success) {
-          setAdminCreationResult(result.message);
-          toast({
-            title: "Success",
-            description: result.message,
-          });
-          
-          // Pre-fill the form with the created admin credentials
-          setEmail(adminEmail);
-          setPassword(adminPassword);
-        } else {
-          setAdminCreationResult(result.message);
-          throw new Error(result.message);
-        }
-      });
-    } catch (error: any) {
-      console.error('[AdminLogin] Error creating admin user:', error);
-      toast({
-        variant: "destructive",
-        title: "Admin Creation Failed",
-        description: error.message || "Failed to create admin user. Please check the console for details.",
-      });
-    }
+  // SECURITY: Admin creation via client-side prompts is disabled for security
+  const handleCreateAdminUser = async (adminEmail: string) => {
+    toast({
+      title: "Security Notice",
+      description: "Admin user creation via this interface has been disabled for security reasons. Please contact system administrator for admin account setup.",
+      variant: "destructive"
+    });
   };
 
   const handleRequestAdminAccess = () => {
@@ -257,53 +234,13 @@ export default function AdminLogin() {
             </Button>
             
             <div className="space-y-2">
-              <p className="text-sm text-gray-400 text-center">Create Admin Users:</p>
-              
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full" 
-                onClick={() => {
-                  const password = prompt('Enter admin password:');
-                  if (password) handleCreateAdminUser('diggs844037@yahoo.com', password);
-                }}
-                disabled={isFormDisabled}
-              >
-                {adminCreationForm.isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Create Yahoo Admin
-                  </>
-                )}
-              </Button>
-              
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full" 
-                onClick={() => {
-                  const password = prompt('Enter admin password:');
-                  if (password) handleCreateAdminUser('drewdiggs844037@gmail.com', password);
-                }}
-                disabled={isFormDisabled}
-              >
-                {adminCreationForm.isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Create Gmail Admin
-                  </>
-                )}
-              </Button>
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Security Notice:</strong> Admin user creation has been moved to secure channels only. 
+                  If you need admin access, please contact the system administrator.
+                </AlertDescription>
+              </Alert>
             </div>
             
             <Button 

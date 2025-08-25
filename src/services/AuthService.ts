@@ -2,9 +2,12 @@
 import { supabase, UserData } from '@/integrations/supabase/client';
 
 export class AuthService {
+  /**
+   * SECURITY: Restricted to single admin email for enhanced security
+   * Multiple admin accounts increase attack surface
+   */
   static readonly ADMIN_EMAILS = [
-    'diggs844037@yahoo.com',
-    'drewdiggs844037@gmail.com'
+    'diggs844037@yahoo.com'
   ];
 
   static isAdminEmail(email?: string | null): boolean {
