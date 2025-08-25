@@ -75,15 +75,61 @@ export const multiFamilyServices: ServiceCategory[] = [
 // Business Services
 export const businessServices: ServiceCategory[] = [
   {
-    name: "Businesses",
+    name: "Business Services",
     services: [
       {
-        name: "Small",
-        pricingModel: "Monthly Base",
-        price: "$199",
-        oneTimePrice: "$299",
-        subscriptionPrice: "$199",
-        description: "3 mo: $189, 6 mo: $179, 12 mo: $169"
+        name: "Grease Hood Cleaning",
+        pricingModel: "Flat Rate",
+        price: "$249 – $399",
+        description: "Professional grease hood cleaning service"
+      },
+      {
+        name: "Cardboard / Space Saver Pickup",
+        pricingModel: "Monthly",
+        price: "$79 – $99",
+        description: "Regular cardboard and space saver pickup"
+      },
+      {
+        name: "Parking Lot Pressure Wash – Small (<10k sqft)",
+        pricingModel: "Flat Rate",
+        price: "$399",
+        description: "Pressure washing for small parking lots"
+      },
+      {
+        name: "Parking Lot Pressure Wash – Medium (10–50k sqft)",
+        pricingModel: "Flat Rate",
+        price: "$699",
+        description: "Pressure washing for medium parking lots"
+      },
+      {
+        name: "Parking Lot Pressure Wash – Large (50k+ sqft)",
+        pricingModel: "Flat Rate",
+        price: "$999+",
+        description: "Pressure washing for large parking lots"
+      },
+      {
+        name: "Drive-Thru Pressure Wash",
+        pricingModel: "Flat Rate",
+        price: "$249",
+        description: "Specialized drive-thru area cleaning"
+      },
+      {
+        name: "Building Exterior Wash – Small (<5k sqft façade)",
+        pricingModel: "Flat Rate",
+        price: "$499",
+        description: "Building exterior cleaning for small buildings"
+      },
+      {
+        name: "Building Exterior Wash – Medium (5k–20k sqft façade)",
+        pricingModel: "Flat Rate",
+        price: "$999",
+        description: "Building exterior cleaning for medium buildings"
+      },
+      {
+        name: "Building Exterior Wash – Large (20k+ sqft façade)",
+        pricingModel: "Flat Rate",
+        price: "$1,499+",
+        description: "Building exterior cleaning for large buildings"
       }
     ]
   }
@@ -92,15 +138,37 @@ export const businessServices: ServiceCategory[] = [
 // Add-Ons Services
 export const addOnServices: ServiceCategory[] = [
   {
-    name: "Add-Ons (All Customer Types)",
+    name: "Add-On Services",
     services: [
       {
-        name: "Event handling",
-        pricingModel: "Monthly / One-Time",
-        price: "$200 / $350",
-        subscriptionPrice: "$200",
-        oneTimePrice: "$350",
-        description: "6 mo: $190, 12 mo: $180, 24 mo: $170, Referral: -$10"
+        name: "Extra Can Concierge",
+        pricingModel: "Monthly",
+        price: "+$9.99",
+        description: "Additional can service per month"
+      },
+      {
+        name: "Extra Can Cleaning",
+        pricingModel: "Monthly",
+        price: "+$14.99",
+        description: "Additional can cleaning per month"
+      },
+      {
+        name: "Priority Same-Day Pickup",
+        pricingModel: "Per Call",
+        price: "$49.99",
+        description: "Same-day priority pickup service"
+      },
+      {
+        name: "Bulk Item Removal",
+        pricingModel: "Per Item",
+        price: "$45 – $99",
+        description: "Individual bulk item removal"
+      },
+      {
+        name: "Yard Pickup (Premiere only)",
+        pricingModel: "Per Service",
+        price: "$25 – $75",
+        description: "Yard waste pickup for Premiere customers"
       }
     ]
   }
@@ -128,6 +196,7 @@ export interface CommunityTier {
   rangeStart: number;
   rangeEnd: number | null;
   discount: number;
+  basicPrice: number;
   standardPrice: number;
   premiumPrice: number;
   comprehensivePrice: number;
@@ -149,111 +218,145 @@ export interface BusinessTier {
 // Single Family Residence Tiers
 export const singleFamilyTiers: ServiceTier[] = [
   {
+    id: "basic",
+    name: "Basic",
+    description: "Essential service for small households",
+    price: 24.99,
+    features: [
+      "1 trash can concierge (same day service)",
+      "No can cleaning",
+      "No hazardous pickup",
+      "No discounts"
+    ]
+  },
+  {
     id: "standard",
     name: "Standard",
-    description: "Entry-level service perfect for small households",
-    price: 19,
+    description: "Enhanced service with cleaning and hazardous pickup",
+    price: 49.99,
     features: [
-      "Weekly bin cleaning (1 bin; hot water sanitize, basic deodorizer)",
-      "Basic junk removal (up to 1/4 truckload/month, curbside)",
-      "Standard concierge (trash to curb 3 nights/week)"
-    ],
-    perk: "$19 (1st bin) + $8/add'l bin; $99 junk allowance. Undercuts Ohio Clean Cans ($20 one-time equiv. to $25/month); 55% margin ($10.50 profit/month). Entry hook for 60% conversion to higher tiers."
+      "1 trash can + 1 recycle concierge (same day)",
+      "1x/month can cleaning",
+      "Bi-monthly hazardous pickup",
+      "5% off add-ons"
+    ]
   },
   {
     id: "premium",
     name: "Premium", 
-    description: "Enhanced service for growing families",
-    price: 29,
+    description: "Premium service with multiple cans and regular cleaning",
+    price: 79.99,
     features: [
-      "All Standard + bi-weekly bin cleaning (up to 2 bins; steam sanitize + premium deodorizer)",
-      "Enhanced junk (1/2 truckload/month; same-day option)",
-      "Full concierge (5 nights/week; recycling included)"
-    ],
-    perk: "$29 (1st bin) + $10/add'l; $149 junk allowance. Beats Neighborhood Fresh Cans ($27/month); adds app notifications. 58% margin ($16.80 profit)."
+      "2 trash cans + 1 recycle concierge",
+      "Bi-weekly can cleaning",
+      "Monthly hazardous pickup",
+      "1x/month large item pickup",
+      "7% off add-ons"
+    ]
   },
   {
     id: "comprehensive",
     name: "Comprehensive",
-    description: "Complete service for larger homes",
-    price: 39,
+    description: "Complete service with area cleanup",
+    price: 119.99,
     features: [
-      "All Premium + monthly deep clean (all bins; bacteria test + eco-sealant)",
-      "Full junk (full truckload/month; includes appliances, no extra fees)",
-      "24/7 concierge (on-demand pickups; yard waste add-on)"
-    ],
-    perk: "$39 (1st bin) + $12/add'l; $249 junk allowance. Bundles to undercut Junk Shot ($99+ per job); route optimization saves 20% costs. 60% margin ($23.40 profit)."
+      "3 trash cans + 1 recycle concierge",
+      "Weekly can cleaning/deodorizing",
+      "Bi-weekly hazardous + large item pickup",
+      "Trash area cleanup",
+      "10% off add-ons"
+    ]
   },
   {
     id: "premiere",
     name: "Premiere",
-    description: "Ultimate luxury service package",
-    price: 49,
+    description: "Ultimate luxury service with account manager",
+    price: 169.99,
     features: [
-      "All Comprehensive + quarterly full-property audit (bins, junk hotspots; custom sustainability report)",
-      "Unlimited junk (priority scheduling; white-glove handling)",
-      "Elite concierge (dedicated rep, EV vehicle pickups, integration with smart home apps)"
-    ],
-    perk: "$49 (1st bin) + $15/add'l; Unlimited junk (up to 2 full loads/month). Dominates with luxury (e.g., vs. Valet Living's basic); analytics for retention. 62% margin ($30.40 profit); targets high-end neighborhoods for $10k+ annual contracts."
+      "All Comprehensive services",
+      "Weekly hazardous pickup",
+      "Weekly trash area cleaning",
+      "Yard pickup (extra for large yards)",
+      "Weekly large item pickup",
+      "Priority service & account manager"
+    ]
   }
 ];
 
 // Multi-Family Property Tiers
 export const multiFamilyTiers: CommunityTier[] = [
   {
-    id: "standard-mf",
-    unitRange: "50+ units",
-    rangeStart: 50,
+    id: "mf-all",
+    unitRange: "All Units",
+    rangeStart: 1,
     rangeEnd: null,
     discount: 0,
-    standardPrice: 9,
-    premiumPrice: 14,
-    comprehensivePrice: 19,
-    premierePrice: 24
+    basicPrice: 9.99,
+    standardPrice: 12.99,
+    premiumPrice: 18.99,
+    comprehensivePrice: 24.99,
+    premierePrice: 32.99
   }
 ];
 
 // Multi-Family Service Details
 export const multiFamilyServiceDetails = [
   {
-    tier: "Standard",
-    price: "$9/unit (min. 50 units); $199 junk/building",
+    tier: "Basic",
+    price: "$9.99/unit/month",
     services: [
-      "Weekly bin cleaning (shared dumpsters; basic sanitize)",
-      "Basic junk for common areas (1/4 truckload/building/month)",
-      "Standard valet trash (3 nights/week; doorstep for residents)"
+      "1x/week concierge (1 bag per unit)",
+      "No dumpster cleaning",
+      "No large item pickup"
     ],
-    competitiveEdge: "Undercuts CCS/Valet Living ($8-15); scalable for small complexes. 50% margin ($4.50/unit profit); low acquisition via property manager partnerships."
+    competitiveEdge: "Entry-level service for budget-conscious properties"
+  },
+  {
+    tier: "Standard",
+    price: "$12.99/unit/month",
+    services: [
+      "1x/week concierge (up to 2 bags/unit)",
+      "Monthly dumpster cleaning",
+      "Bi-monthly large item pickup"
+    ],
+    competitiveEdge: "Enhanced service with regular cleaning maintenance"
   },
   {
     tier: "Premium",
-    price: "$14/unit (min. 50 units); $299 junk/building",
+    price: "$18.99/unit/month",
     services: [
-      "All Standard + bi-weekly bin cleaning (individual bins; premium sanitize + deodorizers)",
-      "Enhanced junk (1/2 truckload/building; resident requests)",
-      "Full valet (5 nights/week; recycling + pet waste option)"
+      "2x/week concierge (up to 3 bags/unit)",
+      "Monthly dumpster cleaning + deodorizing",
+      "2x/week trash area cleanup",
+      "Graffiti cleaning"
     ],
-    competitiveEdge: "Matches Doorstep Details but adds resident app; 55% margin ($7.70/unit). High retention (99% like Valet Living)."
+    competitiveEdge: "Premium service with area maintenance and aesthetics"
   },
   {
     tier: "Comprehensive",
-    price: "$19/unit (min. 50 units); $499 junk/building",
+    price: "$24.99/unit/month",
     services: [
-      "All Premium + monthly deep clean (all bins/dumpsters; eco-audit)",
-      "Full junk (full truckload/building; construction debris included)",
-      "24/7 valet (on-demand; bulk recycling events)"
+      "3x/week concierge",
+      "Bi-weekly large item pickup",
+      "3x/week trash area cleanup",
+      "Graffiti cleanup",
+      "Hallway/stair sweeping",
+      "Common area cleaning"
     ],
-    competitiveEdge: "Bundles to beat Rumpke ($150-350/job); cost savings from volume. 58% margin ($11/unit). Targets mid-size (100-300 units) for $20k+ annual revenue/building."
+    competitiveEdge: "Complete property maintenance solution"
   },
   {
     tier: "Premiere",
-    price: "$24/unit (min. 50 units); Unlimited junk (up to 4 loads/month)",
+    price: "$32.99/unit/month",
     services: [
-      "All Comprehensive + quarterly property-wide sustainability report (waste analytics, ROI for managers)",
-      "Unlimited junk (priority for evictions/renos; EV fleet)",
-      "Elite valet (dedicated team, custom branding, integration with property management software)"
+      "Daily concierge",
+      "Weekly large item pickup",
+      "Daily trash area cleanup",
+      "Graffiti cleaning",
+      "Hallway & stair sweeping",
+      "Hallway wall cleaning"
     ],
-    competitiveEdge: "Luxury domination (e.g., vs. Clean Bins' basic); includes marketing co-op for resident perks. 60% margin ($14.40/unit); aim for 5-10 buildings Year 1 ($100k+ revenue)."
+    competitiveEdge: "Ultimate luxury service with daily attention"
   }
 ];
 
