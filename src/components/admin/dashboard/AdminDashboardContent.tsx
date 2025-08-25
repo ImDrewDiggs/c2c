@@ -22,7 +22,20 @@ import React from "react";
 export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   
+  console.log('[AdminDashboardContent] Component rendering with auth state:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    isSuperAdmin
+  });
+  
   const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, maintenanceSchedules, loading, error, refresh } = useSimpleDashboard();
+  
+  console.log('[AdminDashboardContent] Dashboard state:', {
+    loading,
+    error,
+    hasStats: !!stats,
+    statsContent: stats
+  });
   
   const handleRefresh = () => {
     if (refresh) {

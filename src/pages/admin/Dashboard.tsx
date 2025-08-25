@@ -78,13 +78,18 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
  * error boundaries, and the data provider context.
  */
 export default function AdminDashboard() {
-  console.log('[AdminDashboard] Loading with simple provider');
+  console.log('[AdminDashboard] Starting component render');
   
-  return (
-    <AdminAccessCheck>
-      <SimpleDashboardProvider>
-        <AdminDashboardContent />
-      </SimpleDashboardProvider>
-    </AdminAccessCheck>
-  );
+  try {
+    return (
+      <AdminAccessCheck>
+        <SimpleDashboardProvider>
+          <AdminDashboardContent />
+        </SimpleDashboardProvider>
+      </AdminAccessCheck>
+    );
+  } catch (error) {
+    console.error('[AdminDashboard] Error in render:', error);
+    throw error;
+  }
 }

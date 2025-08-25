@@ -51,9 +51,19 @@ const SimpleDashboardContext = createContext<DashboardData>({
 
 // Real provider component with database integration
 export function SimpleDashboardProvider({ children }: { children: ReactNode }) {
+  console.log('[SimpleDashboardProvider] Initializing dashboard provider');
+  
   const currentLocation = useCurrentLocation();
   const { employeeLocations } = useEmployeeLocations();
   const { data: realTimeStats, isLoading, error, refetch } = useRealTimeStats();
+
+  console.log('[SimpleDashboardProvider] Hook states:', {
+    hasCurrentLocation: !!currentLocation,
+    employeeLocationsCount: employeeLocations?.length || 0,
+    isLoadingStats: isLoading,
+    statsError: error?.message,
+    hasRealTimeStats: !!realTimeStats
+  });
 
   const dashboardData: DashboardData = {
     stats: realTimeStats || {
@@ -74,6 +84,12 @@ export function SimpleDashboardProvider({ children }: { children: ReactNode }) {
     error: error?.message || null,
     refresh: refetch,
   };
+
+  console.log('[SimpleDashboardProvider] Providing dashboard data:', {
+    loading: dashboardData.loading,
+    error: dashboardData.error,
+    hasStats: !!dashboardData.stats
+  });
 
   return (
     <SimpleDashboardContext.Provider value={dashboardData}>

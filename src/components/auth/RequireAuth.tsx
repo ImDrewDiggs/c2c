@@ -30,16 +30,30 @@ export function RequireAuth({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (loading) return;
+    console.log('[RequireAuth] Auth state:', { 
+      loading, 
+      hasUser: !!user, 
+      userEmail: user?.email,
+      userData: userData ? { role: userData.role } : null,
+      isAdmin,
+      allowedRoles 
+    });
+    
+    if (loading) {
+      console.log('[RequireAuth] Still loading auth state...');
+      return;
+    }
     
     // Admin always has access
     if (isAdmin) {
+      console.log('[RequireAuth] Admin access granted');
       setAccessVerified(true);
       return;
     }
 
     // No user, redirect to login
     if (!user) {
+      console.log('[RequireAuth] No user found, redirecting to login');
       toast({
         variant: "destructive",
         title: "Authentication Required",
@@ -58,9 +72,24 @@ export function RequireAuth({
     }
 
     // Check if user role is allowed
+    console.log('[RequireAuth] Checking user role access...', { 
+      userRole: userData?.role, 
+      allowedRoles,
+      isAdminCheck: allowedRoles.includes('admin')
+    });
+    
+    // Special handling for admin routes - if user is verified as admin by isAdmin flag, allow access
+    if (allowedRoles.includes('admin') && isAdmin) {
+      console.log('[RequireAuth] Admin access granted via isAdmin flag');
+      setAccessVerified(true);
+      return;
+    }
+    
     if (userData && allowedRoles.includes(userData.role)) {
+      console.log('[RequireAuth] Role-based access granted');
       setAccessVerified(true);
     } else {
+      console.log('[RequireAuth] Access denied - role not allowed');
       toast({
         variant: "destructive",
         title: "Access Denied",
@@ -69,6 +98,8 @@ export function RequireAuth({
       navigate(redirectTo, { replace: true });
     }
   }, [user, userData, isAdmin, loading, allowedRoles, navigate, toast, redirectTo]);
+
+  console.log('[RequireAuth] Render state:', { loading, accessVerified });
 
   if (loading || !accessVerified) {
     return <Loading fullscreen={true} size="medium" message="Verifying access..." />;
