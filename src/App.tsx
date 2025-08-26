@@ -8,29 +8,38 @@ import Navbar from "./components/Navbar";
 import Loading from "./components/ui/Loading";
 import MaintenanceGate from "@/components/auth/MaintenanceGate";
 
-// Lazy load route components
+// Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
+
+// High priority routes - likely to be accessed from homepage
 const About = lazy(() => import('./pages/About'));
+const ServicesAndPrices = lazy(() => import('./pages/ServicesAndPrices'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
+
+// Medium priority routes - split into smaller chunks
 const Testimonials = lazy(() => import('./pages/Testimonials'));
 const Subscription = lazy(() => import('./pages/Subscription'));
-const ServicesAndPrices = lazy(() => import('./pages/ServicesAndPrices'));
 const Schedule = lazy(() => import('./pages/Schedule'));
-const CustomerLogin = lazy(() => import('./pages/auth/CustomerLogin'));
-const CustomerRegister = lazy(() => import('./pages/auth/CustomerRegister'));
-const CustomerDashboard = lazy(() => import('./pages/customer/Dashboard'));
-const EmployeeLogin = lazy(() => import('./pages/auth/EmployeeLogin'));
-const AdminLogin = lazy(() => import('./pages/auth/AdminLogin'));
-const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
-const EmployeeDashboard = lazy(() => import('./pages/employee/Dashboard'));
-const NotFound = lazy(() => import('./pages/NotFound'));
 const FAQ = lazy(() => import('./pages/FAQ'));
-const ContactUs = lazy(() => import('./pages/ContactUs'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutError = lazy(() => import('./pages/CheckoutError'));
 const Maintenance = lazy(() => import('./pages/Maintenance'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
-// Admin Pages
+// Auth routes - only load when needed
+const CustomerLogin = lazy(() => import('./pages/auth/CustomerLogin'));
+const CustomerRegister = lazy(() => import('./pages/auth/CustomerRegister'));
+const EmployeeLogin = lazy(() => import('./pages/auth/EmployeeLogin'));
+const AdminLogin = lazy(() => import('./pages/auth/AdminLogin'));
+
+// Dashboard routes - heavy components, only load when authenticated
+const CustomerDashboard = lazy(() => import('./pages/customer/Dashboard'));
+const CustomerBilling = lazy(() => import('./pages/customer/Billing'));
+const EmployeeDashboard = lazy(() => import('./pages/employee/Dashboard'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+
+// Admin pages - group related functionality
 const AdminEmployees = lazy(() => import('./pages/admin/Employees'));
 const AdminCustomers = lazy(() => import('./pages/admin/Customers'));
 const AdminPricing = lazy(() => import('./pages/admin/Pricing'));
@@ -47,9 +56,6 @@ const AdminKnowledgeBase = lazy(() => import('./pages/admin/KnowledgeBase'));
 const AdminSupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
 const AdminOrders = lazy(() => import('./pages/admin/Orders'));
 const AdminSubscriptions = lazy(() => import('./pages/admin/Subscriptions'));
-
-// Customer billing
-const CustomerBilling = lazy(() => import('./pages/customer/Billing'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
