@@ -38,6 +38,7 @@ const Index = () => {
 
       {/* Features Section */}
       <section className="container py-20">
+        <h2 className="sr-only">Our Features</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
