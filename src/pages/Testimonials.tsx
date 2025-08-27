@@ -1,5 +1,6 @@
 
-import { Star } from "lucide-react";
+import { Star, Play } from "lucide-react";
+import { useState } from "react";
 
 const testimonials = [
   {
@@ -68,6 +69,39 @@ const testimonials = [
   },
 ];
 
+const VideoTestimonial = ({ testimonial }: { testimonial: typeof testimonials[0] }) => {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  return (
+    <div className="mb-4 relative">
+      {hasError || isLoading ? (
+        <div className="w-full h-48 rounded-lg bg-muted flex flex-col items-center justify-center border-2 border-dashed border-border">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+            <Play className="h-8 w-8 text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground font-medium">Video Testimonial</p>
+          <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
+        </div>
+      ) : (
+        <iframe
+          src={testimonial.videoUrl}
+          className="w-full h-48 rounded-lg"
+          frameBorder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          title={`Video testimonial from ${testimonial.name}`}
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setHasError(true);
+            setIsLoading(false);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
 export default function Testimonials() {
   return (
     <div className="min-h-screen bg-background py-12">
@@ -81,16 +115,7 @@ export default function Testimonials() {
                   <Star key={i} className="h-5 w-5 fill-primary text-primary" />
                 ))}
               </div>
-              <div className="mb-4">
-                <iframe
-                  src={testimonial.videoUrl}
-                  className="w-full h-48 rounded-lg"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                  title={`Video testimonial from ${testimonial.name}`}
-                />
-              </div>
+              <VideoTestimonial testimonial={testimonial} />
               <p className="text-card-foreground mb-4 italic">"{testimonial.text}"</p>
               <div className="text-sm text-muted-foreground">
                 <p className="font-semibold">{testimonial.name}</p>
