@@ -17,39 +17,37 @@ export interface Service {
 // Single Family Residence Services
 export const singleFamilyServices: ServiceCategory[] = [
   {
-    name: "Single Family Residence Plans",
+    name: "Residential (Single-Family Homes)",
     services: [
       {
-        name: "Small",
-        pricingModel: "Monthly Base",
+        name: "Basic",
+        pricingModel: "Monthly",
+        price: "$24.99",
+        description: "1 trash can concierge (same day service)"
+      },
+      {
+        name: "Standard", 
+        pricingModel: "Monthly",
         price: "$49.99",
-        oneTimePrice: "$99",
-        subscriptionPrice: "$49.99",
-        description: "3 mo: $47.49, 6 mo: $44.99, 12 mo: $42.49"
+        description: "1 trash can + 1 recycle concierge (same day)"
       },
       {
-        name: "Medium", 
-        pricingModel: "Monthly Base",
-        price: "$74.99",
-        oneTimePrice: "$149",
-        subscriptionPrice: "$74.99",
-        description: "3 mo: $71.24, 6 mo: $67.49, 12 mo: $63.74"
+        name: "Premium",
+        pricingModel: "Monthly", 
+        price: "$79.99",
+        description: "2 trash cans + 1 recycle concierge"
       },
       {
-        name: "Large",
-        pricingModel: "Monthly Base", 
-        price: "$99.99",
-        oneTimePrice: "$199",
-        subscriptionPrice: "$99.99",
-        description: "3 mo: $94.99, 6 mo: $89.99, 12 mo: $84.99"
+        name: "Comprehensive",
+        pricingModel: "Monthly",
+        price: "$119.99", 
+        description: "3 trash cans + 1 recycle concierge"
       },
       {
         name: "Premiere",
-        pricingModel: "Monthly Base",
-        price: "$149.99", 
-        oneTimePrice: "$299",
-        subscriptionPrice: "$149.99",
-        description: "3 mo: $142.49, 6 mo: $134.99, 12 mo: $127.49"
+        pricingModel: "Monthly",
+        price: "$169.99", 
+        description: "All Comprehensive services + priority account manager"
       }
     ]
   }
@@ -58,15 +56,37 @@ export const singleFamilyServices: ServiceCategory[] = [
 // Multi-Family Properties Services  
 export const multiFamilyServices: ServiceCategory[] = [
   {
-    name: "Multi-Family Properties",
+    name: "Multi-Family (Per Unit Rates)",
     services: [
       {
-        name: "Small (5–25 units)",
-        pricingModel: "Per Unit",
-        price: "$25 / $50",
-        subscriptionPrice: "$25",
-        oneTimePrice: "$50",
-        description: "6 mo: $23.75, 12 mo: $22.50, 24 mo: $21.25"
+        name: "Basic",
+        pricingModel: "Per Unit / Month",
+        price: "$9.99",
+        description: "1x/week concierge (1 bag per unit)"
+      },
+      {
+        name: "Standard",
+        pricingModel: "Per Unit / Month",
+        price: "$12.99",
+        description: "1x/week concierge (up to 2 bags/unit)"
+      },
+      {
+        name: "Premium",
+        pricingModel: "Per Unit / Month",
+        price: "$18.99",
+        description: "2x/week concierge (up to 3 bags/unit)"
+      },
+      {
+        name: "Comprehensive",
+        pricingModel: "Per Unit / Month",
+        price: "$24.99",
+        description: "3x/week concierge"
+      },
+      {
+        name: "Premiere",
+        pricingModel: "Per Unit / Month",
+        price: "$32.99",
+        description: "Daily concierge"
       }
     ]
   }
@@ -444,5 +464,11 @@ export const pricingPolicy = {
   bundlingDiscount: "10–15%",
   bundlingThreshold: 3,
   referralCredit: 10,
-  description: "Minimum service charge: $150 per job if stand-alone (excludes subscription-based trash concierge). Bundling discount: 10–15% off if customer books 3+ services in a single visit. Referral credit: -$10/mo for applicable services."
+  description: "Prices effective as of current date. Rates subject to change with notice. Hazardous material pickups subject to local disposal regulations. Multi-family rates based on occupied units.",
+  termsAndNotes: [
+    "Prices effective as of current date",
+    "Rates subject to change with notice", 
+    "Hazardous material pickups subject to local disposal regulations",
+    "Multi-family rates based on occupied units"
+  ]
 };
