@@ -38,7 +38,6 @@ const Index = () => {
 
       {/* Features Section */}
       <section className="container py-20">
-        <h2 className="sr-only">Our Features</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
@@ -61,9 +60,9 @@ const Index = () => {
               transition={{ delay: index * 0.2 }}
               className="card"
             >
-              <h3 className="text-xl font-semibold mb-3 text-primary">
+              <h2 className="text-xl font-semibold mb-3 text-primary">
                 {feature.title}
-              </h3>
+              </h2>
               <p className="text-gray-300">{feature.description}</p>
             </motion.div>
           ))}
