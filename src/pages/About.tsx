@@ -8,6 +8,10 @@ export default function About() {
             src="/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png"
             alt="Can2Curb Logo"
             className="mx-auto w-64 h-64 mb-8"
+            width="256"
+            height="256"
+            loading="lazy"
+            decoding="async"
           />
           <button className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90">
             Get Started Today

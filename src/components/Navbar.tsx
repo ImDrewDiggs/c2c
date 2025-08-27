@@ -35,6 +35,10 @@ export default function Navbar() {
               src="/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png" 
               alt="Can2Curb Logo" 
               className="h-12 w-auto"
+              width="48"
+              height="48"
+              loading="eager"
+              decoding="async"
             />
           </Link>
 

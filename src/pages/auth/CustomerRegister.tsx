@@ -77,6 +77,10 @@ export default function CustomerRegister() {
               src="/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png"
               alt="Can2Curb Logo"
               className="mx-auto h-16 w-auto mb-6"
+              width="64"
+              height="64"
+              loading="lazy"
+              decoding="async"
             />
             <h2 className="text-3xl font-bold">Customer Registration</h2>
             <p className="mt-2 text-sm text-gray-400">
