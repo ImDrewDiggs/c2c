@@ -14,7 +14,7 @@ export default function CustomerLogin() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const { signIn, loading: authLoading, user, userData } = useAuth();
+  const { signIn, loading: authLoading, user, userData, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -22,7 +22,7 @@ export default function CustomerLogin() {
   useEffect(() => {
     // Short timeout to prevent flash of loading state for already authenticated users
     const timer = setTimeout(() => {
-      if (user && (userData?.role === 'customer' || userData?.role === 'admin')) {
+      if (user && (userData?.role === 'customer' || userData?.role === 'admin' || isAdmin)) {
         navigate('/customer/dashboard');
       }
       setInitialLoading(false);

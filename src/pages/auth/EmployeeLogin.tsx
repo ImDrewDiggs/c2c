@@ -14,7 +14,7 @@ export default function EmployeeLogin() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const { signIn, loading: authLoading, user, userData } = useAuth();
+  const { signIn, loading: authLoading, user, userData, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -22,7 +22,7 @@ export default function EmployeeLogin() {
   useEffect(() => {
     // Short timeout to prevent flash of loading state for already authenticated users
     const timer = setTimeout(() => {
-      if (user && (userData?.role === 'employee' || userData?.role === 'admin')) {
+      if (user && (userData?.role === 'employee' || userData?.role === 'admin' || isAdmin)) {
         navigate('/employee/dashboard');
       }
       setInitialLoading(false);
