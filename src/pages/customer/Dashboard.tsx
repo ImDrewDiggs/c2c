@@ -10,6 +10,7 @@ import CustomerSubscriptions from "@/components/customer/CustomerSubscriptions";
 import CustomerProfile from "@/components/customer/CustomerProfile";
 import ServiceHistory from "@/components/customer/ServiceHistory";
 import { LogoutButton } from "@/components/LogoutButton";
+import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
 
 export default function CustomerDashboard() {
   const { user, userData } = useAuth();
@@ -27,7 +28,10 @@ export default function CustomerDashboard() {
                 Welcome back, {userData?.full_name || user?.email?.split('@')[0] || 'Customer'}
               </p>
             </div>
-            <LogoutButton />
+            <div className="flex items-center gap-3">
+              <ChangePasswordModal />
+              <LogoutButton />
+            </div>
           </div>
 
           <Card>

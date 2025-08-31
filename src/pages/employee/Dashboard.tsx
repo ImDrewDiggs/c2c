@@ -8,6 +8,7 @@ import { QuickActions } from "@/components/employee/dashboard/QuickActions";
 import { DashboardHeader } from "@/components/employee/dashboard/DashboardHeader";
 import { DashboardContent } from "@/components/employee/dashboard/DashboardContent";
 import { LogoutButton } from "@/components/LogoutButton";
+import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
 
 export default function EmployeeDashboard() {
   const { user, userData } = useAuth();
@@ -29,7 +30,10 @@ export default function EmployeeDashboard() {
           {/* Dashboard Header with Logout button */}
           <div className="flex justify-between items-center mb-6">
             <DashboardHeader userData={userData} user={user} />
-            <LogoutButton />
+            <div className="flex items-center gap-3">
+              <ChangePasswordModal />
+              <LogoutButton />
+            </div>
           </div>
           
           <div className="space-y-6 mt-6">

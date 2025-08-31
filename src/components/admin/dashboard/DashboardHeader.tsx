@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
 import { BadgeCheck, Download, RefreshCw } from "lucide-react";
 
 /**
@@ -49,6 +50,8 @@ export function DashboardHeader({ isSuperAdmin }: DashboardHeaderProps) {
       
       {/* Action buttons */}
       <div className="flex gap-3 mt-4 md:mt-0">
+        <ChangePasswordModal />
+        
         <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
