@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    cssCodeSplit: false, // Inline critical CSS to prevent render blocking
     rollupOptions: {
       external: [
         // Add FullCalendar packages to external
