@@ -517,6 +517,33 @@ export type Database = {
         }
         Relationships: []
       }
+      otps: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          otp_code: string
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
