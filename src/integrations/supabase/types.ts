@@ -445,13 +445,6 @@ export type Database = {
             foreignKeyName: "order_items_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
-            referencedRelation: "public_service_catalog"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_items_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
@@ -648,6 +641,45 @@ export type Database = {
         }
         Relationships: []
       }
+      public_service_catalog: {
+        Row: {
+          category: string | null
+          description: string | null
+          features: Json | null
+          frequency: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          public_pricing_info: Json | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          description?: string | null
+          features?: Json | null
+          frequency?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          public_pricing_info?: Json | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          description?: string | null
+          features?: Json | null
+          frequency?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          public_pricing_info?: Json | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       security_audit_logs: {
         Row: {
           created_at: string
@@ -837,13 +869,6 @@ export type Database = {
             foreignKeyName: "subscriptions_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
-            referencedRelation: "public_service_catalog"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subscriptions_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
             referencedRelation: "services"
             referencedColumns: ["id"]
           },
@@ -1013,42 +1038,7 @@ export type Database = {
       }
     }
     Views: {
-      public_service_catalog: {
-        Row: {
-          category: string | null
-          description: string | null
-          features: Json | null
-          frequency: string | null
-          id: string | null
-          is_active: boolean | null
-          name: string | null
-          public_pricing_info: Json | null
-          sort_order: number | null
-        }
-        Insert: {
-          category?: string | null
-          description?: string | null
-          features?: Json | null
-          frequency?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          name?: string | null
-          public_pricing_info?: never
-          sort_order?: number | null
-        }
-        Update: {
-          category?: string | null
-          description?: string | null
-          features?: Json | null
-          frequency?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          name?: string | null
-          public_pricing_info?: never
-          sort_order?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       create_admin_profile_safe: {
@@ -1070,6 +1060,10 @@ export type Database = {
       is_admin_by_email: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      sync_public_service_catalog: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
