@@ -181,6 +181,42 @@ export default function Subscription() {
               selectedTier={selectedTier || ''}
               onTierSelect={setSelectedTier}
             />
+            
+            {/* Single Family Discounts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Available Discounts</CardTitle>
+                <CardDescription>Save money with these residential discounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Neighborhood Cluster Discount</h4>
+                    <p className="text-sm text-muted-foreground">$5/mo off per household when 5+ homes on same street sign up for Standard or higher</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Annual Prepay</h4>
+                    <p className="text-sm text-muted-foreground">10% off when you prepay 12 months (Save 1.5 months)</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">New Customer Intro</h4>
+                    <p className="text-sm text-muted-foreground">50% off first month or $10 off Basic tier for new customers</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Referral Reward</h4>
+                    <p className="text-sm text-muted-foreground">$25 credit for referrer after 2 months, $10 off first month for referee</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">AutoPay Discount</h4>
+                    <p className="text-sm text-muted-foreground">$3/mo off with AutoPay or early payment within 7 days</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Special Discounts</h4>
+                    <p className="text-sm text-muted-foreground">10% off for seniors (65+), military/veterans, and verified nonprofits</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="multi-family" className="space-y-6">
@@ -197,6 +233,42 @@ export default function Subscription() {
               totalPrice={calculateTotal()}
               discount={0}
             />
+            
+            {/* Multi-Family Discounts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Multi-Family Discounts</CardTitle>
+                <CardDescription>Volume and contract discounts for property managers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Volume Discount</h4>
+                    <p className="text-sm text-muted-foreground">5-9 units: 5% off • 10-49 units: 8% off • 50+ units: 12% off (6+ month contract required)</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Annual Prepay</h4>
+                    <p className="text-sm text-muted-foreground">10% off total contract when you prepay 12 months</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">AutoPay Discount</h4>
+                    <p className="text-sm text-muted-foreground">2% invoice discount with AutoPay or early payment</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Freemium Trial</h4>
+                    <p className="text-sm text-muted-foreground">30-day free service trial with 6-month contract signup</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Large Property Bonus</h4>
+                    <p className="text-sm text-muted-foreground">$500 credit for 100+ unit properties with 12-month contract</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Referral Program</h4>
+                    <p className="text-sm text-muted-foreground">$25 credit for referrer, $10 off for new property</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="business" className="space-y-6">
@@ -235,6 +307,42 @@ export default function Subscription() {
                 </Card>
               ))}
             </div>
+            
+            {/* Business Discounts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Business Discounts</CardTitle>
+                <CardDescription>Commercial service bundles and loyalty rewards</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Bundle Discounts</h4>
+                    <p className="text-sm text-muted-foreground">Restaurant: $50/mo • Property Manager: $75/mo • Corporate: $150/mo (2+ services, 6-month min)</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Annual Prepay</h4>
+                    <p className="text-sm text-muted-foreground">10% off total contract when you prepay 12 months</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">AutoPay Discount</h4>
+                    <p className="text-sm text-muted-foreground">2% invoice discount with AutoPay or payment within 7 days</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Loyalty Credit</h4>
+                    <p className="text-sm text-muted-foreground">After 12 months: 1-month credit equal to 10% of monthly average spend</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Special Discounts</h4>
+                    <p className="text-sm text-muted-foreground">10% off for verified nonprofits</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Seasonal Specials</h4>
+                    <p className="text-sm text-muted-foreground">Limited-time campaign offers and seasonal bundle deals</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="add-ons" className="space-y-6">
@@ -270,6 +378,26 @@ export default function Subscription() {
                 </CardContent>
               </Card>
             ))}
+            
+            {/* Add-On Discounts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Add-On Discounts</CardTitle>
+                <CardDescription>Save when you bundle multiple add-on services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Bundle Discount</h4>
+                    <p className="text-sm text-muted-foreground">Get 25% off your 2nd add-on service when purchasing 2+ add-ons at signup</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-primary">Example</h4>
+                    <p className="text-sm text-muted-foreground">Extra can + cleaning service: pay full price for first service, get 25% off the second</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
