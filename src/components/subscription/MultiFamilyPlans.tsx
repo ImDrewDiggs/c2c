@@ -130,7 +130,7 @@ const MultiFamilyPlans = ({
                     {service.services.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm" dangerouslySetInnerHTML={{ __html: feature }} />
+                        <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>

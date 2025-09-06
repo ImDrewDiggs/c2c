@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { validateSecureInput, securePasswordSchema } from "@/utils/securityValidation";
 
 export default function CustomerRegister() {
   const [email, setEmail] = useState("");
@@ -28,12 +29,28 @@ export default function CustomerRegister() {
       return;
     }
 
+    // Validate password strength
+    const passwordValidation = validateSecureInput(securePasswordSchema, password, email);
+    if (!passwordValidation.success) {
+      toast({
+        variant: "destructive",
+        title: "Password Security Error",
+        description: (passwordValidation as { success: false; error: string }).error,
+      });
+      return;
+    }
+
     try {
       setLoading(true);
+      
+      // Critical security fix: Add email redirect configuration
+      const redirectUrl = `${window.location.origin}/customer/login`;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             role: 'customer'
           }
