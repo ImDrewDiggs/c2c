@@ -1065,6 +1065,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      validate_password_strength: {
+        Args: { password_text: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
