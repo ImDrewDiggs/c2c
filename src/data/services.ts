@@ -44,7 +44,7 @@ export const singleFamilyServices: ServiceCategory[] = [
         description: "3 trash cans + 1 recycle concierge"
       },
       {
-        name: "Premiere",
+        name: "ELITE",
         pricingModel: "Monthly",
         price: "$169.99", 
         description: "All Comprehensive services + priority account manager"
@@ -83,7 +83,7 @@ export const multiFamilyServices: ServiceCategory[] = [
         description: "3x/week concierge"
       },
       {
-        name: "Premiere",
+        name: "ELITE",
         pricingModel: "Per Unit / Month",
         price: "$32.99",
         description: "Daily concierge"
@@ -185,10 +185,10 @@ export const addOnServices: ServiceCategory[] = [
         description: "Individual bulk item removal"
       },
       {
-        name: "Yard Pickup (Premiere only)",
+        name: "Yard Pickup (ELITE only)",
         pricingModel: "Per Service",
         price: "$25 – $75",
-        description: "Yard waste pickup for Premiere customers"
+        description: "Yard waste pickup for ELITE customers"
       }
     ]
   }
@@ -220,7 +220,7 @@ export interface CommunityTier {
   standardPrice: number;
   premiumPrice: number;
   comprehensivePrice: number;
-  premierePrice: number;
+  elitePrice: number;
 }
 
 export interface BusinessTier {
@@ -288,8 +288,8 @@ export const singleFamilyTiers: ServiceTier[] = [
     ]
   },
   {
-    id: "premiere",
-    name: "Premiere",
+    id: "elite",
+    name: "ELITE",
     description: "Ultimate luxury service with account manager",
     price: 169.99,
     features: [
@@ -315,7 +315,7 @@ export const multiFamilyTiers: CommunityTier[] = [
     standardPrice: 12.99,
     premiumPrice: 18.99,
     comprehensivePrice: 24.99,
-    premierePrice: 32.99
+    elitePrice: 32.99
   }
 ];
 
@@ -366,7 +366,7 @@ export const multiFamilyServiceDetails = [
     competitiveEdge: "Complete property maintenance solution"
   },
   {
-    tier: "Premiere",
+    tier: "ELITE",
     price: "$32.99/unit/month",
     services: [
       "Daily concierge",

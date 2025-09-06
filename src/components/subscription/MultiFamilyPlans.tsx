@@ -14,7 +14,7 @@ export interface CommunityTier {
   standardPrice: number;
   premiumPrice: number;
   comprehensivePrice: number;
-  premierePrice: number;
+  elitePrice: number;
 }
 
 export interface ServiceType {

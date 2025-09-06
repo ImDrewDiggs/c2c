@@ -27,7 +27,7 @@ const serviceData = [
   { name: 'Standard', value: 45 },
   { name: 'Premium', value: 30 },
   { name: 'Comprehensive', value: 15 },
-  { name: 'Premiere', value: 10 },
+  { name: 'ELITE', value: 10 },
 ];
 
 const serviceTypeColors = ['#22c55e', '#3b82f6', '#f97316', '#8b5cf6'];

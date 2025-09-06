@@ -111,7 +111,7 @@ export const knowledgeArticles: KnowledgeArticle[] = [
       - Weekly pet waste pickup
       - Discounted junk removal services
 
-      ### Premiere Service
+      ### ELITE Service
       - All Comprehensive features
       - Unlimited weekly bulk trash removal
       - Twice-monthly trash can cleaning

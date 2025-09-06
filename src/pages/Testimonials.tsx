@@ -56,7 +56,7 @@ const testimonials = [
     name: "Maria Garcia",
     location: "Amelia, Ohio",
     rating: 5,
-    text: "Premiere service customer here and couldn't be happier. The personal account manager makes everything so smooth, and the daily pickup option is perfect for our busy household.",
+    text: "ELITE service customer here and couldn't be happier. The personal account manager makes everything so smooth, and the daily pickup option is perfect for our busy household.",
     videoUrl: "https://player.vimeo.com/video/1234567896"
   },
   {
