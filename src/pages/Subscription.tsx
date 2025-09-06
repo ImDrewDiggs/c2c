@@ -254,9 +254,7 @@ export default function Subscription() {
                       <TableRow>
                         <TableHead className="w-[300px]">Service</TableHead>
                         <TableHead className="w-[200px]">Pricing Model</TableHead>
-                        <TableHead className="w-[150px]">Monthly Price</TableHead>
-                        <TableHead className="w-[150px]">One-Time Price</TableHead>
-                        <TableHead>Discounts</TableHead>
+                        <TableHead>Price</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -264,9 +262,7 @@ export default function Subscription() {
                         <TableRow key={service.name}>
                           <TableCell className="font-medium">{service.name}</TableCell>
                           <TableCell className="text-muted-foreground">{service.pricingModel}</TableCell>
-                          <TableCell className="font-semibold">{service.subscriptionPrice || "—"}</TableCell>
-                          <TableCell className="font-semibold">{service.oneTimePrice || "—"}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{service.description || "—"}</TableCell>
+                          <TableCell className="font-semibold">{service.price}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
