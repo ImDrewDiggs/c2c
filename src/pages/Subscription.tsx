@@ -112,9 +112,9 @@ export default function Subscription() {
       toast({
         variant: "destructive",
         title: "Authentication Required",
-        description: "Please log in to continue to checkout.",
+        description: "Please create an account to continue to checkout.",
       });
-      navigate("/customer/login");
+      navigate("/customer/register");
       return;
     }
 
@@ -293,7 +293,7 @@ export default function Subscription() {
               }
               className="w-full max-w-md"
             >
-              Continue to Checkout
+              Subscribe Now
             </Button>
           </div>
         )}

@@ -7,8 +7,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    console.log("Navigating to services-and-prices");
-    navigate("/services-and-prices");
+    console.log("Navigating to customer registration");
+    navigate("/customer/register");
   };
 
   return (
