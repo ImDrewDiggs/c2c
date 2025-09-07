@@ -2,39 +2,68 @@
 import { useAuthSession } from './use-auth-session';
 import { useAuthActions } from './use-auth-actions';
 import { useUserProfile } from './use-user-profile';
-import { useMemo } from 'react';
-import { AuthService } from '@/services/AuthService';
+import { useMemo, useEffect, useState } from 'react';
+import { permissionManager } from '@/utils/securityManager';
 
 export function useAuthState() {
   const { user, loading: sessionLoading } = useAuthSession();
   const { signIn, signOut, loading: actionsLoading } = useAuthActions();
-  const { userData, isSuperAdmin, ADMIN_EMAILS } = useUserProfile();
+  const { userData } = useUserProfile();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
   
-  // Determine if user is admin - directly by email or by profile status
-  const isAdminUser = useMemo(() => 
-    AuthService.isAdminEmail(user?.email) || isSuperAdmin,
-  [user?.email, isSuperAdmin]);
+  // Check user permissions using new RBAC system
+  useEffect(() => {
+    async function checkPermissions() {
+      if (!user) {
+        setIsAdmin(false);
+        setIsSuperAdmin(false);
+        return;
+      }
+
+      setPermissionsLoading(true);
+      try {
+        const [adminCheck, superAdminCheck] = await Promise.all([
+          permissionManager.isAdmin(user.id),
+          permissionManager.isSuperAdmin(user.id)
+        ]);
+
+        setIsAdmin(adminCheck);
+        setIsSuperAdmin(superAdminCheck);
+      } catch (error) {
+        console.error('Failed to check permissions:', error);
+        setIsAdmin(false);
+        setIsSuperAdmin(false);
+      } finally {
+        setPermissionsLoading(false);
+      }
+    }
+
+    checkPermissions();
+  }, [user?.id]);
   
   // Combine loading states
-  const loading = sessionLoading || actionsLoading;
+  const loading = sessionLoading || actionsLoading || permissionsLoading;
 
   // Log the current auth state for debugging
   console.log('[useAuthState] Current auth state:', {
     hasUser: !!user,
     userEmail: user?.email,
-    isAdminEmail: AuthService.isAdminEmail(user?.email),
+    isAdmin,
     isSuperAdmin,
-    isAdminUser
+    loading
   });
 
   return {
     user,
     userData,
     loading,
-    isAdmin: isAdminUser,
-    isSuperAdmin: isAdminUser, // Ensure isSuperAdmin reflects combined admin status
+    isAdmin,
+    isSuperAdmin,
     signIn,
     signOut,
-    ADMIN_EMAILS
+    // Backward compatibility
+    ADMIN_EMAILS: [] // Deprecated - now using RBAC
   };
 }

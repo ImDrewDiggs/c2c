@@ -1,11 +1,12 @@
 project_id = "iagkylxqlartqokuiahf"
 
 [functions.admin-create-employee]
-# Require valid JWT (default true); kept explicit for clarity
 verify_jwt = true
 
 [functions.admin-delete-user]
-# Require valid JWT (default true); kept explicit for clarity
+verify_jwt = true
+
+[functions.secure-admin-management]
 verify_jwt = true
 
 [functions.create-checkout-session]

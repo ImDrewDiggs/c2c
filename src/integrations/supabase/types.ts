@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      app_config: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_sensitive: boolean
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_sensitive?: boolean
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_sensitive?: boolean
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
           assigned_date: string
@@ -179,6 +212,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      enhanced_security_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          resource_id: string | null
+          resource_type: string | null
+          risk_level: string
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          risk_level?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          risk_level?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       houses: {
         Row: {
@@ -680,6 +761,63 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          action_type: string
+          attempt_count: number
+          created_at: string
+          id: string
+          identifier: string
+          is_blocked: boolean
+          updated_at: string
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          action_type: string
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          identifier: string
+          is_blocked?: boolean
+          updated_at?: string
+          window_end: string
+          window_start?: string
+        }
+        Update: {
+          action_type?: string
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          identifier?: string
+          is_blocked?: boolean
+          updated_at?: string
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission: Database["public"]["Enums"]["permission"]
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission: Database["public"]["Enums"]["permission"]
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission?: Database["public"]["Enums"]["permission"]
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
       security_audit_logs: {
         Row: {
           created_at: string
@@ -874,6 +1012,42 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       vehicle_assignments: {
         Row: {
           assigned_date: string
@@ -1053,12 +1227,35 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_roles: {
+        Args: { check_user_id?: string }
+        Returns: {
+          expires_at: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["user_role"]
+        }[]
+      }
+      has_permission: {
+        Args: {
+          check_permission: Database["public"]["Enums"]["permission"]
+          check_user_id?: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: { _role: string; _user_id: string }
         Returns: boolean
       }
       is_admin_by_email: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_admin_user: {
+        Args: { check_user_id?: string }
+        Returns: boolean
+      }
+      is_super_admin_user: {
+        Args: { check_user_id?: string }
         Returns: boolean
       }
       sync_public_service_catalog: {
@@ -1071,7 +1268,23 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      permission:
+        | "read_users"
+        | "write_users"
+        | "delete_users"
+        | "read_orders"
+        | "write_orders"
+        | "delete_orders"
+        | "read_analytics"
+        | "manage_subscriptions"
+        | "manage_vehicles"
+        | "manage_schedules"
+        | "manage_fleet"
+        | "manage_properties"
+        | "manage_settings"
+        | "view_audit_logs"
+        | "manage_roles"
+      user_role: "customer" | "employee" | "admin" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1198,6 +1411,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      permission: [
+        "read_users",
+        "write_users",
+        "delete_users",
+        "read_orders",
+        "write_orders",
+        "delete_orders",
+        "read_analytics",
+        "manage_subscriptions",
+        "manage_vehicles",
+        "manage_schedules",
+        "manage_fleet",
+        "manage_properties",
+        "manage_settings",
+        "view_audit_logs",
+        "manage_roles",
+      ],
+      user_role: ["customer", "employee", "admin", "super_admin"],
+    },
   },
 } as const

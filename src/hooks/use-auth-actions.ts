@@ -4,7 +4,7 @@ import { supabase, UserData } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from './use-user-profile';
 import { useAbortController } from './use-abort-controller';
-import { AuthService } from '@/services/AuthService';
+import { EnhancedAuthService } from '@/services/EnhancedAuthService';
 
 export function useAuthActions() {
   const [loading, setLoading] = useState(false);
@@ -26,10 +26,10 @@ export function useAuthActions() {
       setLoading(true);
       console.log(`[AuthActions] Attempting to sign in as ${role} with email: ${email}`);
       
-      const result = await AuthService.signIn(email, password, role);
+      const result = await EnhancedAuthService.signIn(email, password, role);
       
-      if (result.error) {
-        throw result.error;
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
       if (!result.user || !isMounted()) {
@@ -148,10 +148,10 @@ export function useAuthActions() {
       setUserData(null);
       setIsSuperAdmin(false);
       
-      const result = await AuthService.signOut();
+      const result = await EnhancedAuthService.signOut();
       
-      if (result.error) {
-        throw result.error;
+      if (!result.success) {
+        throw new Error(result.error || 'Sign out failed');
       }
       
       console.log('[AuthActions] Sign out completed');
