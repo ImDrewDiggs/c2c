@@ -95,7 +95,7 @@ export class EnhancedAuthService {
         role: actualRole
       };
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign in error:', error);
       await auditLogger.log({
         actionType: 'login_error',
@@ -205,7 +205,7 @@ export class EnhancedAuthService {
         user: data.user
       };
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign up error:', error);
       await auditLogger.log({
         actionType: 'signup_error',
@@ -241,7 +241,7 @@ export class EnhancedAuthService {
       }
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign out error:', error);
       return { success: false, error: 'Sign out failed' };
     }
@@ -326,7 +326,7 @@ export class EnhancedAuthService {
       });
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password change error:', error);
       return { success: false, error: 'Password change failed' };
     }

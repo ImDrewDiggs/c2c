@@ -72,35 +72,28 @@ export class DatabaseRateLimiter {
       
       localStorage.setItem(rateLimitKey, JSON.stringify({ count: 1, windowStart: now }));
       return { allowed: true, remaining: maxAttempts - 1, resetTime: new Date(now + windowMinutes * 60 * 1000) };
-
-      if (error) throw error;
-
-      // Get current rate limit status
-      const { data: limitInfo } = await supabase
-        .from('rate_limits')
-        .select('attempt_count, window_end, is_blocked')
-        .eq('identifier', identifier)
-        .eq('action_type', actionType)
-        .single();
-
-      if (!limitInfo) {
-        return { allowed: true, remaining: maxAttempts - 1, resetTime: null };
-      }
-
-      return {
-        allowed: !limitInfo.is_blocked,
-        remaining: Math.max(0, maxAttempts - limitInfo.attempt_count),
-        resetTime: new Date(limitInfo.window_end)
-      };
     } catch (error) {
-      console.error('Rate limit check failed:', error);
-      // Fail open for availability, but log the error
-        await SecurityAuditLogger.log({
-          actionType: 'rate_limit_error',
-          riskLevel: 'medium',
-          metadata: { error: (error as Error).message, identifier, actionType }
-        });
-      return { allowed: true, remaining: maxAttempts, resetTime: null };
+      // Fallback to localStorage if database fails
+      console.warn('Database rate limiting failed, using localStorage fallback:', error);
+      
+      const rateLimitKey = `rateLimit_${identifier}_${actionType}`;
+      const stored = localStorage.getItem(rateLimitKey);
+      const now = Date.now();
+      const windowDuration = windowMinutes * 60 * 1000;
+
+      if (stored) {
+        const { count, windowStart } = JSON.parse(stored);
+        if (now - windowStart < windowDuration) {
+          if (count >= maxAttempts) {
+            return { allowed: false, remaining: 0, resetTime: new Date(windowStart + windowDuration) };
+          }
+          localStorage.setItem(rateLimitKey, JSON.stringify({ count: count + 1, windowStart }));
+          return { allowed: true, remaining: maxAttempts - count - 1, resetTime: new Date(windowStart + windowDuration) };
+        }
+      }
+      
+      localStorage.setItem(rateLimitKey, JSON.stringify({ count: 1, windowStart: now }));
+      return { allowed: true, remaining: maxAttempts - 1, resetTime: new Date(now + windowMinutes * 60 * 1000) };
     }
   }
 
