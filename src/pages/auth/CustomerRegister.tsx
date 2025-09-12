@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { validateSecureInput, securePasswordSchema } from "@/utils/securityValidation";
+import { validateSecureInput, createPasswordSchema } from "@/utils/securityManager";
 
 export default function CustomerRegister() {
   const [email, setEmail] = useState("");
@@ -30,12 +30,15 @@ export default function CustomerRegister() {
     }
 
     // Validate password strength
-    const passwordValidation = validateSecureInput(securePasswordSchema, password, email);
-    if (!passwordValidation.success) {
+    const passwordValidation = await validateSecureInput(
+      createPasswordSchema(12),
+      password
+    );
+    if (passwordValidation.success === false) {
       toast({
         variant: "destructive",
         title: "Password Security Error",
-        description: (passwordValidation as { success: false; error: string }).error,
+        description: passwordValidation.error,
       });
       return;
     }

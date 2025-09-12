@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import { sanitizeInput } from '@/utils/securityValidation';
+import { sanitizeInput } from '@/utils/securityManager';
 
 interface SafeFeatureRendererProps {
   features: string[];
