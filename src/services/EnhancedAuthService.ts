@@ -43,7 +43,7 @@ export class EnhancedAuthService {
         }
       );
 
-      if (!emailValidation.success) {
+      if (emailValidation.success === false) {
         return { success: false, error: emailValidation.error };
       }
 
@@ -140,7 +140,7 @@ export class EnhancedAuthService {
         }
       );
 
-      if (!emailValidation.success) {
+      if (emailValidation.success === false) {
         return { success: false, error: emailValidation.error };
       }
 
@@ -150,7 +150,7 @@ export class EnhancedAuthService {
         password
       );
 
-      if (!passwordValidation.success) {
+      if (passwordValidation.success === false) {
         return { success: false, error: passwordValidation.error };
       }
 
@@ -283,7 +283,7 @@ export class EnhancedAuthService {
         newPassword
       );
 
-      if (!passwordValidation.success) {
+      if (passwordValidation.success === false) {
         return { success: false, error: passwordValidation.error };
       }
 
