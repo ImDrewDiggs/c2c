@@ -1215,6 +1215,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          _action_type: string
+          _identifier: string
+          _max_attempts?: number
+          _window_minutes?: number
+        }
+        Returns: Json
+      }
       create_admin_profile_safe: {
         Args: { admin_email: string; admin_user_id: string }
         Returns: undefined
@@ -1257,6 +1266,10 @@ export type Database = {
       is_super_admin_user: {
         Args: { check_user_id?: string }
         Returns: boolean
+      }
+      reset_rate_limit: {
+        Args: { _action_type: string; _identifier: string }
+        Returns: undefined
       }
       sync_public_service_catalog: {
         Args: Record<PropertyKey, never>
