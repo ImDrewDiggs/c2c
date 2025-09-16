@@ -16,6 +16,7 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserManagement } from "../UserManagement";
 import { ExpandableGroups } from "./ExpandableGroups";
+import { QuickTimeAdjustments } from "../QuickTimeAdjustments";
 import { ComprehensiveDocumentation } from "../documentation/ComprehensiveDocumentation";
 import React from "react";
 
@@ -145,6 +146,7 @@ export function AdminDashboardContent() {
           }
           employeesContent={
             <div className="space-y-6">
+              <QuickTimeAdjustments />
               <EmployeeStatusPanel employees={employeeLocations || []} />
               <ActivityLogsPanel logs={activityLogs || []} />
               <LiveGpsMap 
