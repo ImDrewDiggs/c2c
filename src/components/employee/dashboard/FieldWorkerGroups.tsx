@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +48,34 @@ export function FieldWorkerGroups({
   const [isClocked, setIsClocked] = useState(false);
   const [todayHours, setTodayHours] = useState(0);
   const [grossPay, setGrossPay] = useState(0);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+
+  // Check for active session on component mount
+  React.useEffect(() => {
+    checkActiveSession();
+  }, [userId]);
+
+  const checkActiveSession = async () => {
+    if (!userId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('work_sessions')
+        .select('*')
+        .eq('employee_id', userId)
+        .eq('status', 'active')
+        .order('clock_in_time', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const activeSession = data?.[0];
+      setCurrentSession(activeSession || null);
+      setIsClocked(!!activeSession);
+    } catch (error) {
+      console.error('Error checking active session:', error);
+    }
+  };
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => ({
@@ -64,37 +92,82 @@ export function FieldWorkerGroups({
   const handleClockInOut = async () => {
     try {
       if (!isClocked) {
+        // Check for existing active session first
+        const { data: existingSession } = await supabase
+          .from('work_sessions')
+          .select('*')
+          .eq('employee_id', userId)
+          .eq('status', 'active')
+          .limit(1);
+
+        if (existingSession && existingSession.length > 0) {
+          toast({ 
+            variant: "destructive", 
+            title: "Already Clocked In", 
+            description: "You already have an active work session." 
+          });
+          setIsClocked(true);
+          setCurrentSession(existingSession[0]);
+          return;
+        }
+
         // Clock in
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('work_sessions')
           .insert({
             employee_id: userId,
             clock_in_location_lat: currentLocation?.latitude,
             clock_in_location_lng: currentLocation?.longitude,
             status: 'active'
-          });
+          })
+          .select()
+          .single();
         
         if (error) throw error;
+        
+        setCurrentSession(data);
         setIsClocked(true);
         toast({ title: "Clocked In", description: "GPS tracking started" });
       } else {
+        if (!currentSession) {
+          toast({ 
+            variant: "destructive", 
+            title: "No Active Session", 
+            description: "No active work session found to clock out." 
+          });
+          return;
+        }
+
+        // Calculate total hours
+        const clockOutTime = new Date().toISOString();
+        const clockInTime = new Date(currentSession.clock_in_time);
+        const clockOut = new Date(clockOutTime);
+        const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
+        const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+
         // Clock out
         const { error } = await supabase
           .from('work_sessions')
           .update({
-            clock_out_time: new Date().toISOString(),
+            clock_out_time: clockOutTime,
             clock_out_location_lat: currentLocation?.latitude,
             clock_out_location_lng: currentLocation?.longitude,
+            total_hours: totalHours,
             status: 'completed'
           })
-          .eq('employee_id', userId)
-          .eq('status', 'active');
+          .eq('id', currentSession.id);
         
         if (error) throw error;
+        
+        setCurrentSession(null);
         setIsClocked(false);
-        toast({ title: "Clocked Out", description: "Work session ended" });
+        toast({ 
+          title: "Clocked Out", 
+          description: `Work session ended: ${totalHours.toFixed(2)} hours recorded` 
+        });
       }
     } catch (error) {
+      console.error('Clock in/out error:', error);
       toast({ variant: "destructive", title: "Error", description: "Failed to update clock status" });
     }
   };

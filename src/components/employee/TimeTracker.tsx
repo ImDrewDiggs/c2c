@@ -86,6 +86,25 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
   const handleClockIn = async () => {
     try {
+      // Check for existing active session first
+      const { data: existingSession } = await supabase
+        .from('work_sessions')
+        .select('*')
+        .eq('employee_id', userId)
+        .eq('status', 'active')
+        .limit(1);
+
+      if (existingSession && existingSession.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Already Clocked In",
+          description: "You already have an active work session.",
+        });
+        setCurrentSession(existingSession[0]);
+        setIsWorking(true);
+        return;
+      }
+
       // Get current location for clock-in
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { data, error } = await supabase
@@ -123,6 +142,25 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
   const clockInWithoutLocation = async () => {
     try {
+      // Check for existing active session first
+      const { data: existingSession } = await supabase
+        .from('work_sessions')
+        .select('*')
+        .eq('employee_id', userId)
+        .eq('status', 'active')
+        .limit(1);
+
+      if (existingSession && existingSession.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Already Clocked In",
+          description: "You already have an active work session.",
+        });
+        setCurrentSession(existingSession[0]);
+        setIsWorking(true);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('work_sessions')
         .insert({
