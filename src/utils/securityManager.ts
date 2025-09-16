@@ -42,7 +42,7 @@ export function sanitizeInput(input: string): string {
     .trim();
 }
 
-// Persistent rate limiting using database
+// Database-backed rate limiting with localStorage fallback
 export class DatabaseRateLimiter {
   static async checkLimit(
     identifier: string,
@@ -51,37 +51,50 @@ export class DatabaseRateLimiter {
     windowMinutes: number = 15
   ): Promise<{ allowed: boolean; remaining: number; resetTime: Date | null }> {
     try {
-      // Note: check_rate_limit function needs to be created in migration
-      // For now, implement basic client-side rate limiting
-      const rateLimitKey = `${identifier}_${actionType}`;
-      const stored = localStorage.getItem(rateLimitKey);
-      const now = Date.now();
-      
-      if (stored) {
-        const { count, windowStart } = JSON.parse(stored);
-        const windowDuration = windowMinutes * 60 * 1000;
-        
-        if (now - windowStart < windowDuration) {
-          if (count >= maxAttempts) {
-            return { allowed: false, remaining: 0, resetTime: new Date(windowStart + windowDuration) };
-          }
-          localStorage.setItem(rateLimitKey, JSON.stringify({ count: count + 1, windowStart }));
-          return { allowed: true, remaining: maxAttempts - count - 1, resetTime: new Date(windowStart + windowDuration) };
-        }
-      }
-      
-      localStorage.setItem(rateLimitKey, JSON.stringify({ count: 1, windowStart: now }));
-      return { allowed: true, remaining: maxAttempts - 1, resetTime: new Date(now + windowMinutes * 60 * 1000) };
-    } catch (error) {
-      // Fallback to localStorage if database fails
-      console.warn('Database rate limiting failed, using localStorage fallback:', error);
-      
-      const rateLimitKey = `rateLimit_${identifier}_${actionType}`;
-      const stored = localStorage.getItem(rateLimitKey);
-      const now = Date.now();
-      const windowDuration = windowMinutes * 60 * 1000;
+      // Use the new database-backed rate limiting function
+      const { data: rateLimitResult, error } = await supabase.rpc('check_rate_limit', {
+        _identifier: identifier,
+        _action_type: actionType,
+        _max_attempts: maxAttempts,
+        _window_minutes: windowMinutes
+      });
 
-      if (stored) {
+      if (error) {
+        console.warn('Database rate limiting failed, falling back to localStorage:', error);
+        return this.fallbackToLocalStorage(identifier, actionType, maxAttempts, windowMinutes);
+      }
+
+      // Type-safe handling of the response
+      const result = rateLimitResult as any;
+      if (!result || typeof result !== 'object') {
+        console.warn('Invalid rate limit response, falling back to localStorage');
+        return this.fallbackToLocalStorage(identifier, actionType, maxAttempts, windowMinutes);
+      }
+
+      return {
+        allowed: Boolean(result.allowed),
+        remaining: Number(result.attempts_remaining) || 0,
+        resetTime: result.reset_time ? new Date(result.reset_time) : null
+      };
+    } catch (error) {
+      console.warn('Rate limiting error, falling back to localStorage:', error);
+      return this.fallbackToLocalStorage(identifier, actionType, maxAttempts, windowMinutes);
+    }
+  }
+
+  private static fallbackToLocalStorage(
+    identifier: string,
+    actionType: string,
+    maxAttempts: number,
+    windowMinutes: number
+  ): { allowed: boolean; remaining: number; resetTime: Date | null } {
+    const rateLimitKey = `rateLimit_${identifier}_${actionType}`;
+    const stored = localStorage.getItem(rateLimitKey);
+    const now = Date.now();
+    const windowDuration = windowMinutes * 60 * 1000;
+
+    if (stored) {
+      try {
         const { count, windowStart } = JSON.parse(stored);
         if (now - windowStart < windowDuration) {
           if (count >= maxAttempts) {
@@ -90,23 +103,33 @@ export class DatabaseRateLimiter {
           localStorage.setItem(rateLimitKey, JSON.stringify({ count: count + 1, windowStart }));
           return { allowed: true, remaining: maxAttempts - count - 1, resetTime: new Date(windowStart + windowDuration) };
         }
+      } catch (e) {
+        // Invalid stored data, reset
       }
-      
-      localStorage.setItem(rateLimitKey, JSON.stringify({ count: 1, windowStart: now }));
-      return { allowed: true, remaining: maxAttempts - 1, resetTime: new Date(now + windowMinutes * 60 * 1000) };
     }
+    
+    localStorage.setItem(rateLimitKey, JSON.stringify({ count: 1, windowStart: now }));
+    return { allowed: true, remaining: maxAttempts - 1, resetTime: new Date(now + windowDuration) };
   }
 
   static async resetLimit(identifier: string, actionType: string): Promise<void> {
     try {
-      await supabase
-        .from('rate_limits')
-        .delete()
-        .eq('identifier', identifier)
-        .eq('action_type', actionType);
+      // Reset using the new database function
+      const { error } = await supabase.rpc('reset_rate_limit', {
+        _identifier: identifier,
+        _action_type: actionType
+      });
+
+      if (error) {
+        console.warn('Failed to reset database rate limit:', error);
+      }
     } catch (error) {
-      console.error('Failed to reset rate limit:', error);
+      console.warn('Error resetting database rate limit:', error);
     }
+
+    // Also reset localStorage fallback
+    const rateLimitKey = `rateLimit_${identifier}_${actionType}`;
+    localStorage.removeItem(rateLimitKey);
   }
 }
 
