@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1599,7 +1600,7 @@ export function ComprehensiveDocumentation() {
               Expand All
             </Button>
             <Button variant="outline" size="sm" onClick={collapseAll}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <ChevronRight className="w-4 h-4 mr-2 rotate-90" />
               Collapse All
             </Button>
           </div>
@@ -1617,17 +1618,18 @@ export function ComprehensiveDocumentation() {
             />
           </div>
           
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-input bg-background rounded-md text-sm min-w-[200px]"
-          >
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.label}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="min-w-[200px] bg-background">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover text-popover-foreground border z-50">
+              {categories.map(category => (
+                <SelectItem key={category.id} value={category.id} className="hover:bg-accent hover:text-accent-foreground">
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Results Summary */}

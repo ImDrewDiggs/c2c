@@ -112,13 +112,13 @@ export function AdminDashboardContent() {
         
         {/* Dashboard with tabs */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="operations">Operations</TabsTrigger>
-            <TabsTrigger value="employees">Employees</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6 bg-muted">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-background">Overview</TabsTrigger>
+            <TabsTrigger value="operations" className="data-[state=active]:bg-background">Operations</TabsTrigger>
+            <TabsTrigger value="employees" className="data-[state=active]:bg-background">Employees</TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-background">Analytics</TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-background">Users</TabsTrigger>
+            <TabsTrigger value="documentation" className="data-[state=active]:bg-background">Documentation</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -206,55 +206,16 @@ export function AdminDashboardContent() {
             <UserManagement />
           </TabsContent>
 
-          <TabsContent value="security" className="space-y-4">
-            <RealTimeSecurityMonitor />
-            <SecurityMonitoringDashboard />
+          <TabsContent value="documentation" className="space-y-4">
+            <ComprehensiveDocumentation />
           </TabsContent>
         </Tabs>
         
-        <DashboardTabs
-          operationsContent={
-            <>
-              {/* Main dashboard grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* First column */}
-                <div className="space-y-6">
-                  <ServiceAreasPanel serviceAreas={serviceAreas || []} />
-                  <QuickActionsPanel />
-                </div>
-                
-                {/* Second column */}
-                <div className="space-y-6">
-                  <EmployeeStatusPanel employees={employeeLocations || []} />
-                  <ActivityLogsPanel logs={activityLogs || []} />
-                </div>
-                
-                {/* Third column */}
-                <div className="space-y-6">
-                  <ScheduledJobsPanel jobs={scheduledJobs || []} />
-                </div>
-                
-                {/* Fourth column */}
-                <div className="space-y-6">
-                  <MaintenanceSchedulePanel schedules={maintenanceSchedules || []} />
-                </div>
-              </div>
-              
-              {/* Full-width map section */}
-              <LiveGpsMap 
-                employeeLocations={employeeLocations || []} 
-                serviceAreas={serviceAreas || []}
-                currentLocation={currentLocation || null}
-              />
-            </>
-          }
-          employeesContent={<div />}
-          analyticsContent={<div />}
-          usersContent={<div />}
-          documentationContent={
-            <ComprehensiveDocumentation />
-          }
-        />
+        {/* Additional Documentation Tab (Standalone) */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">System Documentation</h2>
+          <ComprehensiveDocumentation />
+        </div>
       </div>
     );
   } catch (error) {

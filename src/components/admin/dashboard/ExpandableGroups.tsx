@@ -84,6 +84,15 @@ export function ExpandableGroups() {
     setOpenGroups(newOpenGroups);
   };
 
+  const expandAll = () => {
+    const allGroupIds = new Set(groups.map(group => group.id));
+    setOpenGroups(allGroupIds);
+  };
+
+  const collapseAll = () => {
+    setOpenGroups(new Set());
+  };
+
   // Action handlers
   const handleAddCustomer = () => setShowAddCustomerModal(true);
   
@@ -868,6 +877,21 @@ export function ExpandableGroups() {
 
   return (
     <>
+      {/* Header with expand/collapse controls */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Quick Actions</h3>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={expandAll}>
+            <Plus className="w-4 h-4 mr-1" />
+            Expand All
+          </Button>
+          <Button variant="outline" size="sm" onClick={collapseAll}>
+            <Minus className="w-4 h-4 mr-1" />
+            Collapse All
+          </Button>
+        </div>
+      </div>
+      
       <div className="space-y-3">
         {groups.map((group) => {
           const isOpen = openGroups.has(group.id);
