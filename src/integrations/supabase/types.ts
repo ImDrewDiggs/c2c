@@ -1254,6 +1254,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymize_location_data: {
+        Args: { location_data: Json }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           _action_type: string
@@ -1274,6 +1278,10 @@ export type Database = {
       emergency_disable_admin: {
         Args: { target_admin_id: string }
         Returns: Json
+      }
+      encrypt_sensitive_field: {
+        Args: { data: string; field_name: string }
+        Returns: string
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
