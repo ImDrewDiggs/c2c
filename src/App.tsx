@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useMemo, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SecureAuthProvider } from "./components/auth/SecureAuthProvider";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "./components/Navbar";
@@ -34,6 +35,7 @@ const CustomerLogin = lazy(() => import('./pages/auth/CustomerLogin'));
 const CustomerRegister = lazy(() => import('./pages/auth/CustomerRegister'));
 const EmployeeLogin = lazy(() => import('./pages/auth/EmployeeLogin'));
 const AdminLogin = lazy(() => import('./pages/auth/AdminLogin'));
+const SecureAuth = lazy(() => import('./pages/auth/SecureAuth'));
 
 // Dashboard routes - heavy components, only load when authenticated
 const CustomerDashboard = lazy(() => import('./pages/customer/Dashboard'));
@@ -87,7 +89,8 @@ const App = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SubscriptionProvider>
+          <SecureAuthProvider>
+            <SubscriptionProvider>
           <MaintenanceGate>
             <div className="min-h-screen bg-background">
               <ContentSecurityPolicy />
@@ -111,6 +114,7 @@ const App = () => {
                   <Route path="/maintenance" element={<Maintenance />} />
 
                   {/* Auth Routes */}
+                  <Route path="/auth" element={<SecureAuth />} />
                   <Route path="/customer/login" element={<CustomerLogin />} />
                   <Route path="/customer/register" element={<CustomerRegister />} />
                   <Route path="/customer/dashboard" element={<CustomerDashboard />} />
@@ -145,7 +149,8 @@ const App = () => {
               <Toaster />
             </div>
           </MaintenanceGate>
-          </SubscriptionProvider>
+            </SubscriptionProvider>
+          </SecureAuthProvider>
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>

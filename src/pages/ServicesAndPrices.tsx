@@ -20,11 +20,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { serviceCategories, pricingPolicy, singleFamilyTiers, multiFamilyServiceDetails, businessServiceDetails } from "@/data/services";
+import { useAuth } from "@/components/auth/SecureAuthProvider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Lock } from "lucide-react";
 
 export default function ServicesAndPrices() {
+  const { user } = useAuth();
+  
+  // Security enhancement: Restrict detailed pricing access
+  const showDetailedPricing = user !== null;
+  
   return (
     <div className="container mx-auto py-12">
       <h1 className="text-4xl font-bold text-center mb-8">Services & Prices</h1>
+      
+      {!showDetailedPricing && (
+        <Alert className="mb-6">
+          <Lock className="h-4 w-4" />
+          <AlertDescription>
+            Detailed pricing information is available to registered users only. 
+            <Link to="/auth" className="text-primary underline ml-1">Sign in</Link> to view complete pricing details.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Tabs defaultValue="subscription-plans" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -52,7 +70,9 @@ export default function ServicesAndPrices() {
                     {singleFamilyTiers.map((tier) => (
                       <TableRow key={tier.name}>
                         <TableCell className="font-medium">{tier.name}</TableCell>
-                        <TableCell>${tier.price}/month</TableCell>
+                        <TableCell>
+                          {showDetailedPricing ? `$${tier.price}/month` : "Contact for pricing"}
+                        </TableCell>
                         <TableCell>
                           <ul className="list-none space-y-1">
                             {tier.features.map((feature) => (
@@ -94,7 +114,9 @@ export default function ServicesAndPrices() {
                     {multiFamilyServiceDetails.map((service) => (
                       <TableRow key={service.tier}>
                         <TableCell className="font-medium">{service.tier}</TableCell>
-                        <TableCell className="font-semibold">{service.price}</TableCell>
+                        <TableCell className="font-semibold">
+                          {showDetailedPricing ? service.price : "Contact for pricing"}
+                        </TableCell>
                         <TableCell>
                           <ul className="list-none space-y-1">
                             {service.services.map((feature, index) => (
@@ -178,7 +200,9 @@ export default function ServicesAndPrices() {
                         <TableRow key={service.name}>
                           <TableCell className="font-medium">{service.name}</TableCell>
                           <TableCell className="text-muted-foreground">{service.pricingModel}</TableCell>
-                          <TableCell className="font-semibold">{service.price}</TableCell>
+                          <TableCell className="font-semibold">
+                            {showDetailedPricing ? service.price : "Contact for pricing"}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
