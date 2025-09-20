@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from './use-user-profile';
 import { useAbortController } from './use-abort-controller';
 import { EnhancedAuthService } from '@/services/EnhancedAuthService';
+import { sessionManager } from '@/utils/sessionManager';
 
 export function useAuthActions() {
   const [loading, setLoading] = useState(false);
@@ -42,6 +43,9 @@ export function useAuthActions() {
         role: result.role
       });
       
+      // Initialize session manager
+      await sessionManager.initializeSession();
+
       // Handle admin users
       if (result.role === 'admin') {
         console.log('[AuthActions] Admin user login detected');
@@ -143,6 +147,9 @@ export function useAuthActions() {
       pendingOperation.current = true;
       console.log('[AuthActions] Starting sign out process');
       setLoading(true);
+      
+      // End session monitoring
+      await sessionManager.endSession();
       
       // Clear user data first to prevent flashing of unauthorized content
       setUserData(null);

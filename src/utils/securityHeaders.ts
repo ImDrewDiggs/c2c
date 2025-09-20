@@ -3,14 +3,13 @@
  * Provides consistent security headers across the application
  */
 
+import { SECURITY_CONFIG } from './securityConfig';
+
 export const securityHeaders = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://iagkylxqlartqokuiahf.supabase.co https://*.stripe.com; frame-src 'self' https://*.stripe.com;"
+  ...SECURITY_CONFIG.headers,
+  'Content-Security-Policy': Object.entries(SECURITY_CONFIG.csp)
+    .map(([directive, sources]) => `${directive.replace(/([A-Z])/g, '-$1').toLowerCase()} ${sources.join(' ')}`)
+    .join('; ')
 } as const;
 
 /**

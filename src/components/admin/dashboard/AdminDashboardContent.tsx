@@ -18,6 +18,7 @@ import { UserManagement } from "../UserManagement";
 import { ExpandableGroups } from "./ExpandableGroups";
 import { QuickTimeAdjustments } from "../QuickTimeAdjustments";
 import { SecurityMonitoringDashboard } from "../security/SecurityMonitoringDashboard";
+import { RealTimeSecurityMonitor } from "../security/RealTimeSecurityMonitor";
 import { ComprehensiveDocumentation } from "../documentation/ComprehensiveDocumentation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from "react";
@@ -206,6 +207,7 @@ export function AdminDashboardContent() {
           </TabsContent>
 
           <TabsContent value="security" className="space-y-4">
+            <RealTimeSecurityMonitor />
             <SecurityMonitoringDashboard />
           </TabsContent>
         </Tabs>
