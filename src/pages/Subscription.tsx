@@ -12,6 +12,7 @@ import { singleFamilyTiers, multiFamilyTiers, businessTiers, singleFamilyService
 import { Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 
 const serviceTypes: ServiceType[] = [
   {
@@ -49,6 +50,14 @@ export default function Subscription() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { hasAccepted, loading } = useTermsAcceptance();
+
+  // Redirect to terms page if terms not accepted
+  useEffect(() => {
+    if (!loading && !hasAccepted) {
+      navigate('/terms');
+    }
+  }, [hasAccepted, loading, navigate]);
 
   const handleServiceTypeSelect = (serviceTypeId: string) => {
     setSelectedServiceTypes(prev => 
@@ -156,6 +165,20 @@ export default function Subscription() {
     // Navigate to checkout with data
     navigate('/checkout', { state: checkoutData });
   };
+
+  // Show loading while checking terms acceptance
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // This should not render if terms not accepted due to redirect effect
+  if (!hasAccepted) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
