@@ -27,13 +27,22 @@ const Index = () => {
           <p className="text-lg md:text-xl text-gray-300 mb-8">
             Professional trash can maintenance services that keep your property clean and hygienic
           </p>
-          <button 
-            onClick={handleGetStarted} 
-            className="btn-primary inline-flex items-center group"
-          >
-            Get Started Today
-            <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={handleGetStarted} 
+              className="btn-primary inline-flex items-center group"
+            >
+              Get Started Today
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button 
+              onClick={() => navigate("/terms")} 
+              className="btn-secondary inline-flex items-center group"
+            >
+              View Detailed Pricing
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </motion.div>
       </section>
 

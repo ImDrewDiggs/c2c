@@ -1051,6 +1051,45 @@ export type Database = {
           },
         ]
       }
+      terms_acceptance: {
+        Row: {
+          accepted_at: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          referer: string | null
+          session_id: string | null
+          terms_version: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          referer?: string | null
+          session_id?: string | null
+          terms_version?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          referer?: string | null
+          session_id?: string | null
+          terms_version?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -1295,6 +1334,10 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
         }[]
       }
+      has_accepted_terms: {
+        Args: { check_session_id?: string }
+        Returns: boolean
+      }
       has_permission: {
         Args: {
           check_permission: Database["public"]["Enums"]["permission"]
@@ -1317,6 +1360,15 @@ export type Database = {
       is_super_admin_user: {
         Args: { check_user_id?: string }
         Returns: boolean
+      }
+      record_terms_acceptance: {
+        Args: {
+          p_ip_address?: string
+          p_referer?: string
+          p_session_id?: string
+          p_user_agent?: string
+        }
+        Returns: string
       }
       reset_rate_limit: {
         Args: { _action_type: string; _identifier: string }
