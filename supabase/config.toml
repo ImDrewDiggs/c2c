@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.check-subscription]
 verify_jwt = false
+
+[functions.accept-terms]
+verify_jwt = false
