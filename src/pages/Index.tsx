@@ -16,15 +16,15 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container py-20">
         <motion.div
-          initial={{ y: 20, opacity: 0.8 }}
+          initial={{ y: 10, opacity: 0.9 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          transition={{ duration: 0.1, ease: "easeOut" }}
           className="text-center max-w-3xl mx-auto"
         >
           <h1 className="hero-text">
             Your Trash Can Concierge
           </h1>
-          <p className="hero-subtitle">
+          <p className="hero-subtitle" style={{ transform: 'translateZ(0)' }}>
             Professional trash can maintenance services that keep your property clean and hygienic
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

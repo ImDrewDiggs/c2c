@@ -16,8 +16,8 @@
       body { background: hsl(0 0% 10%); color: hsl(0 0% 100%); }
       .loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
       /* Critical above-the-fold styles for LCP optimization */
-      .hero-text { font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; background: linear-gradient(to right, hsl(120 100% 50%), hsl(120 100% 50% / 0.6)); background-clip: text; -webkit-background-clip: text; color: transparent; }
-      .hero-subtitle { font-size: 1.125rem; color: hsl(0 0% 75%); margin-bottom: 2rem; }
+      .hero-text { font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; background: linear-gradient(to right, hsl(120 100% 25%), hsl(120 100% 25% / 0.6)); background-clip: text; -webkit-background-clip: text; color: transparent; will-change: transform; }
+      .hero-subtitle { font-size: 1.125rem; color: hsl(0 0% 75%); margin-bottom: 2rem; will-change: transform, opacity; contain: layout style paint; }
       @media (min-width: 768px) { .hero-text { font-size: 4rem; } .hero-subtitle { font-size: 1.25rem; } }
     </style>
     <meta name="theme-color" content="#22c55e" />
