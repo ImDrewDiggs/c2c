@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useMemo } from 'react';
+import React, { Suspense, lazy, useMemo, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 import Navbar from "./components/Navbar";
 import Loading from "./components/ui/Loading";
 import MaintenanceGate from "@/components/auth/MaintenanceGate";
+import { ContentSecurityPolicy } from "@/components/admin/security/ContentSecurityPolicy";
+import { sessionManager } from "@/utils/sessionManager";
 
 // Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
@@ -70,6 +72,16 @@ const App = () => {
     },
   }), []);
 
+  useEffect(() => {
+    // Initialize session management and security monitoring
+    sessionManager.initializeSession();
+
+    // Cleanup on app unmount
+    return () => {
+      sessionManager.endSession();
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
@@ -77,6 +89,7 @@ const App = () => {
           <SubscriptionProvider>
           <MaintenanceGate>
             <div className="min-h-screen bg-background">
+              <ContentSecurityPolicy />
               <Navbar />
               <Suspense fallback={<Loading fullscreen={true} size="large" message="Loading application..." />}>
                 <Routes>

@@ -6,9 +6,10 @@
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
-// Enhanced password schema with configurable requirements
+// Enhanced password schema with comprehensive security checks
 export const createPasswordSchema = (minLength: number = 12) => z.string()
   .min(minLength, `Password must be at least ${minLength} characters long`)
+  .max(128, 'Password must not exceed 128 characters') // Prevent DoS
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
   .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
   .regex(/\d/, 'Password must contain at least one number')
@@ -20,9 +21,14 @@ export const createPasswordSchema = (minLength: number = 12) => z.string()
       /password/i, // Contains "password"
       /admin/i, // Contains "admin"
       /qwerty/i, // Contains "qwerty"
+      /letmein/i, // Common weak password
+      /welcome/i, // Common weak password
+      /monkey/i, // Common weak password
+      /dragon/i, // Common weak password
+      /(.)\1{2,}/, // Repeated characters
     ];
     return !weakPatterns.some(pattern => pattern.test(password));
-  }, 'Password contains weak patterns');
+  }, 'Password contains weak patterns or repeated characters');
 
 // Email validation with domain restrictions
 export const emailSchema = z.string()
@@ -32,14 +38,26 @@ export const emailSchema = z.string()
     'Email aliases are not allowed for security reasons'
   );
 
-// Input sanitization for XSS prevention
+// Enhanced input sanitization with comprehensive XSS protection
 export function sanitizeInput(input: string): string {
   return input
-    .replace(/[<>]/g, '')
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+    .replace(/<link\b[^<]*(?:(?!<\/link>)<[^<]*)*<\/link>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
     .replace(/javascript:/gi, '')
-    .replace(/on\w+=/gi, '')
-    .replace(/script/gi, '')
-    .trim();
+    .replace(/vbscript:/gi, '')
+    .replace(/data:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/expression\s*\(/gi, '')
+    .replace(/url\s*\(/gi, '')
+    .replace(/import\s+/gi, '')
+    .replace(/eval\s*\(/gi, '')
+    .replace(/Function\s*\(/gi, '')
+    .trim()
+    .substring(0, 10000); // Prevent excessively long inputs
 }
 
 // Database-backed rate limiting with localStorage fallback

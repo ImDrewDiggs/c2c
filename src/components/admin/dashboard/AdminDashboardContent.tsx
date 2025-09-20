@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import { UserManagement } from "../UserManagement";
 import { ExpandableGroups } from "./ExpandableGroups";
 import { QuickTimeAdjustments } from "../QuickTimeAdjustments";
+import { SecurityMonitoringDashboard } from "../security/SecurityMonitoringDashboard";
 import { ComprehensiveDocumentation } from "../documentation/ComprehensiveDocumentation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from "react";
 
 export function AdminDashboardContent() {
@@ -108,6 +110,106 @@ export function AdminDashboardContent() {
         </div>
         
         {/* Dashboard with tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="operations">Operations</TabsTrigger>
+            <TabsTrigger value="employees">Employees</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* First column */}
+              <div className="space-y-6">
+                <ServiceAreasPanel serviceAreas={serviceAreas || []} />
+                <QuickActionsPanel />
+              </div>
+              
+              {/* Second column */}
+              <div className="space-y-6">
+                <EmployeeStatusPanel employees={employeeLocations || []} />
+                <ActivityLogsPanel logs={activityLogs || []} />
+              </div>
+              
+              {/* Third column */}
+              <div className="space-y-6">
+                <ScheduledJobsPanel jobs={scheduledJobs || []} />
+              </div>
+              
+              {/* Fourth column */}
+              <div className="space-y-6">
+                <MaintenanceSchedulePanel schedules={maintenanceSchedules || []} />
+              </div>
+            </div>
+            
+            {/* Full-width map section */}
+            <LiveGpsMap 
+              employeeLocations={employeeLocations || []} 
+              serviceAreas={serviceAreas || []}
+              currentLocation={currentLocation || null}
+            />
+          </TabsContent>
+
+          <TabsContent value="operations" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* First column */}
+              <div className="space-y-6">
+                <ServiceAreasPanel serviceAreas={serviceAreas || []} />
+                <QuickActionsPanel />
+              </div>
+              
+              {/* Second column */}
+              <div className="space-y-6">
+                <EmployeeStatusPanel employees={employeeLocations || []} />
+                <ActivityLogsPanel logs={activityLogs || []} />
+              </div>
+              
+              {/* Third column */}
+              <div className="space-y-6">
+                <ScheduledJobsPanel jobs={scheduledJobs || []} />
+              </div>
+              
+              {/* Fourth column */}
+              <div className="space-y-6">
+                <MaintenanceSchedulePanel schedules={maintenanceSchedules || []} />
+              </div>
+            </div>
+            
+            {/* Full-width map section */}
+            <LiveGpsMap 
+              employeeLocations={employeeLocations || []} 
+              serviceAreas={serviceAreas || []}
+              currentLocation={currentLocation || null}
+            />
+          </TabsContent>
+        
+          <TabsContent value="employees" className="space-y-4">
+            <QuickTimeAdjustments />
+            <EmployeeStatusPanel employees={employeeLocations || []} />
+            <ActivityLogsPanel logs={activityLogs || []} />
+            <LiveGpsMap 
+              employeeLocations={employeeLocations || []} 
+              serviceAreas={serviceAreas || []}
+              currentLocation={currentLocation || null}
+            />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            <RealAnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-4">
+            <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-4">
+            <SecurityMonitoringDashboard />
+          </TabsContent>
+        </Tabs>
+        
         <DashboardTabs
           operationsContent={
             <>
@@ -144,24 +246,9 @@ export function AdminDashboardContent() {
               />
             </>
           }
-          employeesContent={
-            <div className="space-y-6">
-              <QuickTimeAdjustments />
-              <EmployeeStatusPanel employees={employeeLocations || []} />
-              <ActivityLogsPanel logs={activityLogs || []} />
-              <LiveGpsMap 
-                employeeLocations={employeeLocations || []} 
-                serviceAreas={serviceAreas || []}
-                currentLocation={currentLocation || null}
-              />
-            </div>
-          }
-          analyticsContent={
-            <RealAnalyticsDashboard />
-          }
-          usersContent={
-            <UserManagement />
-          }
+          employeesContent={<div />}
+          analyticsContent={<div />}
+          usersContent={<div />}
           documentationContent={
             <ComprehensiveDocumentation />
           }

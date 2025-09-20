@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_sessions: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean
+          last_activity: string
+          security_level: string
+          session_end: string | null
+          session_start: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_activity?: string
+          security_level?: string
+          session_end?: string | null
+          session_start?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_activity?: string
+          security_level?: string
+          session_end?: string | null
+          session_start?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           category: string
@@ -1230,6 +1269,10 @@ export type Database = {
       }
       create_secure_admin_profile: {
         Args: { admin_email: string; admin_user_id: string }
+        Returns: Json
+      }
+      emergency_disable_admin: {
+        Args: { target_admin_id: string }
         Returns: Json
       }
       get_current_user_role: {
