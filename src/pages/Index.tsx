@@ -16,15 +16,15 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container py-20">
         <motion.div
-          initial={{ y: 20 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.3 }}
+          initial={{ y: 20, opacity: 0.8 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
           className="text-center max-w-3xl mx-auto"
         >
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <h1 className="hero-text">
             Your Trash Can Concierge
           </h1>
-          <p className="text-lg md:text-xl text-gray-300 mb-8">
+          <p className="hero-subtitle">
             Professional trash can maintenance services that keep your property clean and hygienic
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -65,9 +65,9 @@ const Index = () => {
           ].map((feature, index) => (
             <motion.div
               key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0.8, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2 }}
+              transition={{ delay: index * 0.1, duration: 0.2 }}
               className="card"
             >
               <h2 className="text-xl font-semibold mb-3 text-primary">
