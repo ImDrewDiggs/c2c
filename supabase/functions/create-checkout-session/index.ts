@@ -13,15 +13,14 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      subscriptionType, 
-      selectedTier, 
-      selectedServiceTypes = [], 
+    const {
+      priceId,
+      subscriptionType,
+      selectedTier,
       unitCount = 1,
-      total,
-      isSubscription = true,
-      contractLength,
-      selectedServices = []
+      customerEmail,
+      serviceAddress,
+      metadata = {}
     } = await req.json();
 
     // Initialize Stripe
@@ -35,139 +34,81 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    let user = null;
-    let customerId = undefined;
+    let customerId = null;
+    let userId = null;
 
-    // Try to get authenticated user
-    try {
-      const authHeader = req.headers.get("Authorization");
-      if (authHeader) {
+    // Get authenticated user if available
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      try {
         const token = authHeader.replace("Bearer ", "");
         const { data } = await supabaseClient.auth.getUser(token);
-        user = data.user;
+        userId = data.user?.id;
         
-        if (user?.email) {
-          // Check if Stripe customer exists
+        // Find or create Stripe customer
+        if (data.user?.email) {
           const customers = await stripe.customers.list({ 
-            email: user.email, 
+            email: data.user.email, 
             limit: 1 
           });
+          
           if (customers.data.length > 0) {
             customerId = customers.data[0].id;
+          } else {
+            const customer = await stripe.customers.create({
+              email: data.user.email,
+              metadata: {
+                supabase_user_id: userId
+              }
+            });
+            customerId = customer.id;
           }
         }
+      } catch (authError) {
+        console.warn("Auth error, proceeding without user context:", authError);
       }
-    } catch (error) {
-      console.log("No authenticated user, proceeding as guest");
     }
 
-    const origin = req.headers.get("origin") || "http://localhost:8080";
-
-    // Prepare line items based on subscription type
+    // Build line items
     let lineItems = [];
-    let mode: "payment" | "subscription" = isSubscription ? "subscription" : "payment";
 
-    if (isSubscription) {
-      // Create subscription line items
-      if (subscriptionType === "single-family" && selectedTier) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `${selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)} Plan - Single Family`,
-              description: `Monthly ${selectedTier} plan subscription`
-            },
-            unit_amount: Math.round(total * 100),
-            recurring: {
-              interval: "month"
-            }
-          },
-          quantity: 1,
-        });
-      } else if (subscriptionType === "multi-family") {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Multi-Family Service",
-              description: `Service for ${unitCount} units`
-            },
-            unit_amount: Math.round((total / unitCount) * 100),
-            recurring: {
-              interval: "month"
-            }
-          },
-          quantity: unitCount,
-        });
-      } else if (subscriptionType === "business") {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Business ${selectedTier} Plan`,
-              description: `Monthly business plan subscription`
-            },
-            unit_amount: Math.round(total * 100),
-            recurring: {
-              interval: "month"
-            }
-          },
-          quantity: 1,
-        });
-      }
+    if (priceId) {
+      lineItems = [{
+        price: priceId,
+        quantity: unitCount,
+      }];
     } else {
-      // One-time payment
-      lineItems.push({
+      // Default pricing for one-time service
+      lineItems = [{
         price_data: {
-          currency: "usd",
+          currency: 'usd',
           product_data: {
-            name: "One-Time Service",
-            description: selectedServices.join(", ")
+            name: 'Trash Can Cleaning Service',
+            description: 'Professional trash can maintenance service',
           },
-          unit_amount: Math.round(total * 100),
+          unit_amount: 2500, // $25.00
         },
         quantity: 1,
-      });
+      }];
     }
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : (user?.email || "guest@example.com"),
+      customer_email: customerId ? undefined : customerEmail,
       line_items: lineItems,
-      mode,
-      success_url: `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/subscription`,
+      mode: subscriptionType ? 'subscription' : 'payment',
+      success_url: `${req.headers.get("origin")}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/checkout/error`,
       metadata: {
-        subscriptionType: subscriptionType || "",
-        selectedTier: selectedTier || "",
+        userId: userId || '',
+        subscriptionType: subscriptionType || '',
+        selectedTier: selectedTier || '',
         unitCount: unitCount.toString(),
-        contractLength: contractLength || "",
-        userId: user?.id || "",
-      }
+        serviceAddress: serviceAddress || '',
+        ...metadata
+      },
     });
-
-    // Optionally store order in database
-    if (user) {
-      const supabaseService = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-
-      await supabaseService.from("orders").insert({
-        user_id: user.id,
-        stripe_session_id: session.id,
-        amount: Math.round(total * 100),
-        currency: "usd",
-        status: "pending",
-        subscription_type: subscriptionType,
-        selected_tier: selectedTier,
-        unit_count: unitCount,
-        contract_length: contractLength,
-        is_subscription: isSubscription
-      });
-    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -176,7 +117,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error creating checkout session:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: String(error) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -41,28 +41,75 @@ serve(async (req) => {
         .from("orders")
         .update({ 
           status: "paid",
+          stripe_payment_intent_id: session.payment_intent as string,
           updated_at: new Date().toISOString()
         })
         .eq("stripe_session_id", sessionId);
 
       // If this is a subscription, create subscription record
       if (session.mode === "subscription" && session.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-        
-        await supabaseService.from("subscriptions").upsert({
-          user_id: session.metadata?.userId || null,
-          stripe_subscription_id: subscription.id,
-          stripe_customer_id: subscription.customer as string,
-          status: subscription.status,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          subscription_type: session.metadata?.subscriptionType || "",
-          selected_tier: session.metadata?.selectedTier || "",
-          unit_count: parseInt(session.metadata?.unitCount || "1"),
-          contract_length: session.metadata?.contractLength || "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+        try {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          
+          await supabaseService.from("subscriptions").upsert({
+            user_id: session.metadata?.userId || null,
+            service_id: null, // Will be linked later if needed
+            plan_type: session.metadata?.subscriptionType || "basic",
+            billing_cycle: "monthly",
+            status: subscription.status,
+            total_price: subscription.items.data[0]?.price.unit_amount || 0,
+            unit_count: parseInt(session.metadata?.unitCount || "1"),
+            service_address: session.metadata?.serviceAddress,
+            billing_address: session.customer_details?.address ? {
+              line1: session.customer_details.address.line1,
+              line2: session.customer_details.address.line2,
+              city: session.customer_details.address.city,
+              state: session.customer_details.address.state,
+              postal_code: session.customer_details.address.postal_code,
+              country: session.customer_details.address.country
+            } : null,
+            selected_features: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+          // Update subscribers table for subscription status tracking
+          if (session.metadata?.userId && session.customer_details?.email) {
+            await supabaseService.from("subscribers").upsert({
+              user_id: session.metadata.userId,
+              email: session.customer_details.email,
+              subscribed: true,
+              subscription_tier: session.metadata?.selectedTier || "basic",
+              stripe_customer_id: subscription.customer as string,
+              subscription_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          }
+        } catch (subscriptionError) {
+          console.error("Error handling subscription:", subscriptionError);
+          // Don't fail the entire request for subscription errors
+        }
+      }
+
+      // Create payment record
+      if (session.metadata?.userId) {
+        try {
+          await supabaseService.from("payments").insert({
+            user_id: session.metadata.userId,
+            subscription_id: null, // Will be linked if it's a subscription
+            amount: session.amount_total || 0,
+            currency: session.currency || "usd",
+            payment_method: "stripe",
+            status: "completed",
+            stripe_payment_intent_id: session.payment_intent as string,
+            processed_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        } catch (paymentError) {
+          console.error("Error creating payment record:", paymentError);
+          // Don't fail the entire request for payment record errors
+        }
       }
     }
 
@@ -70,7 +117,10 @@ serve(async (req) => {
       status: session.payment_status,
       customerEmail: session.customer_details?.email,
       amountTotal: session.amount_total,
-      metadata: session.metadata
+      currency: session.currency,
+      metadata: session.metadata,
+      subscriptionId: session.subscription,
+      paymentIntentId: session.payment_intent
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
@@ -78,7 +128,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error verifying payment:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: String(error) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

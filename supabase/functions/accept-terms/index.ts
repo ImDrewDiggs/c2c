@@ -84,7 +84,7 @@ serve(async (req) => {
   } catch (err) {
     console.error('Accept terms function error:', err);
     return new Response(
-      JSON.stringify({ success: false, error: err.message }), 
+      JSON.stringify({ success: false, error: String(err) }), 
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
