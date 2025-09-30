@@ -63,6 +63,7 @@ const AdminSubscriptions = lazy(() => import('./pages/admin/Subscriptions'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const SecurePricingPage = lazy(() => import('./pages/SecurePricingPage'));
+const AIDebugger = lazy(() => import('./pages/admin/AIDebugger'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
@@ -147,6 +148,7 @@ const App = () => {
                   <Route path="/admin/support-tickets" element={<AdminSupportTickets />} />
                   <Route path="/admin/orders" element={<AdminOrders />} />
                   <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
+                  <Route path="/admin/ai-debugger" element={<AIDebugger />} />
                   <Route path="/documentation" element={<Documentation />} />
                   
                   <Route path="*" element={<NotFound />} />
