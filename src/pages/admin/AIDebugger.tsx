@@ -1,20 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Bug, Search, Zap, AlertTriangle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, Bug, Search, Zap, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ReactMarkdown from "react-markdown";
 
 export default function AIDebugger() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [analysisType, setAnalysisType] = useState<string>("full_scan");
   const [customQuery, setCustomQuery] = useState("");
   const [analysis, setAnalysis] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+  const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      if (!user) {
+        setIsCheckingAccess(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
+
+        if (error) {
+          console.error('Error checking admin access:', error);
+          setHasAdminAccess(false);
+        } else {
+          setHasAdminAccess(data === true);
+        }
+      } catch (error) {
+        console.error('Failed to check admin access:', error);
+        setHasAdminAccess(false);
+      } finally {
+        setIsCheckingAccess(false);
+      }
+    };
+
+    checkAdminAccess();
+  }, [user]);
 
   const gatherContext = async () => {
     const context: any = {
@@ -35,6 +71,15 @@ export default function AIDebugger() {
   };
 
   const runAnalysis = async () => {
+    if (!hasAdminAccess) {
+      toast({
+        title: "Access Denied",
+        description: "You need admin access to use this feature",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     setAnalysis("");
 
@@ -52,15 +97,23 @@ export default function AIDebugger() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function invocation error:', error);
+        throw new Error(error.message || 'Failed to invoke AI analyzer');
+      }
 
-      if (data.error) {
+      if (data?.error) {
+        console.error('Analysis error:', data.error);
         toast({
           title: "Analysis Failed",
           description: data.error,
           variant: "destructive",
         });
         return;
+      }
+
+      if (!data?.analysis) {
+        throw new Error('No analysis data received');
       }
 
       setAnalysis(data.analysis);
@@ -70,15 +123,65 @@ export default function AIDebugger() {
       });
     } catch (error) {
       console.error("Analysis error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to run analysis";
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to run analysis",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  if (isCheckingAccess) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="flex items-center justify-center p-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-4">Checking access permissions...</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Authentication Required</AlertTitle>
+          <AlertDescription>
+            You must be logged in to access the AI Code Analyzer.
+            <Button 
+              variant="link" 
+              className="ml-2" 
+              onClick={() => navigate('/admin/login')}
+            >
+              Go to Login
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!hasAdminAccess) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You do not have admin access to use the AI Code Analyzer.
+            Only administrators can access this feature.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
