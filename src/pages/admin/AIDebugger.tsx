@@ -90,16 +90,27 @@ export default function AIDebugger() {
         context.query = customQuery;
       }
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
       const { data, error } = await supabase.functions.invoke("ai-code-analyzer", {
         body: {
           analysisType,
           context,
         },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
 
       if (error) {
         console.error('Function invocation error:', error);
-        throw new Error(error.message || 'Failed to invoke AI analyzer');
+        let serverMsg: string | undefined;
+        try {
+          if (error.context) {
+            const parsed = JSON.parse(error.context as unknown as string);
+            serverMsg = parsed?.error || parsed?.message;
+          }
+        } catch {}
+        throw new Error(serverMsg || error.message || 'Failed to invoke AI analyzer');
       }
 
       if (data?.error) {
