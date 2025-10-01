@@ -57,14 +57,74 @@ export default function AIDebugger() {
       timestamp: new Date().toISOString(),
       url: window.location.href,
       userAgent: navigator.userAgent,
+      browser: {
+        language: navigator.language,
+        platform: navigator.platform,
+        cookiesEnabled: navigator.cookieEnabled,
+      }
     };
 
-    // Try to gather console logs from performance
+    // Gather performance metrics
     try {
       const perfEntries = performance.getEntriesByType("navigation");
-      context.performance = perfEntries;
+      const memory = (performance as any).memory;
+      context.performance = {
+        navigation: perfEntries,
+        memory: memory ? {
+          usedJSHeapSize: memory.usedJSHeapSize,
+          totalJSHeapSize: memory.totalJSHeapSize,
+          jsHeapSizeLimit: memory.jsHeapSizeLimit
+        } : null,
+        timing: performance.timing
+      };
     } catch (e) {
       console.error("Could not gather performance data:", e);
+    }
+
+    // Gather console error history
+    try {
+      const consoleErrors: string[] = [];
+      const originalError = console.error;
+      console.error = function(...args) {
+        consoleErrors.push(args.map(arg => String(arg)).join(' '));
+        originalError.apply(console, args);
+      };
+      context.recentErrors = consoleErrors.slice(-10);
+    } catch (e) {
+      console.error("Could not gather console errors:", e);
+    }
+
+    // Gather network activity
+    try {
+      const resources = performance.getEntriesByType("resource");
+      context.networkActivity = {
+        totalRequests: resources.length,
+        failedRequests: resources.filter((r: any) => r.responseStatus >= 400).length,
+        recentRequests: resources.slice(-20).map((r: any) => ({
+          name: r.name,
+          type: r.initiatorType,
+          duration: r.duration,
+          size: r.transferSize
+        }))
+      };
+    } catch (e) {
+      console.error("Could not gather network data:", e);
+    }
+
+    // Gather localStorage/sessionStorage info (non-sensitive)
+    try {
+      context.storageUsage = {
+        localStorageKeys: Object.keys(localStorage).length,
+        sessionStorageKeys: Object.keys(sessionStorage).length
+      };
+    } catch (e) {
+      console.error("Could not gather storage data:", e);
+    }
+
+    // Add analysis type specific context
+    if (analysisType === "error_diagnosis") {
+      // Try to capture any React error boundaries or global errors
+      context.errorBoundaryInfo = "Check React DevTools for component errors";
     }
 
     return context;
@@ -221,25 +281,55 @@ export default function AIDebugger() {
                 <SelectItem value="full_scan">
                   <div className="flex items-center gap-2">
                     <Search className="h-4 w-4" />
-                    Full Application Scan
+                    <div>
+                      <div className="font-medium">Full Application Scan</div>
+                      <div className="text-xs text-muted-foreground">Comprehensive analysis of all components</div>
+                    </div>
                   </div>
                 </SelectItem>
                 <SelectItem value="error_diagnosis">
                   <div className="flex items-center gap-2">
                     <Bug className="h-4 w-4" />
-                    Error Diagnosis
+                    <div>
+                      <div className="font-medium">Error Diagnosis</div>
+                      <div className="text-xs text-muted-foreground">Debug specific errors with root cause analysis</div>
+                    </div>
                   </div>
                 </SelectItem>
                 <SelectItem value="missing_features">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" />
-                    Find Missing Features
+                    <div>
+                      <div className="font-medium">Find Missing Features</div>
+                      <div className="text-xs text-muted-foreground">Identify incomplete implementations</div>
+                    </div>
+                  </div>
+                </SelectItem>
+                <SelectItem value="security_audit">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="h-4 w-4" />
+                    <div>
+                      <div className="font-medium">Security Audit</div>
+                      <div className="text-xs text-muted-foreground">Check RLS policies and vulnerabilities</div>
+                    </div>
+                  </div>
+                </SelectItem>
+                <SelectItem value="performance_audit">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    <div>
+                      <div className="font-medium">Performance Audit</div>
+                      <div className="text-xs text-muted-foreground">Identify bottlenecks and optimization opportunities</div>
+                    </div>
                   </div>
                 </SelectItem>
                 <SelectItem value="custom">
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4" />
-                    Custom Query
+                    <div>
+                      <div className="font-medium">Custom Query</div>
+                      <div className="text-xs text-muted-foreground">Ask specific questions</div>
+                    </div>
                   </div>
                 </SelectItem>
               </SelectContent>
