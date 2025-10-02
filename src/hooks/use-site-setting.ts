@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: T; loading: boolean; error?: string } {
   const [value, setValue] = useState<T>(defaultValue as T);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed from true to false for non-blocking
   const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {

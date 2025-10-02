@@ -8,17 +8,19 @@ import MaintenancePage from '@/pages/Maintenance';
  * MaintenanceGate
  * Blocks access for non-admin users when maintenance_mode is enabled in site_settings.
  * Admins retain full access. Admin login route remains accessible for everyone.
+ * 
+ * Performance: Non-blocking - allows content to render immediately while checking maintenance status
  */
 export default function MaintenanceGate({ children }: PropsWithChildren) {
   const { isAdmin } = useAuth();
   const location = useLocation();
-  const { value: maintenanceEnabled, loading } = useSiteSetting<boolean>('maintenance_mode', false);
+  const { value: maintenanceEnabled } = useSiteSetting<boolean>('maintenance_mode', false);
 
   // Allow admin login route so admins can sign in during maintenance
   const isAdminLogin = location.pathname.startsWith('/admin/login');
 
-  if (loading) return <>{children}</>; // don't block while checking
-
+  // Always render children immediately for optimal performance
+  // Maintenance check happens asynchronously and redirects if needed
   if (maintenanceEnabled && !isAdmin && !isAdminLogin) {
     // If user tries to access dashboards, let them see maintenance page rather than redirect loops
     if (location.pathname !== '/maintenance') {
