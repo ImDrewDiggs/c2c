@@ -143,6 +143,22 @@ export default function Checkout() {
         } else {
           throw new Error('No checkout URL received');
         }
+      } else if (selectedPaymentMethod === "square") {
+        // Square payment processing
+        toast({
+          title: "Square Payment",
+          description: "Redirecting to Square checkout...",
+        });
+        
+        // TODO: Integrate Square Checkout API
+        // For now, simulate redirect
+        setTimeout(() => {
+          navigate('/checkout/success', { 
+            state: { 
+              orderData: { checkoutData, customerInfo, paymentMethod: selectedPaymentMethod, total: calculateTotal() }
+            }
+          });
+        }, 2000);
       } else {
         // For other payment methods, show success (simulated)
         toast({
@@ -361,10 +377,14 @@ export default function Checkout() {
               </CardHeader>
               <CardContent>
                 <Tabs value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
-                  <TabsList className="grid w-full grid-cols-3 mb-6">
+                  <TabsList className="grid w-full grid-cols-4 mb-6">
                     <TabsTrigger value="stripe" className="flex items-center gap-2">
                       <CreditCard className="w-4 h-4" />
                       Card
+                    </TabsTrigger>
+                    <TabsTrigger value="square" className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" />
+                      Square
                     </TabsTrigger>
                     <TabsTrigger value="paypal" className="flex items-center gap-2">
                       <Wallet className="w-4 h-4" />
@@ -396,6 +416,15 @@ export default function Checkout() {
                         <Label htmlFor="cardName">Name on Card</Label>
                         <Input id="cardName" placeholder="John Doe" />
                       </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="square" className="space-y-4">
+                    <div className="text-center py-8">
+                      <CreditCard className="w-16 h-16 mx-auto mb-4 text-primary" />
+                      <p className="text-muted-foreground">
+                        You will be redirected to Square to complete your payment securely.
+                      </p>
                     </div>
                   </TabsContent>
 
