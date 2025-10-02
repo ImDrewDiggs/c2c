@@ -33,9 +33,9 @@ export default function TermsPage() {
       if (success) {
         toast({
           title: "Terms Accepted",
-          description: "Thank you for accepting our terms. You now have access to pricing information."
+          description: "Thank you for accepting our terms. You can now view our subscription plans."
         });
-        navigate('/secure-pricing');
+        navigate('/subscription');
       } else {
         toast({
           variant: "destructive",
