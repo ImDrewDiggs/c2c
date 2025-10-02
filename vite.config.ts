@@ -21,26 +21,39 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    cssCodeSplit: true, // Enable CSS code splitting to reduce render blocking
+    cssCodeSplit: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        passes: 2
+      }
+    },
     rollupOptions: {
       external: [
-        // Add FullCalendar packages to external
         "@fullcalendar/core",
       ],
       output: {
-        manualChunks: {
-          // Core React dependencies
-          'react-vendor': ['react', 'react-dom'],
-          // UI components that are likely to be used across pages
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
-          // Admin pages group
-          'admin-pages': [
-            './src/pages/admin/Dashboard.tsx',
-            './src/pages/admin/Employees.tsx',
-            './src/pages/admin/Customers.tsx'
-          ],
-          // Auth related
-          'auth-vendor': ['@supabase/supabase-js']
+        manualChunks: (id) => {
+          // Vendor chunks for better caching
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('framer-motion')) {
+              return 'animation-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons-vendor';
+            }
+            return 'vendor';
+          }
         }
       }
     }
