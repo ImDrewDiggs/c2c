@@ -54,6 +54,8 @@ export default function Subscription() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const [selectedAddOns, setSelectedAddOns] = useState<SelectedAddOn[]>([]);
+  const [contractDuration, setContractDuration] = useState<"monthly" | "quarterly" | "yearly">("monthly");
+  const [paymentType, setPaymentType] = useState<"one-time" | "recurring">("recurring");
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -139,7 +141,30 @@ export default function Subscription() {
     // Add add-ons with discounts applied
     const addOnsTotal = selectedAddOns.reduce((sum, addOn) => sum + addOn.discountedPrice, 0);
     
-    return baseTotal + addOnsTotal;
+    let monthlyTotal = baseTotal + addOnsTotal;
+    
+    // Apply contract duration multiplier
+    let totalAmount = monthlyTotal;
+    if (contractDuration === "quarterly") {
+      totalAmount = monthlyTotal * 3;
+    } else if (contractDuration === "yearly") {
+      totalAmount = monthlyTotal * 12;
+      // Apply 10% discount for annual prepay if one-time payment
+      if (paymentType === "one-time") {
+        totalAmount = totalAmount * 0.9;
+      }
+    }
+    
+    return totalAmount;
+  };
+  
+  const getContractDurationLabel = (): string => {
+    switch (contractDuration) {
+      case "monthly": return "Monthly";
+      case "quarterly": return "3 Months";
+      case "yearly": return "12 Months";
+      default: return "";
+    }
   };
 
   // Load services from database
@@ -207,6 +232,8 @@ export default function Subscription() {
       unitCount,
       selectedAddOns,
       addOnDiscount: getAddOnDiscount(),
+      contractDuration,
+      paymentType,
       total: calculateTotal(),
       services: services.filter(service => 
         selectedTab === "single-family" 
@@ -633,7 +660,116 @@ export default function Subscription() {
               </Card>
             )}
             
-            <div className="flex justify-center">
+            {/* Contract Duration and Payment Type Selection */}
+            {(selectedTier || (selectedCommunityTierId && selectedServiceId)) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contract Terms & Payment Options</CardTitle>
+                  <CardDescription>Choose your contract length and payment preference</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Contract Duration */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold">Contract Duration</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Button
+                        type="button"
+                        variant={contractDuration === "monthly" ? "default" : "outline"}
+                        onClick={() => setContractDuration("monthly")}
+                        className="h-auto py-4 flex flex-col items-center gap-1"
+                      >
+                        <span className="font-semibold">Monthly</span>
+                        <span className="text-xs opacity-80">Pay as you go</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={contractDuration === "quarterly" ? "default" : "outline"}
+                        onClick={() => setContractDuration("quarterly")}
+                        className="h-auto py-4 flex flex-col items-center gap-1"
+                      >
+                        <span className="font-semibold">3 Months</span>
+                        <span className="text-xs opacity-80">Quarterly billing</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={contractDuration === "yearly" ? "default" : "outline"}
+                        onClick={() => setContractDuration("yearly")}
+                        className="h-auto py-4 flex flex-col items-center gap-1"
+                      >
+                        <span className="font-semibold">12 Months</span>
+                        <span className="text-xs opacity-80">Best value</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Payment Type */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold">Payment Type</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant={paymentType === "recurring" ? "default" : "outline"}
+                        onClick={() => setPaymentType("recurring")}
+                        className="h-auto py-4 flex flex-col items-center gap-1"
+                      >
+                        <span className="font-semibold">Auto-Pay</span>
+                        <span className="text-xs opacity-80">Recurring billing</span>
+                        <span className="text-xs text-green-600 font-semibold">$3/mo discount</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={paymentType === "one-time" ? "default" : "outline"}
+                        onClick={() => setPaymentType("one-time")}
+                        className="h-auto py-4 flex flex-col items-center gap-1"
+                      >
+                        <span className="font-semibold">One-Time</span>
+                        <span className="text-xs opacity-80">Pay upfront</span>
+                        {contractDuration === "yearly" && (
+                          <span className="text-xs text-green-600 font-semibold">10% off yearly</span>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Pricing Summary */}
+                  <div className="pt-4 border-t space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Contract Duration:</span>
+                      <span className="font-semibold">{getContractDurationLabel()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Payment Type:</span>
+                      <span className="font-semibold">
+                        {paymentType === "recurring" ? "Auto-Pay (Recurring)" : "One-Time Payment"}
+                      </span>
+                    </div>
+                    {paymentType === "recurring" && (
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>Auto-Pay Discount:</span>
+                        <span className="font-semibold">-$3/mo</span>
+                      </div>
+                    )}
+                    {contractDuration === "yearly" && paymentType === "one-time" && (
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>Annual Prepay Discount:</span>
+                        <span className="font-semibold">-10%</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold">Total: ${calculateTotal().toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {paymentType === "recurring" 
+                    ? `Billed ${contractDuration === "monthly" ? "monthly" : contractDuration === "quarterly" ? "every 3 months" : "annually"}`
+                    : `One-time payment for ${getContractDurationLabel().toLowerCase()}`
+                  }
+                </p>
+              </div>
               <Button 
                 size="lg"
                 onClick={handleContinueToCheckout}
@@ -644,7 +780,7 @@ export default function Subscription() {
                 }
                 className="w-full max-w-md"
               >
-                {isProcessing ? "Processing..." : "Subscribe Now"}
+                {isProcessing ? "Processing..." : "Continue to Checkout"}
               </Button>
             </div>
           </div>
