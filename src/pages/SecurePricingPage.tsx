@@ -157,7 +157,7 @@ export default function SecurePricingPage() {
           ✓ Terms Accepted - Access Granted
         </Badge>
         <p className="text-lg text-muted-foreground">
-          Detailed competitive pricing analysis and profit margins
+          Detailed pricing analysis
         </p>
         <Button 
           variant="outline" 
@@ -177,7 +177,7 @@ export default function SecurePricingPage() {
             Single Family Residential Pricing
           </CardTitle>
           <CardDescription>
-            Detailed pricing structure with profit margins and competitive analysis
+            Detailed pricing structure
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -208,11 +208,6 @@ export default function SecurePricingPage() {
                       ))}
                     </ul>
                   </div>
-                  <Separator />
-                  <div className="bg-muted p-3 rounded-lg">
-                    <h4 className="font-semibold text-sm mb-1">Competitive Edge:</h4>
-                    <p className="text-xs text-muted-foreground">{tier.competitiveAdvantage}</p>
-                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -228,7 +223,7 @@ export default function SecurePricingPage() {
             Business & Commercial Pricing
           </CardTitle>
           <CardDescription>
-            High-margin B2B pricing structure for commercial clients
+            B2B pricing structure for commercial clients
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -259,11 +254,6 @@ export default function SecurePricingPage() {
                       ))}
                     </ul>
                   </div>
-                  <Separator />
-                  <div className="bg-muted p-3 rounded-lg">
-                    <h4 className="font-semibold text-sm mb-1">Competitive Edge:</h4>
-                    <p className="text-xs text-muted-foreground">{tier.competitiveAdvantage}</p>
-                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -291,23 +281,23 @@ export default function SecurePricingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Cost Structure</h4>
+              <h4 className="font-semibold mb-2">Growth Strategy</h4>
               <ul className="space-y-2 text-sm">
-                <li>• Operations: 15-25% of revenue</li>
-                <li>• Technology: 5-8% of revenue</li>
-                <li>• Marketing: 10-15% of revenue</li>
-                <li>• Net profit margin: 50-65%</li>
+                <li>• Focus on customer retention</li>
+                <li>• Expand service area coverage</li>
+                <li>• Invest in technology automation</li>
+                <li>• Build strategic partnerships</li>
               </ul>
             </div>
           </div>
           <Separator />
-          <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-            <h4 className="font-semibold text-amber-800 mb-2">Confidential Strategic Notes:</h4>
-            <ul className="text-sm text-amber-700 space-y-1">
-              <li>• Pricing designed to undercut competitors by 30-40% while maintaining high margins</li>
-              <li>• Volume-based model allows for aggressive customer acquisition</li>
-              <li>• Technology automation reduces operational costs significantly</li>
-              <li>• B2B pricing captures premium value from commercial clients</li>
+          <div className="bg-muted p-4 rounded-lg">
+            <h4 className="font-semibold mb-2">Strategic Notes:</h4>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Competitive pricing with quality service delivery</li>
+              <li>• Volume-based model enables efficient operations</li>
+              <li>• Technology automation improves service quality</li>
+              <li>• Flexible pricing for different market segments</li>
             </ul>
           </div>
         </CardContent>

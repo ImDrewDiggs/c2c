@@ -328,8 +328,7 @@ export const multiFamilyServiceDetails = [
       "1x/week concierge (1 bag per unit)",
       "No dumpster cleaning",
       "No large item pickup"
-    ],
-    competitiveEdge: "Entry-level service for budget-conscious properties"
+    ]
   },
   {
     tier: "Standard",
@@ -338,8 +337,7 @@ export const multiFamilyServiceDetails = [
       "1x/week concierge (up to 2 bags/unit)",
       "Monthly dumpster cleaning",
       "Bi-monthly large item pickup"
-    ],
-    competitiveEdge: "Enhanced service with regular cleaning maintenance"
+    ]
   },
   {
     tier: "Premium",
@@ -349,8 +347,7 @@ export const multiFamilyServiceDetails = [
       "Monthly dumpster cleaning + deodorizing",
       "2x/week trash area cleanup",
       "Graffiti cleaning"
-    ],
-    competitiveEdge: "Premium service with area maintenance and aesthetics"
+    ]
   },
   {
     tier: "Comprehensive",
@@ -362,8 +359,7 @@ export const multiFamilyServiceDetails = [
       "Graffiti cleanup",
       "Hallway/stair sweeping",
       "Common area cleaning"
-    ],
-    competitiveEdge: "Complete property maintenance solution"
+    ]
   },
   {
     tier: "ELITE",
@@ -375,8 +371,7 @@ export const multiFamilyServiceDetails = [
       "Graffiti cleaning",
       "Hallway & stair sweeping",
       "Hallway wall cleaning"
-    ],
-    competitiveEdge: "Ultimate luxury service with daily attention"
+    ]
   }
 ];
 

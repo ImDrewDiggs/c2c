@@ -19,11 +19,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { serviceCategories, pricingPolicy, singleFamilyTiers, multiFamilyServiceDetails, businessServiceDetails } from "@/data/services";
-import { AuthenticatedPricingGuard } from "@/components/auth/AuthenticatedPricingGuard";
+import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 
 export default function ServicesAndPrices() {
   return (
-    <div className="container mx-auto py-12">
+    <RequireTermsAcceptance>
+      <div className="container mx-auto py-12">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Services & Prices</h1>
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -39,7 +40,6 @@ export default function ServicesAndPrices() {
         </TabsList>
 
         <TabsContent value="subscription-plans">
-          <AuthenticatedPricingGuard>
             <div className="space-y-12">
               {/* Single Family Plans */}
               <div className="space-y-6">
@@ -52,7 +52,6 @@ export default function ServicesAndPrices() {
                         <TableHead className="w-[200px]">Service Tier</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead className="w-[400px]">Features</TableHead>
-                        <TableHead className="w-[300px]">Competitive Edge & Profit Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -69,9 +68,6 @@ export default function ServicesAndPrices() {
                                 </li>
                               ))}
                             </ul>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {tier.perk}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -94,7 +90,6 @@ export default function ServicesAndPrices() {
                         <TableHead className="w-[200px]">Service Tier</TableHead>
                         <TableHead>Monthly Pricing (Per Unit)</TableHead>
                         <TableHead className="w-[400px]">Services Included</TableHead>
-                        <TableHead className="w-[300px]">Key Competitive Edge & Profit Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -111,9 +106,6 @@ export default function ServicesAndPrices() {
                                 </li>
                               ))}
                             </ul>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {service.competitiveEdge}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -164,7 +156,6 @@ export default function ServicesAndPrices() {
                 </div>
               </div>
             </div>
-          </AuthenticatedPricingGuard>
         </TabsContent>
 
         <TabsContent value="all-services">
@@ -214,5 +205,6 @@ export default function ServicesAndPrices() {
         </Button>
       </div>
     </div>
+    </RequireTermsAcceptance>
   );
 }

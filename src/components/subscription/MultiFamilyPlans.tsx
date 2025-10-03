@@ -134,9 +134,6 @@ const MultiFamilyPlans = ({
                       </li>
                     ))}
                   </ul>
-                  <p className="text-xs text-muted-foreground italic">
-                    {service.competitiveEdge}
-                  </p>
                 </div>
               ))}
             </div>
