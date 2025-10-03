@@ -7,23 +7,18 @@
     <title>Can2Curb | Trash Can Concierge</title>
     <meta name="description" content="Can2Curb dashboards for employees and admins. Route optimization, assignments, and billing." />
     <link rel="canonical" href="https://c2c.lovable.app" />
-    
-    <!-- Critical resource hints for performance -->
-    <link rel="preconnect" href="https://iagkylxqlartqokuiahf.supabase.co" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://iagkylxqlartqokuiahf.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://iagkylxqlartqokuiahf.supabase.co" />
-    
-    <!-- Preload critical entry point -->
+    <link rel="preconnect" href="https://cdn.gpteng.co" />
     <link rel="modulepreload" href="/src/main.tsx" />
-    
     <style>
-      /* Critical above-the-fold styles - minimal for fastest paint */
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #1a1a1a; color: #fff; font-family: system-ui, -apple-system, sans-serif; }
-      .hero-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-      .hero-content { text-align: center; max-width: 48rem; padding: 1rem; }
-      .hero-text { font-size: clamp(2rem, 5vw, 4rem); font-weight: 700; margin-bottom: 1.5rem; background: linear-gradient(90deg, #16a34a, #15803d); background-clip: text; -webkit-background-clip: text; color: transparent; }
-      .hero-subtitle { font-size: clamp(1rem, 2vw, 1.25rem); color: #d4d4d4; margin-bottom: 2rem; line-height: 1.6; }
-      .btn-primary { display: inline-block; padding: 0.75rem 1.5rem; font-size: 1.125rem; font-weight: 500; color: #fff; background: #16a34a; border-radius: 0.5rem; border: none; cursor: pointer; text-decoration: none; }
+      body { background: hsl(0 0% 10%); color: hsl(0 0% 100%); }
+      .loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+      /* Critical above-the-fold styles for LCP optimization */
+      .hero-text { font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; background: linear-gradient(to right, hsl(120 100% 25%), hsl(120 100% 25% / 0.6)); background-clip: text; -webkit-background-clip: text; color: transparent; will-change: transform; }
+      .hero-subtitle { font-size: 1.125rem; color: hsl(0 0% 75%); margin-bottom: 2rem; will-change: transform, opacity; contain: layout style paint; }
+      @media (min-width: 768px) { .hero-text { font-size: 4rem; } .hero-subtitle { font-size: 1.25rem; } }
     </style>
     <meta name="theme-color" content="#22c55e" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' https://*.supabase.co 'wasm-unsafe-eval'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.tile.openstreetmap.org; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" />
@@ -33,28 +28,8 @@
   </head>
 
   <body>
-    <div id="root">
-      <!-- Static HTML skeleton renders immediately before React hydration -->
-      <div class="hero-container">
-        <div class="hero-content">
-          <h1 class="hero-text">Your Trash Can Concierge</h1>
-          <p class="hero-subtitle">Professional trash can maintenance services that keep your property clean and hygienic</p>
-          <a href="#get-started" class="btn-primary">Get Started Today</a>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Deferred scripts load after content is painted -->
-    <script>
-      // Defer GPT Engineer script to not block rendering
-      setTimeout(() => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.gpteng.co/gptengineer.js';
-        script.type = 'module';
-        script.defer = true;
-        document.head.appendChild(script);
-      }, 3000);
-    </script>
+    <div id="root"></div>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

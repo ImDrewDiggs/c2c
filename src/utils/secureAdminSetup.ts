@@ -26,13 +26,8 @@ export async function createSecureAdminUser(adminEmail: string, adminPassword: s
 }
     
 
-/**
- * @deprecated This function is deprecated. Admin roles are now managed via the user_roles table.
- * Use permissionManager.isAdmin() or permissionManager.isSuperAdmin() instead.
- * This function is kept only for backward compatibility and will be removed in a future version.
- */
 export function isAdminEmail(email: string): boolean {
-  console.warn('⚠️ DEPRECATED: isAdminEmail() is deprecated. Use permissionManager.isAdmin() instead.');
-  // This function is deprecated - admin status should be checked via user_roles table
-  return false;
+  // SECURITY: Restricted to single admin for security
+  const approvedEmails = ['diggs844037@yahoo.com'];
+  return approvedEmails.includes(email);
 }

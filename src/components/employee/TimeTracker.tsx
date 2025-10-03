@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Play, Square, Calendar, MapPin } from "lucide-react";
+import { Clock, Play, Square, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { useBackgroundGPS } from "@/hooks/useBackgroundGPS";
 
 interface TimeTrackerProps {
   userId: string;
@@ -26,11 +25,7 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   const [currentSession, setCurrentSession] = useState<WorkSession | null>(null);
   const [sessions, setSessions] = useState<WorkSession[]>([]);
   const [totalHours, setTotalHours] = useState(0);
-  const [weekTotalHours, setWeekTotalHours] = useState(0);
   const [loading, setLoading] = useState(true);
-  
-  // Enable background GPS tracking when user is working
-  const { isTracking, startTracking, stopTracking } = useBackgroundGPS(userId, isWorking);
 
   useEffect(() => {
     fetchWorkSessions();
@@ -44,13 +39,6 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       const today = new Date();
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-      
-      // Calculate start of week (Monday)
-      const startOfWeek = new Date(today);
-      const day = startOfWeek.getDay();
-      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-      startOfWeek.setDate(diff);
-      startOfWeek.setHours(0, 0, 0, 0);
 
       const { data, error } = await supabase
         .from('work_sessions')
@@ -83,26 +71,6 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       // Convert to hours with 0.01 precision
       const hours = Math.round((totalMinutes / 60) * 100) / 100;
       setTotalHours(hours);
-      
-      // Calculate week's total hours
-      const weekSessions = data?.filter(session => {
-        const sessionDate = new Date(session.clock_in_time);
-        return sessionDate >= startOfWeek;
-      }) || [];
-      
-      const weekTotalMinutes = weekSessions.reduce((total, session) => {
-        if (session.total_hours) {
-          return total + (session.total_hours * 60);
-        } else if (session.clock_out_time) {
-          const clockIn = new Date(session.clock_in_time);
-          const clockOut = new Date(session.clock_out_time);
-          return total + ((clockOut.getTime() - clockIn.getTime()) / (1000 * 60));
-        }
-        return total;
-      }, 0);
-      
-      const weekHours = Math.round((weekTotalMinutes / 60) * 100) / 100;
-      setWeekTotalHours(weekHours);
       
       // Check for active session
       const activeSession = data?.find(session => session.status === 'active');
@@ -139,13 +107,10 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
       // Get current location for clock-in
       navigator.geolocation.getCurrentPosition(async (position) => {
-        const clockInTime = new Date().toISOString();
-        
         const { data, error } = await supabase
           .from('work_sessions')
           .insert({
             employee_id: userId,
-            clock_in_time: clockInTime,
             clock_in_location_lat: position.coords.latitude,
             clock_in_location_lng: position.coords.longitude,
             status: 'active'
@@ -157,13 +122,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
         setCurrentSession(data);
         setIsWorking(true);
-        
-        // Start background GPS tracking
-        await startTracking();
-        
         toast({
           title: "Clocked In",
-          description: "Your work session has started successfully. GPS tracking is now active.",
+          description: "Your work session has started successfully.",
         });
       }, (error) => {
         // Clock in without location if geolocation fails
@@ -200,13 +161,10 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
         return;
       }
 
-      const clockInTime = new Date().toISOString();
-      
       const { data, error } = await supabase
         .from('work_sessions')
         .insert({
           employee_id: userId,
-          clock_in_time: clockInTime,
           status: 'active'
         })
         .select()
@@ -216,13 +174,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
       setCurrentSession(data);
       setIsWorking(true);
-      
-      // Start background GPS tracking
-      await startTracking();
-      
       toast({
         title: "Clocked In",
-        description: "Your work session has started successfully. GPS tracking is now active.",
+        description: "Your work session has started successfully.",
       });
     } catch (error) {
       console.error('Error clocking in without location:', error);
@@ -263,13 +217,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
         setCurrentSession(null);
         setIsWorking(false);
-        
-        // Stop background GPS tracking
-        await stopTracking();
-        
         toast({
           title: "Clocked Out",
-          description: `Session completed: ${totalHours.toFixed(2)} hours recorded. GPS tracking stopped.`
+          description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
         });
         
         await fetchWorkSessions();
@@ -312,13 +262,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       
       setCurrentSession(null);
       setIsWorking(false);
-      
-      // Stop background GPS tracking
-      await stopTracking();
-      
       toast({
         title: "Clocked Out",
-        description: `Session completed: ${totalHours.toFixed(2)} hours recorded. GPS tracking stopped.`
+        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
       });
       
       await fetchWorkSessions();
@@ -350,17 +296,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <div>
               <p className="font-medium">Current Status</p>
-              <div className="flex items-center gap-2">
-                <Badge variant={isWorking ? "default" : "secondary"}>
-                  {isWorking ? "Working" : "Not Working"}
-                </Badge>
-                {isTracking && (
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    GPS Active
-                  </Badge>
-                )}
-              </div>
+              <Badge variant={isWorking ? "default" : "secondary"}>
+                {isWorking ? "Working" : "Not Working"}
+              </Badge>
             </div>
             <div className="flex gap-2">
               {!isWorking ? (
@@ -390,10 +328,8 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
               <p className="text-sm text-muted-foreground">Sessions</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-primary">
-                {weekTotalHours.toFixed(2)}
-              </div>
-              <div className="text-sm text-muted-foreground">Hours This Week</div>
+              <p className="text-2xl font-bold">Coming Soon</p>
+              <p className="text-sm text-muted-foreground">Status</p>
             </div>
           </div>
         </CardContent>

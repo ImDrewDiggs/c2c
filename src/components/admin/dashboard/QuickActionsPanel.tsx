@@ -6,8 +6,7 @@ import {
   MapPin, 
   Calendar, 
   MessageSquare,
-  UserPlus,
-  Bug
+  UserPlus
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -42,11 +41,6 @@ export function QuickActionsPanel() {
       title: "Site Settings",
       icon: <MessageSquare className="h-4 w-4 mr-2" />,
       action: () => navigate("/admin/settings")
-    },
-    {
-      title: "AI Debugger",
-      icon: <Bug className="h-4 w-4 mr-2" />,
-      action: () => navigate("/admin/ai-debugger")
     }
   ];
 

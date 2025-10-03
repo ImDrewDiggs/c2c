@@ -112,13 +112,10 @@ export function FieldWorkerGroups({
         }
 
         // Clock in
-        const clockInTime = new Date().toISOString();
-        
         const { data, error } = await supabase
           .from('work_sessions')
           .insert({
             employee_id: userId,
-            clock_in_time: clockInTime,
             clock_in_location_lat: currentLocation?.latitude,
             clock_in_location_lng: currentLocation?.longitude,
             status: 'active'

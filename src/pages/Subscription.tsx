@@ -37,13 +37,6 @@ const serviceTypes: ServiceType[] = [
   }
 ];
 
-interface SelectedAddOn {
-  id: string;
-  name: string;
-  price: number;
-  discountedPrice: number;
-}
-
 export default function Subscription() {
   const [selectedTab, setSelectedTab] = useState("single-family");
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
@@ -53,9 +46,6 @@ export default function Subscription() {
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [services, setServices] = useState<any[]>([]);
-  const [selectedAddOns, setSelectedAddOns] = useState<SelectedAddOn[]>([]);
-  const [contractDuration, setContractDuration] = useState<"monthly" | "quarterly" | "yearly">("monthly");
-  const [paymentType, setPaymentType] = useState<"one-time" | "recurring">("recurring");
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -87,84 +77,18 @@ export default function Subscription() {
     return null;
   };
 
-  const getAddOnDiscount = (): number => {
-    if (selectedTab === "single-family" && selectedTier) {
-      const tier = singleFamilyTiers.find(t => t.id === selectedTier);
-      if (!tier) return 0;
-      
-      // Extract discount from features
-      if (tier.id === "standard") return 0.05;
-      if (tier.id === "premium") return 0.07;
-      if (tier.id === "comprehensive") return 0.10;
-    }
-    
-    if (selectedTab === "multi-family" && selectedCommunityTierId) {
-      // Multi-family gets 5% discount on add-ons
-      return 0.05;
-    }
-    
-    return 0;
-  };
-
-  const toggleAddOn = (addOn: { name: string; price: string }) => {
-    const basePrice = parseFloat(addOn.price.replace(/[^0-9.]/g, ''));
-    const discount = getAddOnDiscount();
-    const discountedPrice = basePrice * (1 - discount);
-    
-    const addOnId = addOn.name.toLowerCase().replace(/\s+/g, '-');
-    const existingIndex = selectedAddOns.findIndex(a => a.id === addOnId);
-    
-    if (existingIndex >= 0) {
-      setSelectedAddOns(prev => prev.filter((_, idx) => idx !== existingIndex));
-    } else {
-      setSelectedAddOns(prev => [...prev, {
-        id: addOnId,
-        name: addOn.name,
-        price: basePrice,
-        discountedPrice
-      }]);
-    }
-  };
-
   const calculateTotal = (): number => {
-    let baseTotal = 0;
-    
     if (selectedTab === "single-family" && selectedTier) {
       const tier = singleFamilyTiers.find(t => t.id === selectedTier);
-      baseTotal = tier?.price || 0;
+      return tier?.price || 0;
     }
     
     if (selectedTab === "multi-family") {
-      baseTotal = selectedServiceTypes.length * 25;
+      // For multi-family, return a base calculation
+      return selectedServiceTypes.length * 25; // Simplified calculation
     }
     
-    // Add add-ons with discounts applied
-    const addOnsTotal = selectedAddOns.reduce((sum, addOn) => sum + addOn.discountedPrice, 0);
-    
-    let monthlyTotal = baseTotal + addOnsTotal;
-    
-    // Apply contract duration multiplier
-    let totalAmount = monthlyTotal;
-    if (contractDuration === "quarterly") {
-      totalAmount = monthlyTotal * 3;
-    } else if (contractDuration === "yearly") {
-      totalAmount = monthlyTotal * 12;
-      // Apply 10% discount for annual prepay if one-time payment
-      if (paymentType === "one-time") {
-        totalAmount = totalAmount * 0.9;
-      }
-    }
-    
-    return totalAmount;
-  };
-  
-  const getContractDurationLabel = (): string => {
-    switch (contractDuration) {
-      case "monthly": return "Monthly";
-      case "quarterly": return "3 Months";
-      case "yearly": return "12 Months";
-      default: return "";
-    }
+    return 0;
   };
 
   // Load services from database
@@ -230,10 +154,6 @@ export default function Subscription() {
       selectedCommunityTierId,
       selectedServiceId,
       unitCount,
-      selectedAddOns,
-      addOnDiscount: getAddOnDiscount(),
-      contractDuration,
-      paymentType,
       total: calculateTotal(),
       services: services.filter(service => 
         selectedTab === "single-family" 
@@ -284,66 +204,6 @@ export default function Subscription() {
               selectedTier={selectedTier || ''}
               onTierSelect={setSelectedTier}
             />
-            
-            {/* Add-Ons Section - Integrated with main subscription */}
-            {selectedTier && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl">Add Optional Services</CardTitle>
-                  <CardDescription>
-                    Select additional services to enhance your plan
-                    {getAddOnDiscount() > 0 && (
-                      <span className="block mt-1 text-primary font-semibold">
-                        Your {singleFamilyTiers.find(t => t.id === selectedTier)?.name} plan includes {Math.round(getAddOnDiscount() * 100)}% off all add-ons!
-                      </span>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {addOnServices[0].services.map((addOn) => {
-                      const basePrice = parseFloat(addOn.price.replace(/[^0-9.]/g, ''));
-                      const discount = getAddOnDiscount();
-                      const discountedPrice = basePrice * (1 - discount);
-                      const isSelected = selectedAddOns.some(a => a.name === addOn.name);
-                      
-                      return (
-                        <div 
-                          key={addOn.name}
-                          onClick={() => toggleAddOn(addOn)}
-                          className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                            isSelected 
-                              ? 'border-primary bg-primary/5 shadow-md' 
-                              : 'border-border hover:border-primary/50 hover:shadow-sm'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-base flex items-center gap-2">
-                                {addOn.name}
-                                {isSelected && <Check className="h-4 w-4 text-primary" />}
-                              </h4>
-                              <p className="text-sm text-muted-foreground mt-1">{addOn.description}</p>
-                            </div>
-                            <div className="text-right ml-4">
-                              {discount > 0 ? (
-                                <div>
-                                  <p className="text-sm text-muted-foreground line-through">{addOn.price}</p>
-                                  <p className="font-bold text-primary">${discountedPrice.toFixed(2)}/mo</p>
-                                  <p className="text-xs text-green-600">Save {Math.round(discount * 100)}%</p>
-                                </div>
-                              ) : (
-                                <p className="font-bold">{addOn.price}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
             
             {/* Single Family Discounts */}
             <Card>
@@ -396,60 +256,6 @@ export default function Subscription() {
               totalPrice={calculateTotal()}
               discount={0}
             />
-            
-            {/* Add-Ons Section for Multi-Family */}
-            {selectedCommunityTierId && selectedServiceId && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl">Add Optional Services</CardTitle>
-                  <CardDescription>
-                    Enhance your multi-family property service
-                    <span className="block mt-1 text-primary font-semibold">
-                      Multi-family properties get 5% off all add-ons!
-                    </span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {addOnServices[0].services.map((addOn) => {
-                      const basePrice = parseFloat(addOn.price.replace(/[^0-9.]/g, ''));
-                      const discount = getAddOnDiscount();
-                      const discountedPrice = basePrice * (1 - discount);
-                      const isSelected = selectedAddOns.some(a => a.name === addOn.name);
-                      
-                      return (
-                        <div 
-                          key={addOn.name}
-                          onClick={() => toggleAddOn(addOn)}
-                          className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                            isSelected 
-                              ? 'border-primary bg-primary/5 shadow-md' 
-                              : 'border-border hover:border-primary/50 hover:shadow-sm'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-base flex items-center gap-2">
-                                {addOn.name}
-                                {isSelected && <Check className="h-4 w-4 text-primary" />}
-                              </h4>
-                              <p className="text-sm text-muted-foreground mt-1">{addOn.description}</p>
-                            </div>
-                            <div className="text-right ml-4">
-                              <div>
-                                <p className="text-sm text-muted-foreground line-through">{addOn.price}</p>
-                                <p className="font-bold text-primary">${discountedPrice.toFixed(2)}/mo</p>
-                                <p className="text-xs text-green-600">Save {Math.round(discount * 100)}%</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
             
             {/* Multi-Family Discounts */}
             <Card>
@@ -619,170 +425,27 @@ export default function Subscription() {
         </Tabs>
 
         {(selectedTab === "single-family" || selectedTab === "multi-family") && (
-          <div className="space-y-4">
-            <PricingDisplay
-              total={calculateTotal()}
-              discount={0}
-              subscriptionType={selectedTab}
-            />
-            
-            {selectedAddOns.length > 0 && (
-              <Card className="bg-primary/5">
-                <CardHeader>
-                  <CardTitle className="text-lg">Selected Add-Ons</CardTitle>
-                  <CardDescription>Additional services with applied discounts</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {selectedAddOns.map((addOn) => (
-                      <li key={addOn.id} className="flex justify-between items-center">
-                        <span className="font-medium">{addOn.name}</span>
-                        <div className="text-right">
-                          <span className="font-bold text-primary">
-                            ${addOn.discountedPrice.toFixed(2)}/mo
-                          </span>
-                          {addOn.discountedPrice < addOn.price && (
-                            <span className="block text-xs text-green-600">
-                              Save ${(addOn.price - addOn.discountedPrice).toFixed(2)}/mo
-                            </span>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 pt-4 border-t flex justify-between items-center font-bold">
-                    <span>Total Add-Ons:</span>
-                    <span className="text-primary">
-                      ${selectedAddOns.reduce((sum, a) => sum + a.discountedPrice, 0).toFixed(2)}/mo
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            {/* Contract Duration and Payment Type Selection */}
-            {(selectedTier || (selectedCommunityTierId && selectedServiceId)) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contract Terms & Payment Options</CardTitle>
-                  <CardDescription>Choose your contract length and payment preference</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Contract Duration */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold">Contract Duration</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      <Button
-                        type="button"
-                        variant={contractDuration === "monthly" ? "default" : "outline"}
-                        onClick={() => setContractDuration("monthly")}
-                        className="h-auto py-4 flex flex-col items-center gap-1"
-                      >
-                        <span className="font-semibold">Monthly</span>
-                        <span className="text-xs opacity-80">Pay as you go</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={contractDuration === "quarterly" ? "default" : "outline"}
-                        onClick={() => setContractDuration("quarterly")}
-                        className="h-auto py-4 flex flex-col items-center gap-1"
-                      >
-                        <span className="font-semibold">3 Months</span>
-                        <span className="text-xs opacity-80">Quarterly billing</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={contractDuration === "yearly" ? "default" : "outline"}
-                        onClick={() => setContractDuration("yearly")}
-                        className="h-auto py-4 flex flex-col items-center gap-1"
-                      >
-                        <span className="font-semibold">12 Months</span>
-                        <span className="text-xs opacity-80">Best value</span>
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Payment Type */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-semibold">Payment Type</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        type="button"
-                        variant={paymentType === "recurring" ? "default" : "outline"}
-                        onClick={() => setPaymentType("recurring")}
-                        className="h-auto py-4 flex flex-col items-center gap-1"
-                      >
-                        <span className="font-semibold">Auto-Pay</span>
-                        <span className="text-xs opacity-80">Recurring billing</span>
-                        <span className="text-xs text-green-600 font-semibold">$3/mo discount</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={paymentType === "one-time" ? "default" : "outline"}
-                        onClick={() => setPaymentType("one-time")}
-                        className="h-auto py-4 flex flex-col items-center gap-1"
-                      >
-                        <span className="font-semibold">One-Time</span>
-                        <span className="text-xs opacity-80">Pay upfront</span>
-                        {contractDuration === "yearly" && (
-                          <span className="text-xs text-green-600 font-semibold">10% off yearly</span>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Pricing Summary */}
-                  <div className="pt-4 border-t space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Contract Duration:</span>
-                      <span className="font-semibold">{getContractDurationLabel()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Payment Type:</span>
-                      <span className="font-semibold">
-                        {paymentType === "recurring" ? "Auto-Pay (Recurring)" : "One-Time Payment"}
-                      </span>
-                    </div>
-                    {paymentType === "recurring" && (
-                      <div className="flex justify-between text-sm text-green-600">
-                        <span>Auto-Pay Discount:</span>
-                        <span className="font-semibold">-$3/mo</span>
-                      </div>
-                    )}
-                    {contractDuration === "yearly" && paymentType === "one-time" && (
-                      <div className="flex justify-between text-sm text-green-600">
-                        <span>Annual Prepay Discount:</span>
-                        <span className="font-semibold">-10%</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold">Total: ${calculateTotal().toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">
-                  {paymentType === "recurring" 
-                    ? `Billed ${contractDuration === "monthly" ? "monthly" : contractDuration === "quarterly" ? "every 3 months" : "annually"}`
-                    : `One-time payment for ${getContractDurationLabel().toLowerCase()}`
-                  }
-                </p>
-              </div>
-              <Button 
-                size="lg"
-                onClick={handleContinueToCheckout}
-                disabled={
-                  (selectedTab === "single-family" && !selectedTier) ||
-                  (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
-                  isProcessing
-                }
-                className="w-full max-w-md"
-              >
-                {isProcessing ? "Processing..." : "Continue to Checkout"}
-              </Button>
-            </div>
+          <PricingDisplay
+            total={calculateTotal()}
+            discount={0}
+            subscriptionType={selectedTab}
+          />
+        )}
+        
+        {(selectedTab === "single-family" || selectedTab === "multi-family") && (
+          <div className="flex justify-center">
+            <Button 
+              size="lg"
+              onClick={handleContinueToCheckout}
+              disabled={
+                (selectedTab === "single-family" && !selectedTier) ||
+                (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
+                isProcessing
+              }
+              className="w-full max-w-md"
+            >
+              Subscribe Now
+            </Button>
           </div>
         )}
       </div>

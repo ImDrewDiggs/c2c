@@ -66,7 +66,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error creating customer portal session:", error);
-    return new Response(JSON.stringify({ error: String(error) }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

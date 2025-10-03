@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: T; loading: boolean; error?: string } {
   const [value, setValue] = useState<T>(defaultValue as T);
-  const [loading, setLoading] = useState(false); // Changed from true to false for non-blocking
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -26,10 +26,7 @@ export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: 
       }
     }
 
-    // Defer the fetch to avoid blocking critical rendering path
-    const timeoutId = setTimeout(() => {
-      fetchSetting();
-    }, 100);
+    fetchSetting();
 
     // Realtime subscribe to updates for this key
     const channel = supabase
@@ -42,7 +39,6 @@ export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: 
 
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, [key]);

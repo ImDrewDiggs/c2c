@@ -157,7 +157,7 @@ export default function SecurePricingPage() {
           ✓ Terms Accepted - Access Granted
         </Badge>
         <p className="text-lg text-muted-foreground">
-          Detailed pricing analysis and service information
+          Detailed competitive pricing analysis and profit margins
         </p>
         <Button 
           variant="outline" 
@@ -177,7 +177,7 @@ export default function SecurePricingPage() {
             Single Family Residential Pricing
           </CardTitle>
           <CardDescription>
-            Detailed pricing structure and service offerings
+            Detailed pricing structure with profit margins and competitive analysis
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,6 +207,11 @@ export default function SecurePricingPage() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                  <Separator />
+                  <div className="bg-muted p-3 rounded-lg">
+                    <h4 className="font-semibold text-sm mb-1">Competitive Edge:</h4>
+                    <p className="text-xs text-muted-foreground">{tier.competitiveAdvantage}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -254,6 +259,11 @@ export default function SecurePricingPage() {
                       ))}
                     </ul>
                   </div>
+                  <Separator />
+                  <div className="bg-muted p-3 rounded-lg">
+                    <h4 className="font-semibold text-sm mb-1">Competitive Edge:</h4>
+                    <p className="text-xs text-muted-foreground">{tier.competitiveAdvantage}</p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -286,6 +296,7 @@ export default function SecurePricingPage() {
                 <li>• Operations: 15-25% of revenue</li>
                 <li>• Technology: 5-8% of revenue</li>
                 <li>• Marketing: 10-15% of revenue</li>
+                <li>• Net profit margin: 50-65%</li>
               </ul>
             </div>
           </div>

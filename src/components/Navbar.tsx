@@ -40,7 +40,6 @@ export default function Navbar() {
               width="48"
               height="48"
               loading="eager"
-              fetchPriority="high"
               decoding="async"
             />
           </Link>
