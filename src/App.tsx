@@ -10,6 +10,7 @@ import Loading from "./components/ui/Loading";
 import MaintenanceGate from "@/components/auth/MaintenanceGate";
 import { ContentSecurityPolicy } from "@/components/admin/security/ContentSecurityPolicy";
 import { sessionManager } from "@/utils/sessionManager";
+import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 
 // Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
@@ -102,8 +103,8 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/testimonials" element={<Testimonials />} />
-                  <Route path="/subscription" element={<Subscription />} />
-                  <Route path="/services-and-prices" element={<ServicesAndPrices />} />
+                  <Route path="/subscription" element={<RequireTermsAcceptance><Subscription /></RequireTermsAcceptance>} />
+                  <Route path="/services-and-prices" element={<RequireTermsAcceptance><ServicesAndPrices /></RequireTermsAcceptance>} />
                   <Route path="/schedule" element={<Schedule />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contact" element={<ContactUs />} />

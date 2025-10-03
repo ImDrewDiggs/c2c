@@ -12,7 +12,6 @@ import { singleFamilyTiers, multiFamilyTiers, businessTiers, singleFamilyService
 import { Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -209,7 +208,6 @@ export default function Subscription() {
   };
 
   return (
-    <RequireTermsAcceptance>
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight">Choose Your Plan</h1>
@@ -547,6 +545,5 @@ export default function Subscription() {
         )}
       </div>
     </div>
-    </RequireTermsAcceptance>
   );
 }

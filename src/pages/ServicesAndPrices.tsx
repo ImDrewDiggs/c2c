@@ -19,12 +19,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { serviceCategories, pricingPolicy, singleFamilyTiers, multiFamilyServiceDetails, businessServiceDetails } from "@/data/services";
-import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 
 export default function ServicesAndPrices() {
   return (
-    <RequireTermsAcceptance>
-      <div className="container mx-auto py-12">
+    <div className="container mx-auto py-12">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Services & Prices</h1>
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -205,6 +203,5 @@ export default function ServicesAndPrices() {
         </Button>
       </div>
     </div>
-    </RequireTermsAcceptance>
   );
 }
