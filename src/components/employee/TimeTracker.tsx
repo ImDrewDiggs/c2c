@@ -25,6 +25,7 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   const [currentSession, setCurrentSession] = useState<WorkSession | null>(null);
   const [sessions, setSessions] = useState<WorkSession[]>([]);
   const [totalHours, setTotalHours] = useState(0);
+  const [weekTotalHours, setWeekTotalHours] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +40,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       const today = new Date();
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      
+      // Calculate start of week (Monday)
+      const startOfWeek = new Date(today);
+      const day = startOfWeek.getDay();
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
 
       const { data, error } = await supabase
         .from('work_sessions')
@@ -71,6 +79,26 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       // Convert to hours with 0.01 precision
       const hours = Math.round((totalMinutes / 60) * 100) / 100;
       setTotalHours(hours);
+      
+      // Calculate week's total hours
+      const weekSessions = data?.filter(session => {
+        const sessionDate = new Date(session.clock_in_time);
+        return sessionDate >= startOfWeek;
+      }) || [];
+      
+      const weekTotalMinutes = weekSessions.reduce((total, session) => {
+        if (session.total_hours) {
+          return total + (session.total_hours * 60);
+        } else if (session.clock_out_time) {
+          const clockIn = new Date(session.clock_in_time);
+          const clockOut = new Date(session.clock_out_time);
+          return total + ((clockOut.getTime() - clockIn.getTime()) / (1000 * 60));
+        }
+        return total;
+      }, 0);
+      
+      const weekHours = Math.round((weekTotalMinutes / 60) * 100) / 100;
+      setWeekTotalHours(weekHours);
       
       // Check for active session
       const activeSession = data?.find(session => session.status === 'active');
@@ -334,8 +362,10 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
               <p className="text-sm text-muted-foreground">Sessions</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <p className="text-2xl font-bold">Coming Soon</p>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <div className="text-2xl font-bold text-primary">
+                {weekTotalHours.toFixed(2)}
+              </div>
+              <div className="text-sm text-muted-foreground">Hours This Week</div>
             </div>
           </div>
         </CardContent>
