@@ -92,15 +92,6 @@ const ContactUs = () => {
               </CardContent>
             </Card>
           </div>
-          
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">Visit Our Office</h3>
-            <p className="text-muted-foreground">
-              1234 Waste Management Way<br />
-              Eco City, EC 12345<br />
-              United States
-            </p>
-          </div>
         </div>
       </div>
     </div>
