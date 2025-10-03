@@ -29,7 +29,7 @@ export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: 
     // Defer the fetch to avoid blocking critical rendering path
     const timeoutId = setTimeout(() => {
       fetchSetting();
-    }, 0);
+    }, 100);
 
     // Realtime subscribe to updates for this key
     const channel = supabase
