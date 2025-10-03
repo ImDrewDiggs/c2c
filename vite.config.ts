@@ -22,13 +22,15 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     cssCodeSplit: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        passes: 2
+    minify: mode === 'production' ? 'terser' : 'esbuild',
+    ...(mode === 'production' && {
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          passes: 2
+        }
       }
-    },
+    }),
     rollupOptions: {
       external: [
         "@fullcalendar/core",
