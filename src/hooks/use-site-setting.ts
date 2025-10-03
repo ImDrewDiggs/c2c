@@ -26,7 +26,10 @@ export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: 
       }
     }
 
-    fetchSetting();
+    // Defer the fetch to avoid blocking critical rendering path
+    const timeoutId = setTimeout(() => {
+      fetchSetting();
+    }, 0);
 
     // Realtime subscribe to updates for this key
     const channel = supabase
@@ -39,6 +42,7 @@ export function useSiteSetting<T = any>(key: string, defaultValue: T): { value: 
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, [key]);
