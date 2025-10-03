@@ -15,3 +15,19 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Type exports for compatibility
+export type UserRole = 'customer' | 'employee' | 'admin';
+
+export interface UserData {
+  id: string;
+  email?: string;
+  role?: UserRole;
+  full_name?: string;
+  phone?: string;
+  address?: string;
+  drivers_license?: string;
+  job_title?: string;
+  status?: string;
+  pay_rate?: number;
+}
