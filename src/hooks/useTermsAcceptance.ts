@@ -41,12 +41,28 @@ export function useTermsAcceptance() {
       if (error) {
         console.error('Error checking terms acceptance:', error);
         setHasAccepted(false);
+        // Clear localStorage on error
+        localStorage.removeItem('terms_accepted');
+        localStorage.removeItem('terms_accepted_at');
       } else {
-        setHasAccepted(data || false);
+        const accepted = data || false;
+        setHasAccepted(accepted);
+        
+        // Cache in localStorage only after successful database verification
+        if (accepted) {
+          localStorage.setItem('terms_accepted', 'true');
+          localStorage.setItem('terms_accepted_at', new Date().toISOString());
+        } else {
+          localStorage.removeItem('terms_accepted');
+          localStorage.removeItem('terms_accepted_at');
+        }
       }
     } catch (error) {
       console.error('Terms acceptance check failed:', error);
       setHasAccepted(false);
+      // Clear localStorage on error
+      localStorage.removeItem('terms_accepted');
+      localStorage.removeItem('terms_accepted_at');
     } finally {
       setLoading(false);
     }
@@ -92,16 +108,8 @@ export function useTermsAcceptance() {
   // Initialize check on mount and when sessionId changes
   useEffect(() => {
     if (sessionId) {
-      // Quick check from localStorage first
-      const localAcceptance = localStorage.getItem('terms_accepted');
-      if (localAcceptance === 'true') {
-        setHasAccepted(true);
-        setLoading(false);
-        // Still verify server-side in background
-        checkTermsAcceptance();
-      } else {
-        checkTermsAcceptance();
-      }
+      // Always verify with database first - no localStorage bypass
+      checkTermsAcceptance();
     }
   }, [sessionId, checkTermsAcceptance]);
 
