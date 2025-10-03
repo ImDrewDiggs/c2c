@@ -11,8 +11,13 @@
     <!-- Critical resource hints for performance -->
     <link rel="preconnect" href="https://iagkylxqlartqokuiahf.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://iagkylxqlartqokuiahf.supabase.co" />
-    <link rel="preconnect" href="https://cdn.gpteng.co" />
-    <link rel="modulepreload" href="/src/main.tsx" />
+    <link rel="preconnect" href="https://c2c.lovable.app" crossorigin />
+    
+    <!-- Preload critical chunks to reduce waterfall -->
+    <link rel="modulepreload" href="/src/main.tsx" fetchpriority="high" />
+    <link rel="preload" href="/assets/index.css" as="style" fetchpriority="high" />
+    <link rel="preload" href="/assets/react-vendor.js" as="script" crossorigin fetchpriority="high" />
+    <link rel="preload" href="/assets/index.js" as="script" crossorigin fetchpriority="high" />
     
     <style>
       /* Critical above-the-fold styles - minimal for fastest paint */

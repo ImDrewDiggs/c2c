@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    cssCodeSplit: true,
+    cssCodeSplit: false, // Single CSS file for faster initial load
     minify: mode === 'production' ? 'terser' : 'esbuild',
     ...(mode === 'production' && {
       terserOptions: {
@@ -52,24 +52,26 @@ export default defineConfig(({ mode }) => ({
       ],
       output: {
         manualChunks: (id) => {
-          // Vendor chunks for better caching
+          // More aggressive chunking for critical path optimization
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            // Critical: React must load first
+            if (id.includes('react/') || id.includes('react-dom/')) {
               return 'react-vendor';
             }
-            if (id.includes('framer-motion')) {
-              return 'animation-vendor';
-            }
-            if (id.includes('@radix-ui')) {
+            // UI components in separate chunk to avoid blocking
+            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
               return 'ui-vendor';
             }
+            // Auth can be lazy loaded
             if (id.includes('@supabase')) {
-              return 'supabase-vendor';
+              return 'auth-vendor';
             }
-            if (id.includes('lucide-react')) {
-              return 'icons-vendor';
-            }
+            // Everything else
             return 'vendor';
+          }
+          // Separate admin pages for code splitting
+          if (id.includes('/pages/admin/')) {
+            return 'admin-pages';
           }
         }
       }
