@@ -1306,6 +1306,10 @@ export type Database = {
         }
         Returns: Json
       }
+      cleanup_old_employee_locations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_admin_profile_safe: {
         Args: { admin_email: string; admin_user_id: string }
         Returns: undefined
