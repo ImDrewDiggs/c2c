@@ -62,7 +62,6 @@ const AdminOrders = lazy(() => import('./pages/admin/Orders'));
 const AdminSubscriptions = lazy(() => import('./pages/admin/Subscriptions'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
-const SecurePricingPage = lazy(() => import('./pages/SecurePricingPage'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
@@ -115,9 +114,8 @@ const App = () => {
                   {/* Maintenance */}
                   <Route path="/maintenance" element={<Maintenance />} />
                   
-                  {/* Secure Terms & Pricing Flow */}
+                  {/* Terms */}
                   <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/secure-pricing" element={<SecurePricingPage />} />
 
                   {/* Auth Routes */}
                   <Route path="/auth" element={<SecureAuth />} />

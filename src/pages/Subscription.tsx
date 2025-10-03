@@ -12,7 +12,10 @@ import { singleFamilyTiers, multiFamilyTiers, businessTiers, singleFamilyService
 import { Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const serviceTypes: ServiceType[] = [
   {
@@ -46,18 +49,12 @@ export default function Subscription() {
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [services, setServices] = useState<any[]>([]);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [contractLength, setContractLength] = useState<"1" | "6" | "12">("1");
   
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { hasAccepted, loading } = useTermsAcceptance();
-
-  // Redirect to terms page if terms not accepted
-  useEffect(() => {
-    if (!loading && !hasAccepted) {
-      navigate('/terms');
-    }
-  }, [hasAccepted, loading, navigate]);
 
   const handleServiceTypeSelect = (serviceTypeId: string) => {
     setSelectedServiceTypes(prev => 
@@ -65,6 +62,33 @@ export default function Subscription() {
         ? prev.filter(id => id !== serviceTypeId)
         : [...prev, serviceTypeId]
     );
+  };
+
+  const handleAddOnToggle = (addOnName: string) => {
+    setSelectedAddOns(prev =>
+      prev.includes(addOnName)
+        ? prev.filter(name => name !== addOnName)
+        : [...prev, addOnName]
+    );
+  };
+
+  const getContractLengthDiscount = (): number => {
+    if (contractLength === "6") return 0.05; // 5% off
+    if (contractLength === "12") return 0.10; // 10% off
+    return 0;
+  };
+
+  const getAddOnPrice = (addOn: any): number => {
+    const priceStr = addOn.price.replace(/[^0-9.]/g, '');
+    const match = priceStr.match(/(\d+\.?\d*)/);
+    return match ? parseFloat(match[0]) : 0;
+  };
+
+  const calculateAddOnsTotal = (): number => {
+    return selectedAddOns.reduce((total, addOnName) => {
+      const addOn = addOnServices[0].services.find(s => s.name === addOnName);
+      return total + (addOn ? getAddOnPrice(addOn) : 0);
+    }, 0);
   };
 
   const getSelectedTier = (): ServiceTier | CommunityTier | null => {
@@ -78,17 +102,24 @@ export default function Subscription() {
   };
 
   const calculateTotal = (): number => {
+    let basePrice = 0;
+    
     if (selectedTab === "single-family" && selectedTier) {
       const tier = singleFamilyTiers.find(t => t.id === selectedTier);
-      return tier?.price || 0;
+      basePrice = tier?.price || 0;
+    } else if (selectedTab === "multi-family") {
+      basePrice = selectedServiceTypes.length * 25; // Simplified calculation
     }
     
-    if (selectedTab === "multi-family") {
-      // For multi-family, return a base calculation
-      return selectedServiceTypes.length * 25; // Simplified calculation
-    }
+    // Add add-ons
+    const addOnsTotal = calculateAddOnsTotal();
+    const subtotal = basePrice + addOnsTotal;
     
-    return 0;
+    // Apply contract length discount
+    const discount = getContractLengthDiscount();
+    const finalPrice = subtotal * (1 - discount);
+    
+    return finalPrice;
   };
 
   // Load services from database
@@ -166,21 +197,8 @@ export default function Subscription() {
     navigate('/checkout', { state: checkoutData });
   };
 
-  // Show loading while checking terms acceptance
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // This should not render if terms not accepted due to redirect effect
-  if (!hasAccepted) {
-    return null;
-  }
-
   return (
+    <RequireTermsAcceptance>
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight">Choose Your Plan</h1>
@@ -424,11 +442,71 @@ export default function Subscription() {
           </TabsContent>
         </Tabs>
 
+        {/* Contract Length Selection */}
+        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Contract Length</CardTitle>
+              <CardDescription>Choose your contract length and save more</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup value={contractLength} onValueChange={(value: any) => setContractLength(value)}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="1" id="1month" />
+                  <Label htmlFor="1month">1 Month (Monthly)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="6" id="6months" />
+                  <Label htmlFor="6months">6 Months (5% discount)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="12" id="12months" />
+                  <Label htmlFor="12months">12 Months (10% discount)</Label>
+                </div>
+              </RadioGroup>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Add-Ons Selection */}
+        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Select Add-Ons</CardTitle>
+              <CardDescription>Enhance your service with optional add-ons</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {addOnServices[0].services.map((addOn) => (
+                  <div key={addOn.name} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={addOn.name}
+                      checked={selectedAddOns.includes(addOn.name)}
+                      onCheckedChange={() => handleAddOnToggle(addOn.name)}
+                    />
+                    <Label htmlFor={addOn.name} className="flex-1 cursor-pointer">
+                      <div className="flex justify-between">
+                        <span>{addOn.name}</span>
+                        <span className="text-muted-foreground">{addOn.price}</span>
+                      </div>
+                      {addOn.description && (
+                        <p className="text-xs text-muted-foreground">{addOn.description}</p>
+                      )}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {(selectedTab === "single-family" || selectedTab === "multi-family") && (
           <PricingDisplay
             total={calculateTotal()}
-            discount={0}
+            discount={getContractLengthDiscount() * 100}
             subscriptionType={selectedTab}
+            contractLength={contractLength === "1" ? "Monthly" : contractLength === "6" ? "6 Months" : "12 Months"}
+            selectedServices={selectedAddOns}
           />
         )}
         
@@ -450,5 +528,6 @@ export default function Subscription() {
         )}
       </div>
     </div>
+    </RequireTermsAcceptance>
   );
 }
