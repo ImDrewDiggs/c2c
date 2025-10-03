@@ -1,214 +1,178 @@
 # Can2Curb Security Documentation
 
-## Recent Security Updates
+## Overview
+This document outlines the security measures implemented in the Can2Curb application and provides guidance for maintaining security.
 
-**Last Updated:** 2025-10-03
+## Critical Security Fixes Applied
 
-### Critical Security Fixes Implemented
+### 1. Role-Based Access Control (RBAC)
+- **Implementation**: All admin checks now use the `user_roles` table instead of hardcoded emails
+- **Function**: `is_admin_by_email()` now queries the `user_roles` table
+- **Client Code**: Use `permissionManager` from `securityManager.ts` for all permission checks
+- **Deprecated**: Email-based admin checks in `secureAdminSetup.ts`
 
-1. **Role-Based Access Control (RBAC) Consolidation**
-   - Removed hardcoded email-based admin authentication
-   - All admin checks now use the `user_roles` table exclusively
-   - `is_admin_by_email()` function updated to query `user_roles` instead of hardcoded emails
+### 2. PII Protection
+- **Pay Rate Security**: Column-level RLS restricts `pay_rate` viewing to:
+  - Super admins (full access)
+  - Employees viewing their own data
+- **Profile Access**: Users can view their own profiles, admins can view all profiles
+- **Audit Logging**: All sensitive data access is logged in `enhanced_security_logs`
 
-2. **PII Protection Enhancements**
-   - Implemented column-level security for `pay_rate` in profiles table
-   - Only super admins and the employee themselves can view pay rates
-   - Enhanced RLS policies for better data isolation
+### 3. Payment Data Security
+- **Subscribers Table**: RLS policies now require `user_id` match (email fallback removed)
+- **Stripe Integration**: Webhook signature verification required for all payment events
+- **Rate Limiting**: Implemented via `DatabaseRateLimiter` to prevent abuse
 
-3. **Payment Data Security**
-   - Removed email fallback from `subscribers` table RLS policies
-   - Subscriptions now require `user_id` match only (no email bypass)
-   - Strengthened protection for Stripe customer data
+### 4. Site Settings Protection
+- **Modification**: Only super admins can modify site settings
+- **Read Access**: Regular admins can read settings but not modify them
+- **Audit Trail**: All changes to site settings are logged
 
-4. **Configuration Security**
-   - Restricted `site_settings` modifications to super admins only
-   - Regular admins can read settings but cannot modify them
+### 5. Location Data Privacy
+- **Retention Policy**: 
+  - Locations older than 7 days are anonymized (precision reduced to 2 decimals)
+  - Locations older than 30 days are automatically deleted
+- **Function**: `cleanup_old_employee_locations()` should be run daily via cron job
+- **Setup**: See "Scheduled Tasks" section below
 
-5. **Location Data Privacy**
-   - Added `cleanup_old_employee_locations()` function
-   - Automatically anonymizes location data older than 7 days
-   - Deletes location data older than 30 days
-   - Complies with data retention best practices
+## Required Supabase Configuration
 
-## Required Manual Configuration
-
-### Supabase Dashboard Settings
-
-The following settings must be configured in your Supabase Dashboard for optimal security:
+### Immediate Actions Needed
 
 1. **Enable Leaked Password Protection**
-   - Navigate to: Authentication → Providers → Email
-   - Enable "Check for leaked passwords"
-   - Documentation: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+   - Navigate to: Authentication > Settings
+   - Enable "Leaked Password Protection"
+   - This prevents users from using compromised passwords
 
 2. **Reduce OTP Expiry Time**
-   - Navigate to: Authentication → Email Templates
-   - Set OTP expiry to 10 minutes (600 seconds)
-   - Default is too long and poses security risk
-   - Documentation: https://supabase.com/docs/guides/platform/going-into-prod#security
+   - Current: 1 hour (default)
+   - Recommended: 10 minutes
+   - Navigate to: Authentication > Settings > OTP Expiry
 
 3. **Schedule PostgreSQL Upgrade**
-   - Navigate to: Settings → Database
-   - Check for available security patches
-   - Schedule upgrade during low-traffic period
-   - Documentation: https://supabase.com/docs/guides/platform/upgrading
+   - Current version: Check in dashboard
+   - Recommended: Latest stable version
+   - Navigate to: Database > Settings
 
-### Location Data Cleanup Schedule
+## Scheduled Tasks
 
-The `cleanup_old_employee_locations()` function should be run daily. You have two options:
+### Location Data Cleanup (Daily)
 
-#### Option 1: Using pg_cron (Recommended)
+To automatically clean up old location data, set up a daily cron job:
 
-Enable pg_cron in your Supabase project and create a scheduled job:
-
+1. Enable `pg_cron` extension in Supabase:
 ```sql
--- Enable pg_cron extension
+-- Run in SQL Editor
 CREATE EXTENSION IF NOT EXISTS pg_cron;
+```
 
--- Schedule daily cleanup at 2 AM
+2. Create the scheduled job:
+```sql
+-- Run daily at 2 AM UTC
 SELECT cron.schedule(
-  'cleanup-employee-locations',
-  '0 2 * * *', -- 2 AM every day
-  $$
-  SELECT public.cleanup_old_employee_locations();
-  $$
+  'cleanup-old-locations',
+  '0 2 * * *',
+  $$SELECT public.cleanup_old_employee_locations();$$
 );
 ```
 
-#### Option 2: Using Supabase Edge Function + Cron
-
-Create an edge function and trigger it daily using pg_net:
-
+3. Verify the job was created:
 ```sql
-SELECT
-  cron.schedule(
-    'cleanup-employee-locations',
-    '0 2 * * *', -- 2 AM every day
-    $$
-    SELECT
-      net.http_post(
-        url:='https://YOUR_PROJECT_REF.supabase.co/functions/v1/cleanup-locations',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_SERVICE_ROLE_KEY"}'::jsonb,
-        body:='{}'::jsonb
-      ) as request_id;
-    $$
-  );
+SELECT * FROM cron.job;
 ```
 
 ## Security Best Practices
 
-### Admin User Management
+### Authentication
+- Never check admin status client-side using localStorage/sessionStorage
+- Always use `permissionManager` for permission checks
+- Implement rate limiting on login attempts
+- Use MFA for admin accounts
 
-1. **Creating Admin Users**
-   - Admin roles are assigned via the `user_roles` table
-   - Only super admins can assign admin and super_admin roles
-   - Never use hardcoded emails for admin checks
+### Data Access
+- All sensitive queries must use security definer functions
+- Implement RLS policies on all tables containing PII
+- Use column-level security for highly sensitive data (e.g., pay_rate)
+- Log all access to sensitive data
 
-2. **Checking Admin Status**
-   ```typescript
-   // ✅ CORRECT - Use permissionManager
-   import { permissionManager } from '@/utils/securityManager';
-   const isAdmin = await permissionManager.isAdmin();
-   const isSuperAdmin = await permissionManager.isSuperAdmin();
-   
-   // ❌ DEPRECATED - Don't use email checks
-   import { isAdminEmail } from '@/utils/secureAdminSetup';
-   const isAdmin = isAdminEmail(user.email); // DEPRECATED
-   ```
-
-3. **Using Hooks**
-   ```typescript
-   // ✅ CORRECT - Use useAuthState hook
-   import { useAuthState } from '@/hooks/use-auth-state';
-   const { isAdmin, isSuperAdmin } = useAuthState();
-   ```
-
-### Data Access Patterns
-
-1. **Viewing Pay Rates**
-   - Super admins: Can view all pay rates
-   - Employees: Can view only their own pay rate
-   - Regular admins: Cannot view pay rates
-
-2. **Subscription Data**
-   - Users must be authenticated
-   - Access via `user_id` match only
-   - No email-based access fallback
-
-3. **Employee Location Data**
-   - Admins can view all current locations
-   - Employees can view their own recent locations (24 hours)
-   - Historical data is automatically anonymized after 7 days
-   - All data older than 30 days is deleted
+### API Security
+- Validate all inputs using zod schemas
+- Implement rate limiting on all API endpoints
+- Use prepared statements to prevent SQL injection
+- Validate webhook signatures for third-party integrations
 
 ### Audit Logging
+- All security-relevant events are logged in `enhanced_security_logs`
+- Review logs regularly for suspicious activity
+- Set up alerts for critical security events
 
-All sensitive operations are automatically logged to `enhanced_security_logs`:
-- Admin role changes
-- Profile modifications
-- Payment operations
-- Location data access
-- Site settings changes
+## Permissions Overview
+
+### User Roles
+- **customer**: Basic customer access
+- **employee**: Field worker access + location tracking
+- **admin**: Administrative access to manage operations
+- **super_admin**: Full system access including configuration
+
+### Permission Checks
+```typescript
+// Check if user is admin
+const isAdmin = await permissionManager.isAdmin();
+
+// Check if user is super admin
+const isSuperAdmin = await permissionManager.isSuperAdmin();
+
+// Check specific permission
+const canManageUsers = await permissionManager.hasPermission('manage_users');
+
+// Get all user roles
+const roles = await permissionManager.getUserRoles();
+```
 
 ## Security Monitoring
 
-### Regular Checks
+### Enhanced Security Logs
+Monitor the `enhanced_security_logs` table for:
+- Failed login attempts
+- Unauthorized access attempts
+- Role changes
+- Sensitive data access
+- Configuration changes
 
-1. **Review Audit Logs**
-   ```sql
-   SELECT * FROM enhanced_security_logs
-   WHERE risk_level IN ('high', 'critical')
-   ORDER BY created_at DESC
-   LIMIT 100;
-   ```
+### Risk Levels
+- **low**: Normal operations
+- **medium**: Elevated activity
+- **high**: Sensitive data access, role changes
+- **critical**: Security incidents, admin actions
 
-2. **Check Active Admin Sessions**
-   ```sql
-   SELECT * FROM admin_sessions
-   WHERE is_active = true
-   ORDER BY last_activity DESC;
-   ```
+## Incident Response
 
-3. **Monitor Rate Limiting**
-   ```sql
-   SELECT * FROM rate_limits
-   WHERE is_blocked = true
-   ORDER BY updated_at DESC;
-   ```
+If a security incident occurs:
 
-### Incident Response
+1. **Immediate Actions**
+   - Review `enhanced_security_logs` for the incident timeline
+   - Identify affected users/data
+   - Use `emergency_disable_admin()` function if admin account is compromised
 
-If suspicious activity is detected:
+2. **Investigation**
+   - Review audit logs for the affected time period
+   - Check for unauthorized data access
+   - Verify all role assignments
 
-1. Use `emergency_disable_admin(target_admin_id)` to immediately disable a compromised admin account
-2. Review `enhanced_security_logs` for the user's recent activity
-3. Check `admin_sessions` to identify active sessions
-4. Update passwords and revoke access tokens as needed
+3. **Remediation**
+   - Reset affected user credentials
+   - Review and update RLS policies if needed
+   - Update security documentation
 
-## Compliance
+## Contact
 
-### Data Retention
-- Employee location data: 30 days (anonymized after 7 days)
-- Audit logs: Indefinite retention for compliance
-- Payment records: Indefinite retention for financial compliance
+For security concerns or to report vulnerabilities:
+- Email: security@can2curb.com (configure in production)
+- Document all incidents in `enhanced_security_logs`
 
-### Privacy
-- PII access is restricted via RLS policies
-- Pay rates require super admin privileges
-- Location data is automatically anonymized
-- All sensitive operations are audited
+## Last Updated
+Security documentation last updated: 2025-10-03
 
-## Additional Resources
+---
 
-- [Supabase Security Best Practices](https://supabase.com/docs/guides/platform/going-into-prod#security)
-- [Row Level Security Documentation](https://supabase.com/docs/guides/auth/row-level-security)
-- [Supabase Auth Security](https://supabase.com/docs/guides/auth/password-security)
-
-## Support
-
-For security concerns or questions, please:
-1. Review this documentation
-2. Check the Supabase documentation
-3. Contact your system administrator
-4. For critical issues, use emergency procedures outlined above
+**Note**: This is a living document. Update it whenever security measures are added or modified.
