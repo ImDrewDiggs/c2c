@@ -13,17 +13,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-    storageKey: 'can2curb-auth-token'
   }
 });
-
-// Legacy exports for compatibility
-export type UserRole = 'customer' | 'employee' | 'admin';
-
-export interface UserData {
-  id: string;
-  email?: string;
-  role?: UserRole;
-  full_name?: string;
-  phone?: string;
-}
