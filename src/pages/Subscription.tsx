@@ -79,16 +79,26 @@ export default function Subscription() {
   };
 
   const getAddOnPrice = (addOn: any): number => {
-    const priceStr = addOn.price.replace(/[^0-9.]/g, '');
-    const match = priceStr.match(/(\d+\.?\d*)/);
-    return match ? parseFloat(match[0]) : 0;
+    const priceStr = addOn.price.toString();
+    // Handle different price formats: "+$9.99", "$45 – $99", "$35/month", etc.
+    const match = priceStr.match(/\$?(\d+(?:\.\d{2})?)/);
+    return match ? parseFloat(match[1]) : 0;
   };
 
   const calculateAddOnsTotal = (): number => {
-    return selectedAddOns.reduce((total, addOnName) => {
+    let total = 0;
+    selectedAddOns.forEach((addOnName, index) => {
       const addOn = addOnServices[0].services.find(s => s.name === addOnName);
-      return total + (addOn ? getAddOnPrice(addOn) : 0);
-    }, 0);
+      if (addOn) {
+        let price = getAddOnPrice(addOn);
+        // Apply 25% off to the second add-on
+        if (index === 1 && selectedAddOns.length >= 2) {
+          price = price * 0.75;
+        }
+        total += price;
+      }
+    });
+    return total;
   };
 
   const getSelectedTier = (): ServiceTier | CommunityTier | null => {
@@ -101,17 +111,18 @@ export default function Subscription() {
     return null;
   };
 
-  const calculateTotal = (): number => {
-    let basePrice = 0;
-    
+  const getBasePrice = (): number => {
     if (selectedTab === "single-family" && selectedTier) {
       const tier = singleFamilyTiers.find(t => t.id === selectedTier);
-      basePrice = tier?.price || 0;
+      return tier?.price || 0;
     } else if (selectedTab === "multi-family") {
-      basePrice = selectedServiceTypes.length * 25; // Simplified calculation
+      return selectedServiceTypes.length * 25; // Simplified calculation
     }
-    
-    // Add add-ons
+    return 0;
+  };
+
+  const calculateTotal = (): number => {
+    const basePrice = getBasePrice();
     const addOnsTotal = calculateAddOnsTotal();
     const subtotal = basePrice + addOnsTotal;
     
@@ -500,13 +511,21 @@ export default function Subscription() {
           </Card>
         )}
 
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && (
+        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
           <PricingDisplay
             total={calculateTotal()}
             discount={getContractLengthDiscount() * 100}
             subscriptionType={selectedTab}
+            selectedPlan={
+              selectedTab === "single-family" 
+                ? singleFamilyTiers.find(t => t.id === selectedTier)?.name
+                : multiFamilyTiers.find(t => t.id === selectedTier)?.unitRange
+            }
             contractLength={contractLength === "1" ? "Monthly" : contractLength === "6" ? "6 Months" : "12 Months"}
             selectedServices={selectedAddOns}
+            basePrice={getBasePrice()}
+            addOnsTotal={calculateAddOnsTotal()}
+            bundleDiscount={selectedAddOns.length >= 2 ? 25 : 0}
           />
         )}
         

@@ -9,7 +9,6 @@ const navigation = [
   { name: "About Us", path: "/about" },
   { name: "Testimonials", path: "/testimonials" },
   { name: "Services & Pricing", path: "/services-and-prices" },
-  { name: "Secure Pricing", path: "/terms" },
   { name: "Subscription", path: "/subscription" },
   { name: "Documentation", path: "/documentation" },
   { name: "FAQs", path: "/faq" },

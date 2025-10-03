@@ -8,6 +8,9 @@ interface PricingDisplayProps {
   selectedPlan?: string;
   contractLength?: string;
   selectedServices?: string[];
+  basePrice?: number;
+  addOnsTotal?: number;
+  bundleDiscount?: number;
 }
 
 const PricingDisplay = ({ 
@@ -16,7 +19,10 @@ const PricingDisplay = ({
   subscriptionType, 
   selectedPlan, 
   contractLength, 
-  selectedServices 
+  selectedServices,
+  basePrice,
+  addOnsTotal,
+  bundleDiscount
 }: PricingDisplayProps) => {
   return (
     <motion.div
@@ -25,7 +31,7 @@ const PricingDisplay = ({
       className="glass mb-8 p-6 sticky top-0 z-50 w-full"
     >
       <h2 className="text-2xl font-bold text-center mb-4">
-        Selected Services Total
+        Pricing Summary
       </h2>
       
       {selectedPlan && (
@@ -37,36 +43,72 @@ const PricingDisplay = ({
         </div>
       )}
       
-      {selectedServices && selectedServices.length > 0 && (
-        <div className="text-center mb-3">
-          <p className="text-sm text-muted-foreground">
-            Selected Services: {selectedServices.join(", ")}
-          </p>
+      {/* Detailed Breakdown */}
+      {basePrice !== undefined && basePrice > 0 && (
+        <div className="space-y-2 mb-4 border-t border-b py-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Base Plan:</span>
+            <span className="font-medium">${basePrice.toFixed(2)}/mo</span>
+          </div>
+          
+          {selectedServices && selectedServices.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Add-ons:</p>
+              {selectedServices.map((service, index) => (
+                <div key={service} className="flex justify-between text-xs pl-4">
+                  <span className="text-muted-foreground">
+                    {service}
+                    {index === 1 && selectedServices.length >= 2 && " (25% off)"}
+                  </span>
+                </div>
+              ))}
+              {addOnsTotal !== undefined && addOnsTotal > 0 && (
+                <div className="flex justify-between text-sm pt-1">
+                  <span className="text-muted-foreground">Add-ons subtotal:</span>
+                  <span className="font-medium">${addOnsTotal.toFixed(2)}/mo</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {discount > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>Contract discount ({discount}%):</span>
+              <span className="font-medium">-${(((basePrice || 0) + (addOnsTotal || 0)) * (discount / 100)).toFixed(2)}</span>
+            </div>
+          )}
         </div>
       )}
       
       <p className="text-4xl font-bold text-primary text-center">
         ${total.toFixed(2)}
-        <span className="text-lg text-gray-400">/month</span>
+        <span className="text-lg text-muted-foreground">/month</span>
       </p>
       
-      {discount > 0 && (
+      {(discount > 0 || (bundleDiscount && bundleDiscount > 0)) && (
         <div className="text-center mt-3 space-y-1">
           <p className="text-sm text-green-600 font-medium">
             {subscriptionType === "multi-family" && "Volume & Contract Discount Applied"}
-            {subscriptionType === "single-family" && "Contract Discount Applied"}
+            {subscriptionType === "single-family" && "Discounts Applied"}
             {subscriptionType === "business" && "Contract & Bundle Discount Applied"}
           </p>
-          <p className="text-xs text-green-600">
-            Saving {discount}% on your monthly bill
-          </p>
+          {discount > 0 && (
+            <p className="text-xs text-green-600">
+              {contractLength} contract: {discount}% off
+            </p>
+          )}
+          {bundleDiscount && bundleDiscount > 0 && (
+            <p className="text-xs text-green-600">
+              Bundle discount: 25% off 2nd add-on
+            </p>
+          )}
         </div>
       )}
       
       {subscriptionType === "single-family" && (
         <div className="text-center mt-3">
           <p className="text-xs text-muted-foreground">
-            Referral credit: -$10/month • Long-term contracts save up to 15%
+            Additional savings available with referrals and AutoPay
           </p>
         </div>
       )}

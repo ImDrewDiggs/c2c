@@ -35,7 +35,7 @@ export default function TermsPage() {
           title: "Terms Accepted",
           description: "Thank you for accepting our terms. You now have access to pricing information."
         });
-        navigate('/secure-pricing');
+        navigate('/services-and-prices');
       } else {
         toast({
           variant: "destructive",
