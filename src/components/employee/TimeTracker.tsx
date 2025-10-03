@@ -107,10 +107,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
       // Get current location for clock-in
       navigator.geolocation.getCurrentPosition(async (position) => {
+        const clockInTime = new Date().toISOString();
+        
         const { data, error } = await supabase
           .from('work_sessions')
           .insert({
             employee_id: userId,
+            clock_in_time: clockInTime,
             clock_in_location_lat: position.coords.latitude,
             clock_in_location_lng: position.coords.longitude,
             status: 'active'
@@ -161,10 +164,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
         return;
       }
 
+      const clockInTime = new Date().toISOString();
+      
       const { data, error } = await supabase
         .from('work_sessions')
         .insert({
           employee_id: userId,
+          clock_in_time: clockInTime,
           status: 'active'
         })
         .select()
