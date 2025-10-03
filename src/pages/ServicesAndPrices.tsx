@@ -52,7 +52,6 @@ export default function ServicesAndPrices() {
                         <TableHead className="w-[200px]">Service Tier</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead className="w-[400px]">Features</TableHead>
-                        <TableHead className="w-[300px]">Competitive Edge & Profit Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -94,7 +93,6 @@ export default function ServicesAndPrices() {
                         <TableHead className="w-[200px]">Service Tier</TableHead>
                         <TableHead>Monthly Pricing (Per Unit)</TableHead>
                         <TableHead className="w-[400px]">Services Included</TableHead>
-                        <TableHead className="w-[300px]">Key Competitive Edge & Profit Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

@@ -87,9 +87,9 @@ export default function TermsPage() {
                   and proprietary business information including but not limited to:
                 </p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
-                  <li>Detailed pricing structures and profit margins</li>
+                  <li>Detailed pricing structures and service offerings</li>
                   <li>Service delivery methodologies and operational processes</li>
-                  <li>Customer acquisition strategies and competitive positioning</li>
+                  <li>Customer acquisition strategies and market positioning</li>
                   <li>Market analysis and business intelligence</li>
                   <li>Financial projections and business models</li>
                 </ul>

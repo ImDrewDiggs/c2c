@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Play, Square, Calendar } from "lucide-react";
+import { Clock, Play, Square, Calendar, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useBackgroundGPS } from "@/hooks/useBackgroundGPS";
 
 interface TimeTrackerProps {
   userId: string;
@@ -27,6 +28,9 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   const [totalHours, setTotalHours] = useState(0);
   const [weekTotalHours, setWeekTotalHours] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // Enable background GPS tracking when user is working
+  const { isTracking, startTracking, stopTracking } = useBackgroundGPS(userId, isWorking);
 
   useEffect(() => {
     fetchWorkSessions();
@@ -153,9 +157,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
         setCurrentSession(data);
         setIsWorking(true);
+        
+        // Start background GPS tracking
+        await startTracking();
+        
         toast({
           title: "Clocked In",
-          description: "Your work session has started successfully.",
+          description: "Your work session has started successfully. GPS tracking is now active.",
         });
       }, (error) => {
         // Clock in without location if geolocation fails
@@ -208,9 +216,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
       setCurrentSession(data);
       setIsWorking(true);
+      
+      // Start background GPS tracking
+      await startTracking();
+      
       toast({
         title: "Clocked In",
-        description: "Your work session has started successfully.",
+        description: "Your work session has started successfully. GPS tracking is now active.",
       });
     } catch (error) {
       console.error('Error clocking in without location:', error);
@@ -251,9 +263,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
 
         setCurrentSession(null);
         setIsWorking(false);
+        
+        // Stop background GPS tracking
+        await stopTracking();
+        
         toast({
           title: "Clocked Out",
-          description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
+          description: `Session completed: ${totalHours.toFixed(2)} hours recorded. GPS tracking stopped.`
         });
         
         await fetchWorkSessions();
@@ -296,9 +312,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       
       setCurrentSession(null);
       setIsWorking(false);
+      
+      // Stop background GPS tracking
+      await stopTracking();
+      
       toast({
         title: "Clocked Out",
-        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
+        description: `Session completed: ${totalHours.toFixed(2)} hours recorded. GPS tracking stopped.`
       });
       
       await fetchWorkSessions();
@@ -330,9 +350,17 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <div>
               <p className="font-medium">Current Status</p>
-              <Badge variant={isWorking ? "default" : "secondary"}>
-                {isWorking ? "Working" : "Not Working"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={isWorking ? "default" : "secondary"}>
+                  {isWorking ? "Working" : "Not Working"}
+                </Badge>
+                {isTracking && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    GPS Active
+                  </Badge>
+                )}
+              </div>
             </div>
             <div className="flex gap-2">
               {!isWorking ? (
