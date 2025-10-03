@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // Plugin to defer CSS loading for better performance
 function deferCssPlugin() {
@@ -29,6 +30,17 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
     mode === 'production' && deferCssPlugin(),
+    mode === 'production' && ViteImageOptimizer({
+      png: {
+        quality: 80,
+      },
+      webp: {
+        quality: 80,
+      },
+      jpg: {
+        quality: 80,
+      },
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {
