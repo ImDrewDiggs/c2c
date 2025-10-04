@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ export default function CustomerRegister() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/services-and-prices';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +69,8 @@ export default function CustomerRegister() {
         description: "Registration successful! Please check your email to verify your account.",
       });
       
-      navigate('/customer/login');
+      // Redirect to login, preserving the intended destination
+      navigate(`/customer/login?redirect=${encodeURIComponent(redirectTo)}`);
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,19 +17,22 @@ export default function CustomerLogin() {
   const { signIn, loading: authLoading, user, userData, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   
   // Check for existing session on mount and redirect appropriately
   useEffect(() => {
     // Short timeout to prevent flash of loading state for already authenticated users
     const timer = setTimeout(() => {
       if (user && (userData?.role === 'customer' || userData?.role === 'admin' || isAdmin)) {
-        navigate('/customer/dashboard');
+        // If there's a redirect parameter, go there, otherwise go to dashboard
+        navigate(redirectTo || '/customer/dashboard');
       }
       setInitialLoading(false);
     }, 200);
     
     return () => clearTimeout(timer);
-  }, [user, userData, navigate]);
+  }, [user, userData, navigate, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +59,8 @@ export default function CustomerLogin() {
         return;
       }
       
-      navigate('/customer/dashboard', { replace: true });
+      // Redirect to the intended destination or dashboard
+      navigate(redirectTo || '/customer/dashboard', { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
       // Toast is already handled in the signIn function
@@ -163,7 +167,7 @@ export default function CustomerLogin() {
               type="button" 
               variant="outline" 
               className="w-full" 
-              onClick={() => navigate("/customer/register")}
+              onClick={() => navigate(`/customer/register${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`)}
               disabled={isSubmitting || authLoading}
             >
               Create New Account
@@ -173,7 +177,7 @@ export default function CustomerLogin() {
           <div className="text-center">
             <p className="text-sm text-gray-400">
               Don't have an account?{" "}
-              <Link to="/customer/register" className="text-primary hover:text-primary/80">
+              <Link to={`/customer/register${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-primary hover:text-primary/80">
                 Sign up
               </Link>
             </p>

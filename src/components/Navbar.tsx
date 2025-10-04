@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navigation = [
   { name: "Home", path: "/" },
@@ -18,17 +19,27 @@ const navigation = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { hasAccepted, loading } = useTermsAcceptance();
+  const { user, loading: authLoading } = useAuth();
+  const { hasAccepted, loading: termsLoading } = useTermsAcceptance();
 
   const handleNavigation = (path: string, requiresTerms?: boolean) => {
     setIsOpen(false);
     
-    // Check if this route requires NDA acceptance
-    if (requiresTerms && !loading && !hasAccepted) {
-      // Redirect to terms page with return path
-      const returnTo = encodeURIComponent(path);
-      navigate(`/terms?redirect=${returnTo}`);
-      return;
+    // Check if this route requires authentication + NDA acceptance
+    if (requiresTerms) {
+      // First check: user must be authenticated
+      if (!authLoading && !user) {
+        const returnTo = encodeURIComponent(path);
+        navigate(`/customer/register?redirect=${returnTo}`);
+        return;
+      }
+      
+      // Second check: authenticated user must accept NDA
+      if (!termsLoading && !hasAccepted) {
+        const returnTo = encodeURIComponent(path);
+        navigate(`/terms?redirect=${returnTo}`);
+        return;
+      }
     }
     
     // Normal navigation
