@@ -1,15 +1,15 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 
 const navigation = [
   { name: "Home", path: "/" },
   { name: "About Us", path: "/about" },
   { name: "Testimonials", path: "/testimonials" },
-  { name: "Services & Pricing", path: "/services-and-prices" },
-  { name: "Subscription", path: "/subscription" },
+  { name: "Services & Pricing", path: "/services-and-prices", requiresTerms: true },
+  { name: "Subscription", path: "/subscription", requiresTerms: true },
   { name: "Documentation", path: "/documentation" },
   { name: "FAQs", path: "/faq" },
   { name: "Contact Us", path: "/contact" },
@@ -18,10 +18,20 @@ const navigation = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { hasAccepted, loading } = useTermsAcceptance();
 
-  const handleNavigation = (path: string) => {
+  const handleNavigation = (path: string, requiresTerms?: boolean) => {
     setIsOpen(false);
-    // Add a small delay to ensure the menu closes before navigation
+    
+    // Check if this route requires NDA acceptance
+    if (requiresTerms && !loading && !hasAccepted) {
+      // Redirect to terms page with return path
+      const returnTo = encodeURIComponent(path);
+      navigate(`/terms?redirect=${returnTo}`);
+      return;
+    }
+    
+    // Normal navigation
     setTimeout(() => {
       navigate(path);
     }, 10);
@@ -46,9 +56,19 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-8">
             {navigation.map((item) => (
-              <Link key={item.name} to={item.path} className="nav-link">
-                {item.name}
-              </Link>
+              item.requiresTerms ? (
+                <button
+                  key={item.name}
+                  onClick={() => handleNavigation(item.path, item.requiresTerms)}
+                  className="nav-link"
+                >
+                  {item.name}
+                </button>
+              ) : (
+                <Link key={item.name} to={item.path} className="nav-link">
+                  {item.name}
+                </Link>
+              )
             ))}
             <div className="flex space-x-4">
               <button 
@@ -105,14 +125,24 @@ export default function Navbar() {
           >
             <div className="container py-4 space-y-2">
               {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="block nav-link py-2"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.name}
-                </Link>
+                item.requiresTerms ? (
+                  <button
+                    key={item.name}
+                    className="block nav-link py-2 w-full text-left"
+                    onClick={() => handleNavigation(item.path, item.requiresTerms)}
+                  >
+                    {item.name}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className="block nav-link py-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                )
               ))}
               <button
                 className="block btn-primary text-center !py-2 mb-2 w-full"

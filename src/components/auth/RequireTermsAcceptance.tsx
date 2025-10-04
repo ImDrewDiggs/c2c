@@ -1,24 +1,16 @@
-import { ReactNode, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ReactNode } from 'react';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useTermsAcceptance } from '@/hooks/useTermsAcceptance';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface RequireTermsAcceptanceProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export function RequireTermsAcceptance({ children }: RequireTermsAcceptanceProps) {
   const { hasAccepted, loading } = useTermsAcceptance();
-  const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!loading && !hasAccepted) {
-      navigate('/terms');
-    }
-  }, [hasAccepted, loading, navigate]);
-
+  // Show loading spinner while checking acceptance
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -27,26 +19,12 @@ export function RequireTermsAcceptance({ children }: RequireTermsAcceptanceProps
     );
   }
 
+  // Immediately redirect to terms page with return path if not accepted
   if (!hasAccepted) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="max-w-md">
-          <CardHeader className="text-center">
-            <Lock className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              You must accept our confidentiality agreement to access this page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate('/terms')} className="w-full">
-              Review and Accept Terms
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    const returnTo = encodeURIComponent(location.pathname);
+    return <Navigate to={`/terms?redirect=${returnTo}`} replace />;
   }
 
-  return <>{children}</>;
+  // Render children or outlet for nested routes
+  return children ? <>{children}</> : <Outlet />;
 }

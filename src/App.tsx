@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useMemo, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SecureAuthProvider } from "./components/auth/SecureAuthProvider";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
@@ -103,8 +103,6 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/testimonials" element={<Testimonials />} />
-                  <Route path="/subscription" element={<RequireTermsAcceptance><Subscription /></RequireTermsAcceptance>} />
-                  <Route path="/services-and-prices" element={<RequireTermsAcceptance><ServicesAndPrices /></RequireTermsAcceptance>} />
                   <Route path="/schedule" element={<Schedule />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contact" element={<ContactUs />} />
@@ -117,6 +115,12 @@ const App = () => {
                   
                   {/* Terms */}
                   <Route path="/terms" element={<TermsPage />} />
+
+                  {/* NDA-Protected Routes - all pricing information requires terms acceptance */}
+                  <Route element={<RequireTermsAcceptance />}>
+                    <Route path="/services-and-prices" element={<ServicesAndPrices />} />
+                    <Route path="/subscription" element={<Subscription />} />
+                  </Route>
 
                   {/* Auth Routes */}
                   <Route path="/auth" element={<SecureAuth />} />

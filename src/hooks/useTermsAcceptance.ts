@@ -45,7 +45,8 @@ export function useTermsAcceptance() {
         localStorage.removeItem('terms_accepted');
         localStorage.removeItem('terms_accepted_at');
       } else {
-        const accepted = data || false;
+        // CRITICAL: Strictly enforce boolean check - data must be exactly true
+        const accepted = data === true;
         setHasAccepted(accepted);
         
         // Cache in localStorage only after successful database verification

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,6 +15,7 @@ export default function TermsPage() {
   const { acceptTerms } = useTermsAcceptance();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleAccept = async () => {
     if (!isChecked) {
@@ -35,7 +36,10 @@ export default function TermsPage() {
           title: "Terms Accepted",
           description: "Thank you for accepting our terms. You now have access to pricing information."
         });
-        navigate('/services-and-prices');
+        
+        // Navigate to the redirect parameter if present, otherwise default to services-and-prices
+        const redirectTo = searchParams.get('redirect') || '/services-and-prices';
+        navigate(redirectTo);
       } else {
         toast({
           variant: "destructive",
