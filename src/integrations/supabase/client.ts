@@ -20,10 +20,21 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 // Legacy exports for compatibility
 export type UserRole = 'customer' | 'employee' | 'admin';
 
+/**
+ * SECURITY: Role is no longer stored in profiles table
+ * Use permissionManager to check roles via user_roles table
+ */
 export interface UserData {
   id: string;
   email?: string;
-  role?: UserRole;
+  role?: UserRole; // DEPRECATED: Use user_roles table instead
   full_name?: string;
   phone?: string;
+  address?: string;
+  drivers_license?: string;
+  job_title?: string;
+  pay_rate?: number;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
 }

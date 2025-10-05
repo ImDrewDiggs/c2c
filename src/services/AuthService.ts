@@ -1,18 +1,19 @@
 
 import { supabase, UserData } from '@/integrations/supabase/client';
 
+/**
+ * SECURITY: Admin checks are now performed via RBAC system.
+ * Use permissionManager.isAdmin() instead of checking emails.
+ */
 export class AuthService {
   /**
-   * SECURITY: Restricted to single admin email for enhanced security
-   * Multiple admin accounts increase attack surface
+   * @deprecated Use RBAC system instead
    */
-  static readonly ADMIN_EMAILS = [
-    'diggs844037@yahoo.com'
-  ];
+  static readonly ADMIN_EMAILS: string[] = [];
 
   static isAdminEmail(email?: string | null): boolean {
-    if (!email) return false;
-    return this.ADMIN_EMAILS.includes(email.toLowerCase());
+    console.warn('⚠️ DEPRECATED: isAdminEmail is deprecated. Use RBAC checks instead.');
+    return false;
   }
 
   static async signIn(email: string, password: string, role: UserData['role']) {
@@ -33,20 +34,15 @@ export class AuthService {
         return { error: new Error('No user returned'), user: null, role: null };
       }
 
-      console.log('[AuthService] Sign in successful for:', data.user.email);
+      console.log('[AuthService] Sign in successful');
 
-      // Determine role based on email for admin users
-      const actualRole = this.isAdminEmail(data.user.email) ? 'admin' : role;
-      
-      // For admin users, ensure profile exists
-      if (actualRole === 'admin') {
-        await this.ensureAdminProfile(data.user.id, data.user.email);
-      }
+      // Role is now determined by user_roles table, not by email
+      // No client-side role assignment for security
 
       return { 
         error: null, 
         user: data.user, 
-        role: actualRole 
+        role: role 
       };
     } catch (error) {
       console.error('[AuthService] Unexpected sign in error:', error);
@@ -78,28 +74,11 @@ export class AuthService {
     }
   }
 
+  /**
+   * @deprecated Admin profiles are now managed via user_roles table
+   */
   static async ensureAdminProfile(userId: string, email: string): Promise<boolean> {
-    try {
-      console.log('[AuthService] Ensuring admin profile for:', email);
-      
-      // Use the security definer function to safely create admin profile
-      const { error } = await supabase.rpc('create_secure_admin_profile', {
-        admin_user_id: userId,
-        admin_email: email
-      });
-
-      if (error) {
-        console.warn('[AuthService] Admin profile creation warning:', error);
-        // Don't throw error for admin users - they should still be able to access
-        return true;
-      }
-
-      console.log('[AuthService] Admin profile ensured for:', email);
-      return true;
-    } catch (error) {
-      console.warn('[AuthService] Admin profile creation failed:', error);
-      // Return true for admin emails even if profile creation fails
-      return this.isAdminEmail(email);
-    }
+    console.warn('⚠️ DEPRECATED: ensureAdminProfile is no longer used. Admin roles managed via RBAC.');
+    return false;
   }
 }

@@ -46,14 +46,7 @@ export function useAuthState() {
   // Combine loading states
   const loading = sessionLoading || actionsLoading || permissionsLoading;
 
-  // Log the current auth state for debugging
-  console.log('[useAuthState] Current auth state:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    isAdmin,
-    isSuperAdmin,
-    loading
-  });
+  // SECURITY: Removed console.log containing sensitive user data
 
   return {
     user,

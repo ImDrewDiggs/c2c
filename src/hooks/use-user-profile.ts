@@ -36,10 +36,10 @@ export function useUserProfile() {
         return adminData;
       }
       
-      // For non-admin users, try to fetch profile data
+      // Fetch profile data (role column no longer exists)
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, full_name, phone, address, job_title, status, created_at, updated_at')
         .eq('id', userId)
         .maybeSingle();
 
@@ -81,15 +81,13 @@ export function useUserProfile() {
       } else {
         console.log('[UserProfile] User data fetched:', {
           id: data.id,
-          email: data.email,
-          role: data.role
+          email: data.email
         });
         
+        // SECURITY: Role is now fetched from user_roles table via RBAC
+        // No longer using profiles.role column
         setUserData(data as UserData);
-        
-        // Check if user is admin by role or email
-        const isAdmin = data.role === 'admin' || AuthService.isAdminEmail(data.email);
-        setIsSuperAdmin(isAdmin);
+        setIsSuperAdmin(false); // Will be set by permission manager
         
         return data;
       }

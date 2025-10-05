@@ -1,13 +1,11 @@
 import { z } from 'zod';
+import { sanitizeInput } from './inputSanitization';
 
-// XSS protection - sanitize HTML input
-export const sanitizeInput = (input: string): string => {
-  return input
-    .trim()
-    .replace(/[<>]/g, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+=/gi, '');
-};
+/**
+ * SECURITY: Now using enhanced sanitization from inputSanitization.ts
+ * @deprecated Import from './inputSanitization' instead
+ */
+export { sanitizeInput } from './inputSanitization';
 
 // Comprehensive validation schemas
 export const customerInfoSchema = z.object({

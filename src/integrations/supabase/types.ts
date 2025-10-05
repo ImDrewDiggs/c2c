@@ -716,6 +716,36 @@ export type Database = {
           },
         ]
       }
+      pii_access_logs: {
+        Row: {
+          accessed_fields: string[]
+          accessed_user_id: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accessed_fields: string[]
+          accessed_user_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accessed_fields?: string[]
+          accessed_user_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -727,7 +757,6 @@ export type Database = {
           job_title: string | null
           pay_rate: number | null
           phone: string | null
-          role: string
           status: string | null
           updated_at: string
         }
@@ -741,7 +770,6 @@ export type Database = {
           job_title?: string | null
           pay_rate?: number | null
           phone?: string | null
-          role?: string
           status?: string | null
           updated_at?: string
         }
@@ -755,7 +783,6 @@ export type Database = {
           job_title?: string | null
           pay_rate?: number | null
           phone?: string | null
-          role?: string
           status?: string | null
           updated_at?: string
         }
@@ -1305,6 +1332,10 @@ export type Database = {
           _window_minutes?: number
         }
         Returns: Json
+      }
+      cleanup_old_employee_locations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       create_admin_profile_safe: {
         Args: { admin_email: string; admin_user_id: string }

@@ -4,7 +4,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { UserRole, UserData } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { RouteProtectionOptions } from '@/types/auth';
-import { AuthService } from '@/services/AuthService';
+
+/**
+ * SECURITY: No hardcoded admin credentials.
+ * Admin checks are performed via RBAC system.
+ */
 
 export function useRouteProtection(
   loading: boolean,
@@ -16,18 +20,11 @@ export function useRouteProtection(
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { publicRoutes, roleBasedRoutes, adminEmail } = options;
+  const { publicRoutes, roleBasedRoutes } = options;
 
   // Function to redirect based on user role
   function redirectBasedOnRole(role: UserRole) {
     console.log('[RouteProtection] Redirecting based on role:', role);
-    
-    // Special case for admin email
-    if (user?.email === adminEmail) {
-      console.log('[RouteProtection] Redirecting admin user to /admin/dashboard');
-      navigate('/admin/dashboard', { replace: true });
-      return;
-    }
     
     switch (role) {
       case 'customer':
@@ -68,12 +65,6 @@ export function useRouteProtection(
     // Handle authenticated users
     if (user) {
       console.log('[RouteProtection] User is authenticated, checking role-based access');
-      
-      // Special bypass for admin email on admin routes
-      if (user.email === adminEmail && currentPath.startsWith('/admin')) {
-        console.log('[RouteProtection] Admin email on admin route, allowing access');
-        return;
-      }
       
       // Check for specific role paths
       const isCustomerRoute = currentPath.startsWith('/customer');
@@ -135,7 +126,7 @@ export function useRouteProtection(
         }
       }
     }
-  }, [loading, user, userData, location.pathname, navigate, isSuperAdmin, adminEmail, toast]);
+  }, [loading, user, userData, location.pathname, navigate, isSuperAdmin, toast]);
 
   return { redirectBasedOnRole };
 }

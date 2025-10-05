@@ -162,10 +162,11 @@ export default function TermsPage() {
           <div className="flex items-start space-x-3 mb-6">
             <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-muted-foreground">
-              <p className="font-medium mb-1">Important Notice:</p>
+              <p className="font-medium mb-1">Important Privacy Notice:</p>
               <p>
-                Your acceptance is recorded with audit information including timestamp, IP address, and device information 
-                for legal compliance and security purposes.
+                By accepting these terms, you explicitly consent to the collection of your IP address, 
+                device information (user agent), and timestamp for legal compliance and security purposes. 
+                This information is stored securely and used solely for audit and legal protection.
               </p>
             </div>
           </div>

@@ -26,8 +26,10 @@ export async function createSecureAdminUser(adminEmail: string, adminPassword: s
 }
     
 
+/**
+ * @deprecated Use RBAC system via permissionManager.isAdmin() instead
+ */
 export function isAdminEmail(email: string): boolean {
-  // SECURITY: Restricted to single admin for security
-  const approvedEmails = ['diggs844037@yahoo.com'];
-  return approvedEmails.includes(email);
+  console.warn('⚠️ DEPRECATED: isAdminEmail is deprecated. Use RBAC checks instead.');
+  return false;
 }

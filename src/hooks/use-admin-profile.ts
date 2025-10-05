@@ -1,79 +1,30 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { permissionManager } from '@/utils/securityManager';
 
-// Updated admin email reference
-const ADMIN_EMAIL = 'diggs844037@yahoo.com';
-
+/**
+ * SECURITY: This hook is DEPRECATED and should not be used.
+ * Admin roles are now managed through the user_roles table only.
+ * Use permissionManager.isAdmin() or permissionManager.isSuperAdmin() instead.
+ */
 export function useAdminProfile() {
-  // Special function to ensure admin profile exists
+  // DEPRECATED: Admin profiles should be managed through proper RBAC, not client-side
   const createAdminProfile = async (userId: string, email: string) => {
-    try {
-      console.log('[DIAGNOSTIC][AdminProfile] Attempting to create admin profile for:', email);
-      
-      // First check if profile already exists
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-        
-      if (checkError) {
-        console.error('[DIAGNOSTIC][AdminProfile] Error checking for existing profile:', checkError);
-      }
-      
-      // If profile exists, just update it to admin role
-      if (existingProfile) {
-        console.log('[DIAGNOSTIC][AdminProfile] Profile exists, updating to admin role');
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ 
-            role: 'admin',
-            email: email,
-            full_name: 'Administrator'
-          })
-          .eq('id', userId);
-          
-        if (updateError) {
-          console.error('[DIAGNOSTIC][AdminProfile] Error updating profile to admin:', updateError);
-          // Return true for admin email even if update fails
-          return email === ADMIN_EMAIL;
-        }
-        
-        return true;
-      }
-      
-      // If profile doesn't exist, create it
-      const { error } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email: email,
-          role: 'admin',
-          full_name: 'Administrator'
-        });
-      
-      if (error) {
-        console.error('[DIAGNOSTIC][AdminProfile] Error creating admin profile:', error);
-        // Return true for admin email even if creation fails
-        return email === ADMIN_EMAIL;
-      }
-      
-      console.log('[DIAGNOSTIC][AdminProfile] Successfully created admin profile for:', email);
-      return true;
-    } catch (err) {
-      console.error('[DIAGNOSTIC][AdminProfile] Failed to create admin profile:', err);
-      // For the admin email, we'll consider it a success even if there's an error
-      return email === ADMIN_EMAIL;
-    }
+    console.warn('⚠️ DEPRECATED: createAdminProfile is deprecated. Use proper admin management instead.');
+    
+    // Check if user has admin role via RBAC
+    const isAdmin = await permissionManager.isAdmin(userId);
+    return isAdmin;
   };
 
   const isAdminEmail = (email: string) => {
-    return email === ADMIN_EMAIL;
+    console.warn('⚠️ DEPRECATED: isAdminEmail is deprecated. Use RBAC checks instead.');
+    return false;
   };
 
   return {
     createAdminProfile,
     isAdminEmail,
-    ADMIN_EMAIL
+    ADMIN_EMAIL: '' // Deprecated
   };
 }
