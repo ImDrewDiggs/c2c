@@ -25,14 +25,16 @@ export class SessionManager {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // Get user info to determine if admin
-      const { data: profile } = await supabase
-        .from('profiles')
+      // Get user role from user_roles table (RBAC)
+      const { data: roleData } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', session.user.id)
-        .single();
+        .eq('user_id', session.user.id)
+        .eq('is_active', true)
+        .in('role', ['admin', 'super_admin'])
+        .maybeSingle();
 
-      const isAdmin = profile?.role === 'admin';
+      const isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
       
       // Create session info
       this.currentSession = {

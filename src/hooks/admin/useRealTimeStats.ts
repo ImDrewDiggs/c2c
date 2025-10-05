@@ -60,15 +60,17 @@ export function useRealTimeStats() {
             .eq('status', 'completed')
             .gte('processed_at', today.toISOString()),
           
-          // Total customers
-          supabase.from('profiles')
+          // Total customers - count from user_roles
+          supabase.from('user_roles')
             .select('*', { count: 'exact', head: true })
-            .eq('role', 'customer'),
+            .eq('role', 'customer')
+            .eq('is_active', true),
           
-          // Total employees
-          supabase.from('profiles')
+          // Total employees - count from user_roles
+          supabase.from('user_roles')
             .select('*', { count: 'exact', head: true })
-            .eq('role', 'employee'),
+            .eq('role', 'employee')
+            .eq('is_active', true),
           
           // Total vehicles
           supabase.from('vehicles')

@@ -93,12 +93,20 @@ export function EditCustomerModal({ open, onOpenChange, customerId }: EditCustom
       if (error) throw error;
 
       if (data) {
+        // Fetch user role from user_roles table
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', customerId)
+          .eq('is_active', true)
+          .maybeSingle();
+
         form.reset({
           full_name: data.full_name || "",
           email: data.email || "",
           phone: data.phone || "",
           address: data.address || "",
-          role: data.role as any || "customer",
+          role: (roleData?.role || "customer") as any,
           status: data.status as any || "active",
           job_title: data.job_title || "",
           pay_rate: data.pay_rate || 0,

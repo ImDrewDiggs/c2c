@@ -143,11 +143,19 @@ export function NotificationCenter() {
       if (messagesError) throw messagesError;
       setMessages(messagesData || []);
 
-      // Fetch employees for recipient selection
+      // Fetch employees for recipient selection from user_roles
+      const { data: empRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['employee', 'admin'])
+        .eq('is_active', true);
+
+      const employeeIds = empRoles?.map(r => r.user_id) || [];
+
       const { data: employeesData, error: employeesError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role')
-        .neq('role', 'customer');
+        .select('id, full_name, email')
+        .in('id', employeeIds);
       
       if (employeesError) throw employeesError;
       setEmployees(employeesData || []);

@@ -65,12 +65,23 @@ export function QuickSearchModal({ open, onOpenChange }: QuickSearchModalProps) 
 
       if (customerError) throw customerError;
 
+      // Fetch roles for customers
+      const { data: customerRoles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("is_active", true)
+        .in("user_id", customers?.map(c => c.id) || []);
+
+      const roleMap = new Map<string, string>();
+      customerRoles?.forEach(ur => roleMap.set(ur.user_id, ur.role));
+
       customers?.forEach(customer => {
+        const role = roleMap.get(customer.id) || 'customer';
         results.push({
           id: customer.id,
           type: "customer",
           title: customer.full_name || customer.email,
-          subtitle: `${customer.email} • ${customer.role}`,
+          subtitle: `${customer.email} • ${role}`,
           status: customer.status,
           data: customer,
         });

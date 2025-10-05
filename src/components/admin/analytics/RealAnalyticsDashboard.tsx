@@ -32,11 +32,21 @@ export function RealAnalyticsDashboard() {
     try {
       setLoading(true);
       
-      // Fetch employees data
+      // Fetch employees data from user_roles (role column removed from profiles)
+      const { data: employeeRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'employee')
+        .eq('is_active', true);
+      
+      if (rolesError) throw rolesError;
+
+      const employeeIds = employeeRoles?.map(r => r.user_id) || [];
+      
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('role', 'employee');
+        .select('id, email, full_name, phone, status')
+        .in('id', employeeIds);
       
       if (profilesError) throw profilesError;
 

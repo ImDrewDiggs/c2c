@@ -44,37 +44,49 @@ export function UserManagement() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch employees
-      const { data: employeeData, error: employeeError } = await supabase
+      // SECURITY: Roles are now in user_roles table, not profiles
+      // We fetch all profiles and then filter by their roles from user_roles
+      const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('role', 'employee');
+        .select('id, email, full_name, phone, address, job_title, status, created_at, updated_at');
       
-      if (employeeError) throw employeeError;
+      if (profilesError) throw profilesError;
+
+      // Fetch user roles separately
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .eq('is_active', true);
       
-      // Fetch customers
-      const { data: customerData, error: customerError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'customer');
-      
-      if (customerError) throw customerError;
-      
-      // Fetch admins (only for super admin)
-      let adminData: UserData[] = [];
-      if (isSuperAdmin) {
-        const { data: admins, error: adminError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('role', 'admin');
+      if (rolesError) throw rolesError;
+
+      // Create a map of user_id to role with explicit typing
+      const roleMap = new Map<string, string>();
+      userRoles?.forEach(ur => roleMap.set(ur.user_id, ur.role));
+
+      // Categorize users by their roles
+      const employees: UserData[] = [];
+      const customers: UserData[] = [];
+      const admins: UserData[] = [];
+
+      allProfiles?.forEach(profile => {
+        const role = roleMap.get(profile.id) || 'customer';
+        const userData = { ...profile, role } as UserData;
         
-        if (adminError) throw adminError;
-        adminData = admins as UserData[];
-      }
+        if (role === 'employee') {
+          employees.push(userData);
+        } else if (role === 'customer') {
+          customers.push(userData);
+        } else if (role === 'admin' || role === 'super_admin') {
+          if (isSuperAdmin) {
+            admins.push(userData);
+          }
+        }
+      });
       
-      setEmployees(employeeData as UserData[]);
-      setCustomers(customerData as UserData[]);
-      setAdmins(adminData);
+      setEmployees(employees);
+      setCustomers(customers);
+      setAdmins(admins);
       
     } catch (error: any) {
       toast({

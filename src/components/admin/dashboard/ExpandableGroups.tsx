@@ -26,7 +26,7 @@ import {
   Wrench,
   Search,
   FileDown,
-  Map,
+  Map as MapIcon,
   History
 } from "lucide-react";
 import {
@@ -413,10 +413,20 @@ export function ExpandableGroups() {
         .select("*")
         .limit(1);
 
+      // Get employee IDs from user_roles
+      const { data: empRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "employee")
+        .eq("is_active", true)
+        .limit(1);
+
+      const employeeIds = empRoles?.map(r => r.user_id) || [];
+
       const { data: employees, error: empError } = await supabase
         .from("profiles")
-        .select("*")
-        .eq("role", "employee")
+        .select("id, full_name, email")
+        .in("id", employeeIds)
         .limit(1);
 
       if (houseError || empError) throw houseError || empError;
@@ -459,10 +469,20 @@ export function ExpandableGroups() {
         .select("*")
         .limit(1);
 
+      // Get employee IDs from user_roles
+      const { data: empRoles2 } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "employee")
+        .eq("is_active", true)
+        .limit(1);
+
+      const employeeIds2 = empRoles2?.map(r => r.user_id) || [];
+
       const { data: employees, error: empError } = await supabase
         .from("profiles")
-        .select("*")
-        .eq("role", "employee")
+        .select("id, full_name, email")
+        .in("id", employeeIds2)
         .limit(1);
 
       if (houseError || empError) throw houseError || empError;
@@ -533,17 +553,29 @@ export function ExpandableGroups() {
   const handleExportData = async () => {
     try {
       // Export customer data as CSV format
+      // SECURITY: Role column no longer exists in profiles, fetch from user_roles
       const { data: customers, error } = await supabase
         .from("profiles")
-        .select("full_name, email, phone, role, status")
-        .eq("role", "customer");
+        .select("id, full_name, email, phone, status");
 
       if (error) throw error;
+
+      // Fetch roles for these users
+      const { data: userRoles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("is_active", true)
+        .in("user_id", customers?.map(c => c.id) || []);
+
+      const roleMap = new Map<string, string>();
+      userRoles?.forEach(ur => {
+        roleMap.set(ur.user_id, ur.role);
+      });
 
       if (customers && customers.length > 0) {
         const csvContent = [
           "Name,Email,Phone,Role,Status",
-          ...customers.map(c => `${c.full_name},${c.email},${c.phone},${c.role},${c.status}`)
+          ...customers.map(c => `${c.full_name},${c.email},${c.phone},${roleMap.get(c.id) || 'customer'},${c.status}`)
         ].join("\n");
 
         const blob = new Blob([csvContent], { type: "text/csv" });
@@ -683,11 +715,20 @@ export function ExpandableGroups() {
           icon: FileText,
           action: async () => {
             try {
-              // Add a note via messages system
+              // Get customer IDs from user_roles
+              const { data: custRoles } = await supabase
+                .from("user_roles")
+                .select("user_id")
+                .eq("role", "customer")
+                .eq("is_active", true)
+                .limit(1);
+
+              const customerIds = custRoles?.map(r => r.user_id) || [];
+
               const { data: customers, error } = await supabase
                 .from("profiles")
-                .select("*")
-                .eq("role", "customer")
+                .select("id, full_name, email")
+                .in("id", customerIds)
                 .limit(1);
 
               if (error) throw error;
@@ -830,7 +871,7 @@ export function ExpandableGroups() {
         {
           id: "gps-map",
           label: "Live Employee GPS Map",
-          icon: Map,
+          icon: MapIcon,
           action: handleGPSMap,
         },
         {

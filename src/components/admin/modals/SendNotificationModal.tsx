@@ -72,10 +72,19 @@ export function SendNotificationModal({ open, onOpenChange }: SendNotificationMo
 
   const loadRecipients = async () => {
     try {
+      // Get user IDs for customers and employees from user_roles
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["customer", "employee"])
+        .eq("is_active", true);
+
+      const userIds = roles?.map(r => r.user_id) || [];
+
       const { data: users, error } = await supabase
         .from("profiles")
-        .select("*")
-        .in("role", ["customer", "employee"])
+        .select("id, email, full_name")
+        .in("id", userIds)
         .limit(100);
 
       if (error) throw error;
