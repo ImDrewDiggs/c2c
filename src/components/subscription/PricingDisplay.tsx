@@ -11,6 +11,7 @@ interface PricingDisplayProps {
   basePrice?: number;
   addOnsTotal?: number;
   bundleDiscount?: number;
+  contractMonths?: number;
 }
 
 const PricingDisplay = ({ 
@@ -22,8 +23,10 @@ const PricingDisplay = ({
   selectedServices,
   basePrice,
   addOnsTotal,
-  bundleDiscount
+  bundleDiscount,
+  contractMonths = 1
 }: PricingDisplayProps) => {
+  const isMultiMonth = contractMonths > 1;
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -82,8 +85,16 @@ const PricingDisplay = ({
       
       <p className="text-4xl font-bold text-primary text-center">
         ${total.toFixed(2)}
-        <span className="text-lg text-muted-foreground">/month</span>
+        <span className="text-lg text-muted-foreground">
+          {isMultiMonth ? ` for ${contractMonths} months` : '/month'}
+        </span>
       </p>
+      
+      {isMultiMonth && (
+        <p className="text-center text-sm text-muted-foreground mt-2">
+          ${(total / contractMonths).toFixed(2)}/month
+        </p>
+      )}
       
       {(discount > 0 || (bundleDiscount && bundleDiscount > 0)) && (
         <div className="text-center mt-3 space-y-1">

@@ -66,10 +66,26 @@ export function EmployeeTimeCard() {
 
   const fetchEmployees = async () => {
     try {
+      // First get employee user IDs from user_roles
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'employee')
+        .eq('is_active', true);
+
+      if (roleError) throw roleError;
+      if (!roleData || roleData.length === 0) {
+        setEmployees([]);
+        return;
+      }
+
+      const employeeIds = roleData.map(r => r.user_id);
+
+      // Then get their profiles
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, pay_rate, job_title')
-        .eq('role', 'employee')
+        .in('id', employeeIds)
         .order('full_name');
 
       if (error) throw error;

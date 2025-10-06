@@ -26,6 +26,8 @@ interface CheckoutData {
   unitCount: number;
   total: number;
   services: any[];
+  contractLength?: string;
+  monthlyPrice?: number;
 }
 
 interface CustomerInfo {
@@ -122,6 +124,13 @@ export default function Checkout() {
     try {
       // Use Stripe for payment processing
       if (selectedPaymentMethod === "stripe") {
+        const contractLengthValue = checkoutData?.contractLength || "1";
+        const contractLengthLabel = contractLengthValue === "1" 
+          ? "monthly" 
+          : contractLengthValue === "6" 
+          ? "6-month" 
+          : "12-month";
+        
         const { data, error } = await supabase.functions.invoke('create-checkout-session', {
           body: {
             subscriptionType: checkoutData?.subscriptionType,
@@ -129,9 +138,10 @@ export default function Checkout() {
             selectedServiceTypes: checkoutData?.selectedServiceTypes || [],
             unitCount: checkoutData?.unitCount || 1,
             total: calculateTotal(),
-            isSubscription: true,
-            contractLength: "monthly",
-            selectedServices: [`${checkoutData?.subscriptionType} ${checkoutData?.selectedTier || ''} Plan`]
+            isSubscription: contractLengthValue === "1",
+            contractLength: contractLengthLabel,
+            contractMonths: parseInt(contractLengthValue),
+            selectedServices: [`${checkoutData?.subscriptionType} ${checkoutData?.selectedTier || ''} Plan (${contractLengthLabel})`]
           }
         });
 
@@ -197,7 +207,7 @@ export default function Checkout() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-start">
+                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-medium">
                         {checkoutData.subscriptionType === "single-family" 
@@ -206,8 +216,18 @@ export default function Checkout() {
                         }
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Monthly subscription
+                        {checkoutData.contractLength === "1" 
+                          ? "Monthly subscription"
+                          : checkoutData.contractLength === "6"
+                          ? "6-month subscription (5% discount applied)"
+                          : "12-month subscription (10% discount applied)"
+                        }
                       </p>
+                      {checkoutData.monthlyPrice && parseInt(checkoutData.contractLength || "1") > 1 && (
+                        <p className="text-sm text-muted-foreground">
+                          ${checkoutData.monthlyPrice.toFixed(2)}/month × {checkoutData.contractLength} months
+                        </p>
+                      )}
                       {checkoutData.subscriptionType === "multi-family" && (
                         <p className="text-sm text-muted-foreground">
                           {checkoutData.unitCount} units

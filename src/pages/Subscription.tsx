@@ -123,11 +123,15 @@ export default function Subscription() {
   const calculateTotal = (): number => {
     const basePrice = getBasePrice();
     const addOnsTotal = calculateAddOnsTotal();
-    const subtotal = basePrice + addOnsTotal;
+    const monthlySubtotal = basePrice + addOnsTotal;
     
     // Apply contract length discount
     const discount = getContractLengthDiscount();
-    const finalPrice = subtotal * (1 - discount);
+    const discountedMonthlyPrice = monthlySubtotal * (1 - discount);
+    
+    // Multiply by number of months for full contract price
+    const months = parseInt(contractLength);
+    const finalPrice = discountedMonthlyPrice * months;
     
     return finalPrice;
   };
@@ -196,6 +200,8 @@ export default function Subscription() {
       selectedServiceId,
       unitCount,
       total: calculateTotal(),
+      contractLength,
+      monthlyPrice: getBasePrice() + calculateAddOnsTotal(),
       services: services.filter(service => 
         selectedTab === "single-family" 
           ? service.category === 'single_family' && service.id === selectedTier
@@ -524,6 +530,7 @@ export default function Subscription() {
             basePrice={getBasePrice()}
             addOnsTotal={calculateAddOnsTotal()}
             bundleDiscount={selectedAddOns.length >= 2 ? 25 : 0}
+            contractMonths={parseInt(contractLength)}
           />
         )}
         
