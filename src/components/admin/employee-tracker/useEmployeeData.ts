@@ -18,10 +18,26 @@ export function useEmployeeData(employeeLocations: EmployeeLocation[]) {
     async function fetchEmployeeData() {
       setError(null);
       try {
+        // Get employee roles first
+        const { data: employeeRoles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "employee")
+          .eq("is_active", true);
+        
+        if (rolesError) throw rolesError;
+
+        const employeeIds = employeeRoles?.map(r => r.user_id) || [];
+        if (employeeIds.length === 0) {
+          setEmployees([]);
+          setFilteredEmployees([]);
+          return;
+        }
+
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('role', 'employee');
+          .in('id', employeeIds);
         
         if (error) {
           console.error('Error fetching employee profiles:', error);

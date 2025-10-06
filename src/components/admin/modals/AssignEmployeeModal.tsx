@@ -68,9 +68,20 @@ export function AssignEmployeeModal({ open, onOpenChange }: AssignEmployeeModalP
 
   const loadData = async () => {
     try {
+      // Get employee roles first
+      const employeeRolesResult = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "employee")
+        .eq("is_active", true);
+
+      const employeeIds = employeeRolesResult.data?.map(r => r.user_id) || [];
+
       const [housesResult, employeesResult] = await Promise.all([
         supabase.from("houses").select("*").limit(50),
-        supabase.from("profiles").select("*").eq("role", "employee").limit(50)
+        employeeIds.length > 0 
+          ? supabase.from("profiles").select("*").in("id", employeeIds).limit(50)
+          : Promise.resolve({ data: [], error: null })
       ]);
 
       if (housesResult.data) setHouses(housesResult.data);

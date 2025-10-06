@@ -86,10 +86,26 @@ export default function AdminEmployees() {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
+      // Get employee roles first
+      const { data: employeeRoles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "employee")
+        .eq("is_active", true);
+      
+      if (rolesError) throw rolesError;
+
+      const employeeIds = employeeRoles?.map(r => r.user_id) || [];
+      if (employeeIds.length === 0) {
+        setEmployees([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'employee');
+        .in('id', employeeIds);
       
       if (error) throw error;
       

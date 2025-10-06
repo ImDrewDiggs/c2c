@@ -17,11 +17,23 @@ export function useCustomers(searchTerm = "") {
   return useQuery({
     queryKey: ["adminCustomers", searchTerm],
     queryFn: async (): Promise<CustomerData[]> => {
+      // Get customer roles first
+      const { data: customerRoles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "customer")
+        .eq("is_active", true);
+      
+      if (rolesError) throw rolesError;
+
+      const customerIds = customerRoles?.map(r => r.user_id) || [];
+      if (customerIds.length === 0) return [];
+
       // Get customer profiles
       let profilesQuery = supabase
         .from("profiles")
         .select("id,full_name,email,phone,address,created_at")
-        .eq("role", "customer")
+        .in("id", customerIds)
         .order("created_at", { ascending: false });
 
       if (searchTerm) {
