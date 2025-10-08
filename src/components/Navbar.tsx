@@ -54,12 +54,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/47eceaaa-7293-4544-a9d0-3810212f7c1c.png" 
+              src="/logo-optimized.webp" 
               alt="Can2Curb Logo" 
               className="h-12 w-auto"
               width="48"
               height="48"
-              loading="eager"
+              fetchPriority="high"
               decoding="async"
             />
           </Link>
