@@ -44,6 +44,7 @@ import { EditCustomerModal } from "../modals/EditCustomerModal";
 import { CreateSubscriptionModal } from "../modals/CreateSubscriptionModal";
 import { QuickSearchModal } from "../modals/QuickSearchModal";
 import { AssignEmployeeModal } from "../modals/AssignEmployeeModal";
+import { AutoAssignRoutesModal } from "../modals/AutoAssignRoutesModal";
 import { SendNotificationModal } from "../modals/SendNotificationModal";
 
 interface ActionButton {
@@ -69,6 +70,7 @@ export function ExpandableGroups() {
   const [showCreateSubscriptionModal, setShowCreateSubscriptionModal] = useState(false);
   const [showQuickSearchModal, setShowQuickSearchModal] = useState(false);
   const [showAssignEmployeeModal, setShowAssignEmployeeModal] = useState(false);
+  const [showAutoAssignRoutesModal, setShowAutoAssignRoutesModal] = useState(false);
   const [showSendNotificationModal, setShowSendNotificationModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
@@ -315,54 +317,7 @@ export function ExpandableGroups() {
   };
 
   const handleAssignEmployee = () => setShowAssignEmployeeModal(true);
-  const handleOptimizeRoute = async () => {
-    try {
-      // Get pending assignments and optimize them
-      const { data: assignments, error } = await supabase
-        .from("assignments")
-        .select(`
-          *,
-          houses (address, latitude, longitude),
-          profiles (full_name)
-        `)
-        .eq("status", "pending")
-        .limit(10);
-
-      if (error) throw error;
-
-      if (assignments && assignments.length > 0) {
-        // Simple optimization: assign consecutive jobs to same employee
-        const employees = [...new Set(assignments.map(a => a.employee_id))];
-        
-        for (let i = 0; i < assignments.length; i++) {
-          const employeeIndex = i % employees.length;
-          await supabase
-            .from("assignments")
-            .update({ 
-              employee_id: employees[employeeIndex],
-              status: "assigned"
-            })
-            .eq("id", assignments[i].id);
-        }
-
-        toast({
-          title: "Routes Optimized",
-          description: `Optimized ${assignments.length} assignments across ${employees.length} employees.`,
-        });
-      } else {
-        toast({
-          title: "No Pending Assignments",
-          description: "No pending assignments found to optimize.",
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to optimize routes",
-        variant: "destructive",
-      });
-    }
-  };
+  const handleOptimizeRoute = () => setShowAutoAssignRoutesModal(true);
 
   const handleMarkComplete = async () => {
     try {
@@ -1038,6 +993,11 @@ export function ExpandableGroups() {
       <AssignEmployeeModal 
         open={showAssignEmployeeModal} 
         onOpenChange={setShowAssignEmployeeModal}
+      />
+      
+      <AutoAssignRoutesModal 
+        open={showAutoAssignRoutesModal} 
+        onOpenChange={setShowAutoAssignRoutesModal}
       />
       
       <SendNotificationModal 

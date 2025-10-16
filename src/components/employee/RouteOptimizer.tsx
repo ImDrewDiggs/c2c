@@ -17,6 +17,7 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
   const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const [estimatedDistance, setEstimatedDistance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [routeOrder, setRouteOrder] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,22 +39,31 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
     setLoading(true);
 
     try {
-      // Calculate route using the Mapbox Directions API
-      // Note: In a real app, this should be done through a Supabase Edge Function
-      // to protect your Mapbox API key
-      const start = `${currentLocation.longitude},${currentLocation.latitude}`;
-      const end = `${selectedAssignment.house.longitude},${selectedAssignment.house.latitude}`;
+      // Calculate straight-line distance (Haversine formula)
+      const R = 3959; // Earth's radius in miles
+      const lat1 = currentLocation.latitude * Math.PI / 180;
+      const lat2 = selectedAssignment.house.latitude * Math.PI / 180;
+      const dLat = (selectedAssignment.house.latitude - currentLocation.latitude) * Math.PI / 180;
+      const dLng = (selectedAssignment.house.longitude - currentLocation.longitude) * Math.PI / 180;
       
-      // Simulate API response
-      setTimeout(() => {
-        // Sample estimation data (would come from the API)
-        const distance = ((Math.random() * 10) + 2).toFixed(1);
-        const minutes = Math.floor((Math.random() * 30) + 10);
-        
-        setEstimatedDistance(`${distance} miles`);
-        setEstimatedTime(`${minutes} min`);
-        setLoading(false);
-      }, 1500);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c;
+      
+      // Estimate time (assume 25 mph average with traffic)
+      const minutes = Math.round((distance / 25) * 60);
+      
+      setEstimatedDistance(`${distance.toFixed(1)} miles`);
+      setEstimatedTime(`${minutes} min`);
+      
+      // Get route order if available
+      if ('route_order' in selectedAssignment && selectedAssignment.route_order) {
+        setRouteOrder(selectedAssignment.route_order as number);
+      }
+      
+      setLoading(false);
     } catch (error) {
       console.error('Error calculating route:', error);
       toast({
@@ -61,7 +71,6 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
         title: "Route Calculation Failed",
         description: "Unable to calculate the best route. Please try again.",
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -92,7 +101,12 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-medium">Optimal Route</CardTitle>
-          <Badge variant="outline">{selectedAssignment.status}</Badge>
+          <div className="flex gap-2">
+            {routeOrder && (
+              <Badge variant="secondary">Stop #{routeOrder}</Badge>
+            )}
+            <Badge variant="outline">{selectedAssignment.status}</Badge>
+          </div>
         </div>
       </CardHeader>
       

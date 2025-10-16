@@ -26,4 +26,6 @@ export interface Assignment {
   assigned_date: string;
   completed_at?: string;
   house: House;
+  route_order?: number;
+  cluster_id?: number;
 }

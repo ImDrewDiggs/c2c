@@ -125,31 +125,40 @@ export type Database = {
       assignments: {
         Row: {
           assigned_date: string
+          cluster_id: number | null
           completed_at: string | null
           created_at: string
           employee_id: string
           house_id: string
           id: string
+          optimized_at: string | null
+          route_order: number | null
           status: string
           updated_at: string
         }
         Insert: {
           assigned_date?: string
+          cluster_id?: number | null
           completed_at?: string | null
           created_at?: string
           employee_id: string
           house_id: string
           id?: string
+          optimized_at?: string | null
+          route_order?: number | null
           status?: string
           updated_at?: string
         }
         Update: {
           assigned_date?: string
+          cluster_id?: number | null
           completed_at?: string | null
           created_at?: string
           employee_id?: string
           house_id?: string
           id?: string
+          optimized_at?: string | null
+          route_order?: number | null
           status?: string
           updated_at?: string
         }
