@@ -328,9 +328,13 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
               <p className="text-sm text-muted-foreground">Sessions</p>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
-              <p className="text-2xl font-bold text-primary">
-                {isWorking ? "Working" : "Not Working"}
-              </p>
+              <div className="flex items-center justify-center mb-2">
+                <div 
+                  className={`w-16 h-16 rounded-full ${
+                    isWorking ? 'bg-green-500' : 'bg-red-500'
+                  }`}
+                />
+              </div>
               <p className="text-sm text-muted-foreground">Status</p>
             </div>
           </div>
