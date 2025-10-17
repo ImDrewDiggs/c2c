@@ -49,18 +49,23 @@ export default function CustomerLogin() {
     try {
       const role = await signIn(email, password, 'customer');
       
-      if (role !== 'customer' && role !== 'admin') {
-        // If the user is not a customer or admin, show an error
+      // Allow both customer and admin roles to access customer dashboard
+      if (role === 'customer' || role === 'admin') {
+        // Redirect to the intended destination or dashboard
+        navigate(redirectTo || '/customer/dashboard', { replace: true });
+      } else if (role === 'employee') {
+        toast({
+          variant: "destructive",
+          title: "Access Denied", 
+          description: "Please use the employee login portal to access employee features"
+        });
+      } else {
         toast({
           variant: "destructive",
           title: "Access Denied", 
           description: "You must be a customer to access the customer dashboard"
         });
-        return;
       }
-      
-      // Redirect to the intended destination or dashboard
-      navigate(redirectTo || '/customer/dashboard', { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
       // Toast is already handled in the signIn function

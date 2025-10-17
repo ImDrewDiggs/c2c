@@ -64,9 +64,14 @@ export default function CustomerRegister() {
 
       if (error) throw error;
 
+      // Check if email confirmation is required
+      const isConfirmationRequired = !data.session;
+      
       toast({
         title: "Success",
-        description: "Registration successful! Please check your email to verify your account.",
+        description: isConfirmationRequired 
+          ? "Registration successful! Please check your email to verify your account."
+          : "Registration successful! You can now log in.",
       });
       
       // Redirect to login, preserving the intended destination
