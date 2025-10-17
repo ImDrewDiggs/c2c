@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,22 +8,29 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import CustomerSubscriptions from "@/components/customer/CustomerSubscriptions";
 import CustomerProfile from "@/components/customer/CustomerProfile";
 import ServiceHistory from "@/components/customer/ServiceHistory";
+import SchedulePickup from "@/components/customer/SchedulePickup";
+import BulkItemRequest from "@/components/customer/BulkItemRequest";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
+import { Calendar, Package, CreditCard, User, History, Home } from "lucide-react";
 
 export default function CustomerDashboard() {
   const { user, userData } = useAuth();
-  const [activeTab, setActiveTab] = useState("subscriptions");
+  const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
 
   return (
     <RequireAuth allowedRoles={['customer']} redirectTo="/customer/login">
       <div className="container mx-auto py-10 px-4 md:px-6">
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold">Customer Dashboard</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold flex items-center gap-2">
+                <Home className="h-8 w-8 text-primary" />
+                Customer Dashboard
+              </h1>
+              <p className="text-muted-foreground mt-1">
                 Welcome back, {userData?.full_name || user?.email?.split('@')[0] || 'Customer'}
               </p>
             </div>
@@ -34,51 +40,93 @@ export default function CustomerDashboard() {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Manage your account and services</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-4">
-              <Button 
-                onClick={() => setActiveTab("subscriptions")}
-                variant={activeTab === "subscriptions" ? "default" : "outline"}
-              >
-                View Subscriptions
-              </Button>
-              <Button 
-                onClick={() => setActiveTab("profile")}
-                variant={activeTab === "profile" ? "default" : "outline"}
-              >
-                Manage Profile
-              </Button>
-              <Button 
-                onClick={() => setActiveTab("history")}
-                variant={activeTab === "history" ? "default" : "outline"}
-              >
-                Service History
-              </Button>
-              <Button 
-                onClick={() => navigate("/customer/billing")}
-                variant="outline"
-              >
-                Billing
-              </Button>
-              <Button 
-                onClick={() => navigate("/subscription")}
-                variant="outline"
-              >
-                Browse Plans
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("schedule")}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Calendar className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Schedule</p>
+                  <p className="text-2xl font-bold">Pickup</p>
+                </div>
+              </CardContent>
+            </Card>
 
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("bulk")}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Package className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Bulk Items</p>
+                  <p className="text-2xl font-bold">Request</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/customer/billing")}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Billing</p>
+                  <p className="text-2xl font-bold">Payment</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("profile")}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Account</p>
+                  <p className="text-2xl font-bold">Profile</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 mb-8">
-              <TabsTrigger value="subscriptions">My Subscriptions</TabsTrigger>
+            <TabsList className="grid grid-cols-2 md:grid-cols-6 mb-8">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+              <TabsTrigger value="bulk">Bulk Items</TabsTrigger>
+              <TabsTrigger value="subscriptions">Plans</TabsTrigger>
               <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="history">Service History</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SchedulePickup userId={user.id} />
+                <BulkItemRequest userId={user.id} />
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Your latest service interactions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-center py-8">
+                    No recent activity to display
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="schedule">
+              <SchedulePickup userId={user.id} />
+            </TabsContent>
+
+            <TabsContent value="bulk">
+              <BulkItemRequest userId={user.id} />
+            </TabsContent>
 
             <TabsContent value="subscriptions">
               <CustomerSubscriptions userId={user.id} />

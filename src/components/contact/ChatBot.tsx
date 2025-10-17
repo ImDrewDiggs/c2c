@@ -29,24 +29,24 @@ const ChatBot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Enhanced bot responses based on keywords
+  // Enhanced bot responses with comprehensive business knowledge
   const getBotResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
     
-    // Service & Pricing related queries
+    // Service & Pricing related queries - Enhanced with specific details
     if (lowerCaseMessage.includes("pricing") || lowerCaseMessage.includes("cost") || lowerCaseMessage.includes("price") || lowerCaseMessage.includes("fee")) {
-      return "Our pricing varies based on your needs. For single-family homes, plans start at $29.99/month for basic service. Multi-family communities receive volume discounts starting at 10% for 10+ units. Please visit our Services and Prices page for detailed information or use our Subscription tool to get a custom quote.";
-    } 
+      return "Can2Curb offers flexible pricing for all property types:\n\n🏠 Single-Family Homes:\n• Basic: $24.99/mo (1 trash can concierge)\n• Standard: $49.99/mo (trash + recycle)\n• Premium: $79.99/mo (2 trash + recycle)\n• Comprehensive: $119.99/mo (3 cans + cleaning)\n• ELITE: $169.99/mo (all services + account manager)\n\n🏢 Multi-Family Properties:\n• Starting at $9.99/unit/month\n• Volume discounts available\n• Daily service options for ELITE\n\n💼 Business Services:\n• Grease hood cleaning: $249-$399\n• Pressure washing: Custom quotes\n• Cardboard pickup: $79-$99/mo\n\nVisit our Subscription page for detailed plans!";
+    }
     
-    // Collection & Schedule related queries
+    // Collection & Schedule related queries - Enhanced
     else if (lowerCaseMessage.includes("pickup") || lowerCaseMessage.includes("schedule") || lowerCaseMessage.includes("collection") || lowerCaseMessage.includes("when")) {
-      return "We offer flexible pickup schedules. Standard residential service includes weekly collection, but we can accommodate more frequent pickups if needed. Multi-family properties can schedule bi-weekly or daily service based on volume. You can manage your pickup schedule through your customer account or contact customer service for changes.";
-    } 
+      return "Can2Curb offers flexible pickup scheduling:\n\n📅 Residential:\n• Weekly standard service\n• Same-day pickup for ELITE members\n• Schedule through your customer dashboard\n• Time slots: 8 AM - 6 PM\n\n🏢 Multi-Family:\n• 1x/week to daily service options\n• Customizable schedules\n• Common area cleaning included in higher tiers\n\n⏰ Scheduling Options:\n• Online scheduling: Log into your dashboard\n• Advance notice: 48 hours for hazardous materials\n• Holiday schedule: Posted annually\n\nNeed to schedule? Visit our customer dashboard!";
+    }
     
-    // Recycling related queries
+    // Recycling related queries - Enhanced
     else if (lowerCaseMessage.includes("recycle") || lowerCaseMessage.includes("recycling") || lowerCaseMessage.includes("recyclable")) {
-      return "We accept paper, cardboard, glass bottles and jars, plastic containers (types 1-7), and metal cans for recycling. Please ensure all items are clean and dry. Electronics, batteries, and hazardous materials require special handling and can be scheduled for special pickup. Visit our website for detailed recycling guidelines.";
-    } 
+      return "Can2Curb's comprehensive recycling services:\n\n♻️ Accepted Recyclables:\n• Paper & cardboard\n• Glass bottles & jars\n• Plastic containers (types 1-7)\n• Metal cans (aluminum, steel)\n• Clean & dry items only\n\n🔋 Special Recycling:\n• Electronics: Scheduled pickup\n• Batteries: Special handling\n• Hazardous materials: 48-hr advance notice\n\n📦 Service Levels:\n• Standard+: Includes recycling can\n• Premium+: Bi-weekly can cleaning\n• ELITE: Weekly recycling pickup\n\nTip: Rinse containers and remove caps for better recycling!";
+    }
     
     // Account management queries
     else if (lowerCaseMessage.includes("cancel") || lowerCaseMessage.includes("stop service") || lowerCaseMessage.includes("change service")) {
@@ -63,9 +63,9 @@ const ChatBot = () => {
       return "We offer multiple payment options including credit card, bank transfer, and check. Bills are generated monthly and can be viewed in your customer portal. We offer paperless billing and auto-pay options for your convenience. If you have specific billing questions, please contact our billing department at billing@wastemanagement.com.";
     }
     
-    // Container related queries
-    else if (lowerCaseMessage.includes("bin") || lowerCaseMessage.includes("container") || lowerCaseMessage.includes("dumpster") || lowerCaseMessage.includes("trash can")) {
-      return "We provide various container sizes based on your needs. Standard residential service includes a 65-gallon wheeled bin, but we also offer 35-gallon and 95-gallon options. Multi-family properties can choose from dumpsters ranging from 2 to 8 cubic yards. Container maintenance and replacement is included in your service.";
+    // Container related queries - Enhanced with service details
+    else if (lowerCaseMessage.includes("bin") || lowerCaseMessage.includes("container") || lowerCaseMessage.includes("dumpster") || lowerCaseMessage.includes("trash can") || lowerCaseMessage.includes("cleaning")) {
+      return "Can2Curb container services:\n\n🗑️ Residential Containers:\n• Standard 65-gallon wheeled bins\n• Additional cans: +$9.99/month\n• Can cleaning: +$14.99/month\n\n🏢 Multi-Family Dumpsters:\n• 2-8 cubic yard options\n• Monthly cleaning included (Standard+)\n• Deodorizing (Premium+)\n• Daily cleaning (ELITE)\n\n✨ Cleaning Services:\n• Standard: 1x/month\n• Premium: Bi-weekly + deodorizing\n• Comprehensive: Weekly cleaning\n• ELITE: Weekly + area cleanup\n\nAll maintenance & replacement included!";
     }
     
     // Holiday schedule queries
@@ -78,14 +78,24 @@ const ChatBot = () => {
       return "For waste management emergencies such as spills or hazardous material incidents, please call our 24/7 emergency line at 1-800-555-9876. Our emergency response team is available around the clock to handle urgent situations.";
     }
     
-    // Subscription related queries
-    else if (lowerCaseMessage.includes("subscription") || lowerCaseMessage.includes("plan") || lowerCaseMessage.includes("sign up") || lowerCaseMessage.includes("register")) {
-      return "You can sign up for our services through our website's Subscription page. We offer flexible plans for both single-family homes and multi-family communities with various service frequencies. New customers receive a 10% discount on their first three months of service. Visit our Subscription page to get started.";
+    // Bulk item queries - New detailed section
+    else if (lowerCaseMessage.includes("bulk") || lowerCaseMessage.includes("large item") || lowerCaseMessage.includes("furniture") || lowerCaseMessage.includes("appliance")) {
+      return "Can2Curb Bulk Item Pickup Service:\n\n📦 Standard Bulk Items: $45/item\n• Furniture (couches, chairs, tables)\n• Small appliances\n• Exercise equipment\n• Electronics\n\n🏠 Large Items: $75-$99/item\n• Mattresses & box springs\n• Large appliances\n• Heavy furniture sets\n\n⭐ Service Levels:\n• Premium: 1x/month large item pickup\n• Comprehensive: Bi-weekly pickup\n• ELITE: Weekly large item pickup\n\n📱 How to Request:\n1. Log into customer dashboard\n2. Go to 'Bulk Item Request'\n3. Add items & submit\n4. We'll contact you within 24 hours\n\nELITE members get priority scheduling!";
     }
     
-    // Contact information queries
-    else if (lowerCaseMessage.includes("contact") || lowerCaseMessage.includes("phone") || lowerCaseMessage.includes("email") || lowerCaseMessage.includes("reach")) {
-      return "You can reach our customer service team by phone at 1-800-555-1234 (Mon-Fri, 8am-6pm), by email at support@wastemanagement.com, or through the contact form on our website. For emergencies, our 24/7 hotline is 1-800-555-9876.";
+    // Subscription related queries - Enhanced
+    else if (lowerCaseMessage.includes("subscription") || lowerCaseMessage.includes("plan") || lowerCaseMessage.includes("sign up") || lowerCaseMessage.includes("register") || lowerCaseMessage.includes("tier")) {
+      return "Welcome to Can2Curb! Here's how to get started:\n\n🎯 Choose Your Plan:\n• Single-Family: 5 tiers from $24.99-$169.99/mo\n• Multi-Family: $9.99-$32.99 per unit/month\n• Business: Custom solutions available\n\n✨ New Customer Benefits:\n• Flexible month-to-month contracts\n• No setup fees\n• First pickup within 48 hours\n• 30-day satisfaction guarantee\n\n📝 Sign Up Process:\n1. Visit our Subscription page\n2. Select your property type\n3. Choose your service tier\n4. Complete secure checkout\n5. Schedule your first pickup\n\n💡 Not sure which plan? Our chatbot can help guide you, or contact us for a personalized consultation!";
+    }
+    
+    // Account management queries - Enhanced
+    else if (lowerCaseMessage.includes("cancel") || lowerCaseMessage.includes("stop service") || lowerCaseMessage.includes("change service") || lowerCaseMessage.includes("pause")) {
+      return "Can2Curb Account Management:\n\n📊 Modify Your Service:\n• Log into your customer dashboard\n• No long-term contracts required\n• Month-to-month flexibility\n\n⚠️ Service Changes:\n• Upgrade: Effective immediately\n• Downgrade: 7-day notice required\n• Pause service: Available for up to 2 months\n• Cancellation: 7-day notice, no fees\n\n💳 Billing Adjustments:\n• Pro-rated for mid-month changes\n• Credits applied automatically\n• Refunds processed within 5-7 business days\n\n📞 Need Help?\n• Online: Customer dashboard\n• Email: support@can2curb.com\n• Phone: 1-800-555-1234\n\nWe're here to make changes easy!";
+    }
+    
+    // Contact information queries - Enhanced
+    else if (lowerCaseMessage.includes("contact") || lowerCaseMessage.includes("phone") || lowerCaseMessage.includes("email") || lowerCaseMessage.includes("reach") || lowerCaseMessage.includes("support")) {
+      return "📞 Contact Can2Curb:\n\n🏢 Customer Service:\n• Phone: 1-800-555-1234\n• Hours: Mon-Fri 8 AM - 6 PM, Sat 9 AM - 2 PM\n• Email: support@can2curb.com\n• Response time: Within 24 hours\n\n🚨 Emergency Hotline:\n• Available 24/7: 1-800-555-9876\n• For spills, hazmat incidents, urgent issues\n\n💻 Online Support:\n• Customer Dashboard: Manage account\n• Live Chat: Available during business hours\n• Help Center: Comprehensive guides\n\n📧 Specialized Departments:\n• Billing: billing@can2curb.com\n• Business Services: commercial@can2curb.com\n• ELITE Support: elite@can2curb.com\n\nWe're here to help!";
     }
     
     // Business hours queries
@@ -103,9 +113,29 @@ const ChatBot = () => {
       return "You're welcome! Is there anything else I can help you with regarding our waste management services?";
     }
     
-    // Default response
+    // Multi-family specific queries - New
+    else if (lowerCaseMessage.includes("multi-family") || lowerCaseMessage.includes("apartment") || lowerCaseMessage.includes("property manager") || lowerCaseMessage.includes("hoa")) {
+      return "Can2Curb Multi-Family Solutions:\n\n🏢 Service Tiers (Per Unit/Month):\n• Basic: $9.99 - 1x/week concierge\n• Standard: $12.99 - Weekly + dumpster cleaning\n• Premium: $18.99 - 2x/week + area cleanup\n• Comprehensive: $24.99 - 3x/week + hallway cleaning\n• ELITE: $32.99 - Daily service + full amenities\n\n✨ Property Services Include:\n• Dumpster management & cleaning\n• Common area cleanup\n• Graffiti removal (Premium+)\n• Hallway/stair sweeping (Comprehensive+)\n\n💼 Property Manager Benefits:\n• Dedicated account representative\n• Online portal for all units\n• Consolidated billing\n• Resident satisfaction reports\n• Volume discounts available\n\n📊 Perfect For:\n• Apartment complexes\n• Condos & townhomes\n• HOA communities\n• Student housing\n\nContact us for custom property solutions!";
+    }
+    
+    // ELITE membership queries - New
+    else if (lowerCaseMessage.includes("elite") || lowerCaseMessage.includes("premium service") || lowerCaseMessage.includes("vip")) {
+      return "Can2Curb ELITE Membership - The Ultimate Service:\n\n👑 ELITE Benefits:\n\n🏠 Single-Family ELITE ($169.99/mo):\n• All Comprehensive services included\n• 3 trash cans + 1 recycle can\n• Weekly can cleaning & deodorizing\n• Weekly hazardous pickup\n• Weekly large item pickup\n• Yard waste pickup (extra for large yards)\n• Weekly trash area cleaning\n• Priority same-day service\n• Dedicated account manager\n• 24/7 priority support line\n\n🏢 Multi-Family ELITE ($32.99/unit/mo):\n• Daily door-to-door concierge\n• Daily trash area cleanup\n• Weekly large item pickup\n• Complete hallway & stair service\n• Wall & common area cleaning\n• Priority emergency response\n• Property manager dashboard\n\n⚡ Exclusive ELITE Perks:\n• Zero wait times\n• Guaranteed same-day callbacks\n• Complimentary quarterly deep cleans\n• First access to new services\n• Special event support\n• Holiday service guarantee\n\nExperience the Can2Curb difference - upgrade to ELITE today!";
+    }
+    
+    // Business services - Enhanced
+    else if (lowerCaseMessage.includes("business") || lowerCaseMessage.includes("commercial") || lowerCaseMessage.includes("restaurant") || lowerCaseMessage.includes("office")) {
+      return "Can2Curb Business & Commercial Services:\n\n🍽️ Restaurant Services:\n• Grease Hood Cleaning: $249-$399\n• Daily waste management\n• Grease trap maintenance\n• Health inspection prep\n• Back-of-house cleaning\n\n🏪 Retail & Office:\n• Cardboard/recycling: $79-$99/mo\n• Daily or weekly service\n• After-hours pickup available\n• Confidential document destruction\n\n🧼 Facility Services:\n• Pressure Washing:\n  - Small lots (<10k sqft): $399\n  - Medium (10-50k): $699\n  - Large (50k+): $999+\n• Drive-thru cleaning: $249\n• Building exterior washing: $499+\n\n💼 Business Advantages:\n• Flexible scheduling\n• Volume discounts\n• Monthly billing\n• Tax-deductible service\n• EPA compliance support\n• COI certificates provided\n\n📞 Get a custom quote: commercial@can2curb.com";
+    }
+    
+    // Dashboard/account help - New
+    else if (lowerCaseMessage.includes("dashboard") || lowerCaseMessage.includes("login") || lowerCaseMessage.includes("account") || lowerCaseMessage.includes("portal")) {
+      return "Can2Curb Customer Dashboard:\n\n🖥️ Dashboard Features:\n• Schedule pickups\n• Request bulk item removal\n• View service history\n• Manage payment methods\n• Update account information\n• Track current pickups\n• Submit service requests\n• Access billing statements\n• Contact support\n\n🔐 Account Access:\n1. Visit can2curb.com\n2. Click 'Customer Login'\n3. Enter your email & password\n4. Access your dashboard\n\n❓ Login Issues?\n• Forgot password: Use 'Reset Password' link\n• New customer: Create account during signup\n• Technical help: support@can2curb.com\n\n📱 Mobile Access:\n• Fully responsive design\n• All features available\n• Optimized for smartphones\n\nManage everything in one place!";
+    }
+    
+    // Default response - Enhanced
     else {
-      return "I'm not sure I understand your question about our waste management services. Could you please rephrase or ask about specific topics like pricing, scheduling, recycling, or account management? Alternatively, you can reach our customer service team at 1-800-555-1234.";
+      return "I'm your Can2Curb virtual assistant! I can help you with:\n\n🏠 Services:\n• Pricing & plans for all property types\n• Scheduling & pickup information\n• Recycling & waste management\n• Bulk item removal\n• ELITE membership benefits\n\n💼 Account Management:\n• Dashboard navigation\n• Service changes\n• Billing questions\n• Technical support\n\n🏢 Specialized Services:\n• Multi-family solutions\n• Business & commercial\n• Property management\n\nWhat would you like to know? Or call us at 1-800-555-1234 (Mon-Fri 8 AM - 6 PM).";
     }
   };
 
