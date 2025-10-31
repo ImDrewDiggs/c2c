@@ -1,9 +1,9 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { sanitizeInput } from "@/utils/inputSanitization";
 
 interface Message {
   id: string;
@@ -142,10 +142,18 @@ const ChatBot = () => {
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return;
 
-    // Add user message
+    // Sanitize and validate user input
+    const sanitizedText = sanitizeInput(inputValue.trim());
+    
+    // Limit message length to prevent abuse
+    if (sanitizedText.length > 1000) {
+      return; // Silently reject overly long messages
+    }
+
+    // Add user message with sanitized input
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputValue,
+      text: sanitizedText,
       sender: "user",
       timestamp: new Date(),
     };

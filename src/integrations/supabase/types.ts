@@ -21,7 +21,7 @@ export type Database = {
           admin_user_id: string | null
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           security_level: string | null
           target_user_id: string | null
           user_agent: string | null
@@ -32,7 +32,7 @@ export type Database = {
           admin_user_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           security_level?: string | null
           target_user_id?: string | null
           user_agent?: string | null
@@ -43,7 +43,7 @@ export type Database = {
           admin_user_id?: string | null
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           security_level?: string | null
           target_user_id?: string | null
           user_agent?: string | null
@@ -55,7 +55,7 @@ export type Database = {
           admin_user_id: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean
           last_activity: string
           security_level: string
@@ -67,7 +67,7 @@ export type Database = {
           admin_user_id: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           last_activity?: string
           security_level?: string
@@ -79,7 +79,7 @@ export type Database = {
           admin_user_id?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           last_activity?: string
           security_level?: string
@@ -266,7 +266,7 @@ export type Database = {
           action_type: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           new_values: Json | null
           old_values: Json | null
@@ -281,7 +281,7 @@ export type Database = {
           action_type: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           new_values?: Json | null
           old_values?: Json | null
@@ -296,7 +296,7 @@ export type Database = {
           action_type?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           new_values?: Json | null
           old_values?: Json | null
@@ -731,7 +731,7 @@ export type Database = {
           accessed_user_id: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string | null
         }
@@ -740,7 +740,7 @@ export type Database = {
           accessed_user_id: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -749,7 +749,7 @@ export type Database = {
           accessed_user_id?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -899,7 +899,7 @@ export type Database = {
           event_details: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string | null
         }
@@ -908,7 +908,7 @@ export type Database = {
           event_details?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -917,7 +917,7 @@ export type Database = {
           event_details?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -1092,7 +1092,7 @@ export type Database = {
           accepted_at: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           referer: string | null
           session_id: string | null
           terms_version: string | null
@@ -1104,7 +1104,7 @@ export type Database = {
           accepted_at?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           referer?: string | null
           session_id?: string | null
           terms_version?: string | null
@@ -1116,7 +1116,7 @@ export type Database = {
           accepted_at?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           referer?: string | null
           session_id?: string | null
           terms_version?: string | null
@@ -1329,10 +1329,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      anonymize_location_data: {
-        Args: { location_data: Json }
-        Returns: Json
-      }
+      anonymize_location_data: { Args: { location_data: Json }; Returns: Json }
       check_rate_limit: {
         Args: {
           _action_type: string
@@ -1342,10 +1339,7 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_old_employee_locations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_old_employee_locations: { Args: never; Returns: undefined }
       create_admin_profile_safe: {
         Args: { admin_email: string; admin_user_id: string }
         Returns: undefined
@@ -1362,10 +1356,7 @@ export type Database = {
         Args: { data: string; field_name: string }
         Returns: string
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       get_user_roles: {
         Args: { check_user_id?: string }
         Returns: {
@@ -1385,18 +1376,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      has_role: {
-        Args: { _role: string; _user_id: string }
-        Returns: boolean
-      }
-      is_admin_by_email: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_admin_user: {
-        Args: { check_user_id?: string }
-        Returns: boolean
-      }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      is_admin_by_email: { Args: never; Returns: boolean }
+      is_admin_user: { Args: { check_user_id?: string }; Returns: boolean }
       is_super_admin_user: {
         Args: { check_user_id?: string }
         Returns: boolean
@@ -1414,10 +1396,7 @@ export type Database = {
         Args: { _action_type: string; _identifier: string }
         Returns: undefined
       }
-      sync_public_service_catalog: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      sync_public_service_catalog: { Args: never; Returns: undefined }
       validate_password_strength: {
         Args: { password_text: string }
         Returns: Json

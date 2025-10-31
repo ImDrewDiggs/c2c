@@ -66,7 +66,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error creating customer portal session:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    // Generic error to client, detailed error logged server-side only
+    return new Response(JSON.stringify({ error: 'Unable to access billing portal. Please try again later.' }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
