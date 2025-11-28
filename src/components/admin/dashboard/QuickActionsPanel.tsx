@@ -6,14 +6,17 @@ import {
   MapPin, 
   Calendar, 
   MessageSquare,
-  UserPlus
+  UserPlus,
+  Shield
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AddEmployeeModal } from "@/components/admin/modals/AddEmployeeModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function QuickActionsPanel() {
   const navigate = useNavigate();
+  const { isSuperAdmin } = useAuth();
   const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
   
   const quickActions = [
@@ -41,7 +44,12 @@ export function QuickActionsPanel() {
       title: "Site Settings",
       icon: <MessageSquare className="h-4 w-4 mr-2" />,
       action: () => navigate("/admin/settings")
-    }
+    },
+    ...(isSuperAdmin ? [{
+      title: "Audit Logs",
+      icon: <Shield className="h-4 w-4 mr-2" />,
+      action: () => navigate("/admin/audit-logs")
+    }] : [])
   ];
 
   return (
