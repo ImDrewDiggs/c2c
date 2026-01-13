@@ -62,6 +62,7 @@ const AdminSupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
 const AdminOrders = lazy(() => import('./pages/admin/Orders'));
 const AdminSubscriptions = lazy(() => import('./pages/admin/Subscriptions'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
+const AdminApiDocs = lazy(() => import('./pages/admin/ApiDocs'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 
@@ -152,6 +153,7 @@ const App = () => {
                   <Route path="/admin/orders" element={<AdminOrders />} />
                   <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
                   <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                  <Route path="/admin/api-docs" element={<AdminApiDocs />} />
                   <Route path="/documentation" element={<Documentation />} />
                   
                   <Route path="*" element={<NotFound />} />
