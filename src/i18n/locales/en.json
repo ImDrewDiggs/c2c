@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Logout"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create your account"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "profile": "Profile",
+    "notifications": "Notifications"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "users": "Users",
+    "employees": "Employees",
+    "customers": "Customers",
+    "orders": "Orders",
+    "reports": "Reports",
+    "auditLogs": "Audit Logs",
+    "fleet": "Fleet Management"
+  },
+  "services": {
+    "title": "Our Services",
+    "residential": "Residential",
+    "commercial": "Commercial",
+    "industrial": "Industrial",
+    "schedule": "Schedule Pickup",
+    "pricing": "View Pricing"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us"
+  }
+}
