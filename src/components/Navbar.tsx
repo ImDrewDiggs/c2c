@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 import { useAuth } from "@/contexts/AuthContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navigation = [
   { name: "Home", path: "/" },
@@ -81,7 +82,8 @@ export default function Navbar() {
                 </Link>
               )
             ))}
-            <div className="flex space-x-4">
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher />
               <button 
                 onClick={() => navigate("/customer/register")} 
                 className="btn-primary !py-2"
@@ -155,6 +157,9 @@ export default function Navbar() {
                   </Link>
                 )
               ))}
+              <div className="py-2">
+                <LanguageSwitcher />
+              </div>
               <button
                 className="block btn-primary text-center !py-2 mb-2 w-full"
                 onClick={() => handleNavigation("/customer/register")}

@@ -419,6 +419,14 @@ export default function AdminSettings() {
                       className="w-20" 
                     />
                     <span className="text-sm text-muted-foreground">minutes</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => updateSetting('session_timeout', parseInt(settings.session_timeout) || 30)}
+                      disabled={saving}
+                    >
+                      Save
+                    </Button>
                   </div>
                 </div>
                 <Separator />
@@ -450,12 +458,40 @@ export default function AdminSettings() {
                 <div className="space-y-2">
                   <Label htmlFor="api-key">Current API Key</Label>
                   <div className="flex gap-2">
-                    <Input id="api-key" value="sk_live_xxxxxxxxxxxxxxxxxxx" readOnly className="flex-1" />
-                    <Button variant="outline">Copy</Button>
-                    <Button variant="outline" className="text-destructive">Revoke</Button>
+                    <Input id="api-key" value={settings.api_key || 'sk_live_xxxxxxxxxxxxxxxxxxx'} readOnly className="flex-1" />
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(settings.api_key || 'sk_live_xxxxxxxxxxxxxxxxxxx');
+                        toast({ title: "Copied", description: "API key copied to clipboard" });
+                      }}
+                    >
+                      Copy
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="text-destructive"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
+                          updateSetting('api_key', '');
+                          toast({ title: "Revoked", description: "API key has been revoked" });
+                        }
+                      }}
+                    >
+                      Revoke
+                    </Button>
                   </div>
                 </div>
-                <Button>Generate New API Key</Button>
+                <Button
+                  onClick={() => {
+                    const newKey = `sk_live_${crypto.randomUUID().replace(/-/g, '')}`;
+                    updateSetting('api_key', newKey);
+                    toast({ title: "Generated", description: "New API key has been generated" });
+                  }}
+                  disabled={saving}
+                >
+                  Generate New API Key
+                </Button>
               </div>
             </CardContent>
           </Card>
