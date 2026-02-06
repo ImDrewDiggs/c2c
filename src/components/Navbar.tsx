@@ -2,40 +2,39 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 import { useAuth } from "@/contexts/AuthContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const navigation = [
-  { name: "Home", path: "/" },
-  { name: "About Us", path: "/about" },
-  { name: "Testimonials", path: "/testimonials" },
-  { name: "Services & Pricing", path: "/services-and-prices", requiresTerms: true },
-  { name: "Subscription", path: "/subscription", requiresTerms: true },
-  { name: "Documentation", path: "/documentation" },
-  { name: "FAQs", path: "/faq" },
-  { name: "Contact Us", path: "/contact" },
+  { nameKey: "nav.home", path: "/" },
+  { nameKey: "nav.about", path: "/about" },
+  { nameKey: "nav.testimonials", path: "/testimonials" },
+  { nameKey: "nav.servicesAndPricing", path: "/services-and-prices", requiresTerms: true },
+  { nameKey: "nav.subscription", path: "/subscription", requiresTerms: true },
+  { nameKey: "nav.documentation", path: "/documentation" },
+  { nameKey: "nav.faq", path: "/faq" },
+  { nameKey: "nav.contact", path: "/contact" },
 ];
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { hasAccepted, loading: termsLoading } = useTermsAcceptance();
 
   const handleNavigation = (path: string, requiresTerms?: boolean) => {
     setIsOpen(false);
     
-    // Check if this route requires authentication + NDA acceptance
     if (requiresTerms) {
-      // First check: user must be authenticated
       if (!authLoading && !user) {
         const returnTo = encodeURIComponent(path);
         navigate(`/customer/register?redirect=${returnTo}`);
         return;
       }
       
-      // Second check: authenticated user must accept NDA
       if (!termsLoading && !hasAccepted) {
         const returnTo = encodeURIComponent(path);
         navigate(`/terms?redirect=${returnTo}`);
@@ -43,7 +42,6 @@ export default function Navbar() {
       }
     }
     
-    // Normal navigation
     setTimeout(() => {
       navigate(path);
     }, 10);
@@ -70,15 +68,15 @@ export default function Navbar() {
             {navigation.map((item) => (
               item.requiresTerms ? (
                 <button
-                  key={item.name}
+                  key={item.nameKey}
                   onClick={() => handleNavigation(item.path, item.requiresTerms)}
                   className="nav-link"
                 >
-                  {item.name}
+                  {t(item.nameKey)}
                 </button>
               ) : (
-                <Link key={item.name} to={item.path} className="nav-link">
-                  {item.name}
+                <Link key={item.nameKey} to={item.path} className="nav-link">
+                  {t(item.nameKey)}
                 </Link>
               )
             ))}
@@ -88,25 +86,25 @@ export default function Navbar() {
                 onClick={() => navigate("/customer/register")} 
                 className="btn-primary !py-2"
               >
-                Sign Up
+                {t("nav.signUp")}
               </button>
               <button 
                 onClick={() => navigate("/customer/login")} 
                 className="nav-link"
               >
-                Customer Login
+                {t("nav.customerLogin")}
               </button>
               <button 
                 onClick={() => navigate("/employee/login")} 
                 className="nav-link"
               >
-                Employee
+                {t("nav.employee")}
               </button>
               <button 
                 onClick={() => navigate("/admin/login")} 
                 className="nav-link"
               >
-                Admin
+                {t("nav.admin")}
               </button>
             </div>
           </div>
@@ -140,20 +138,20 @@ export default function Navbar() {
               {navigation.map((item) => (
                 item.requiresTerms ? (
                   <button
-                    key={item.name}
+                    key={item.nameKey}
                     className="block nav-link py-2 w-full text-left"
                     onClick={() => handleNavigation(item.path, item.requiresTerms)}
                   >
-                    {item.name}
+                    {t(item.nameKey)}
                   </button>
                 ) : (
                   <Link
-                    key={item.name}
+                    key={item.nameKey}
                     to={item.path}
                     className="block nav-link py-2"
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.name}
+                    {t(item.nameKey)}
                   </Link>
                 )
               ))}
@@ -164,25 +162,25 @@ export default function Navbar() {
                 className="block btn-primary text-center !py-2 mb-2 w-full"
                 onClick={() => handleNavigation("/customer/register")}
               >
-                Sign Up
+                {t("nav.signUp")}
               </button>
               <button
                 className="block nav-link py-2 w-full text-left"
                 onClick={() => handleNavigation("/customer/login")}
               >
-                Customer Login
+                {t("nav.customerLogin")}
               </button>
               <button
                 className="block nav-link py-2 w-full text-left"
                 onClick={() => handleNavigation("/employee/login")}
               >
-                Employee Login
+                {t("nav.employeeLogin")}
               </button>
               <button
                 className="block nav-link py-2 w-full text-left"
                 onClick={() => handleNavigation("/admin/login")}
               >
-                Admin Login
+                {t("nav.adminLogin")}
               </button>
             </div>
           </motion.div>
