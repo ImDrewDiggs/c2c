@@ -7,7 +7,8 @@ import {
   Calendar, 
   MessageSquare,
   UserPlus,
-  Shield
+  Shield,
+  ClipboardList
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -44,6 +45,11 @@ export function QuickActionsPanel() {
       title: "Site Settings",
       icon: <MessageSquare className="h-4 w-4 mr-2" />,
       action: () => navigate("/admin/settings")
+    },
+    {
+      title: "Integrity Reports",
+      icon: <ClipboardList className="h-4 w-4 mr-2" />,
+      action: () => navigate("/admin/service-integrity")
     },
     ...(isSuperAdmin ? [{
       title: "Audit Logs",

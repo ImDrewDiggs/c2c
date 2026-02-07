@@ -923,6 +923,68 @@ export type Database = {
         }
         Relationships: []
       }
+      service_integrity_reports: {
+        Row: {
+          completed_pickups: number
+          completion_rate: number
+          created_at: string
+          employees_assigned: Json
+          generated_at: string
+          house_id: string
+          id: string
+          issues: Json
+          late_pickups: number
+          missed_pickups: number
+          notes: string | null
+          overall_score: number
+          report_month: string
+          total_scheduled_pickups: number
+          updated_at: string
+        }
+        Insert: {
+          completed_pickups?: number
+          completion_rate?: number
+          created_at?: string
+          employees_assigned?: Json
+          generated_at?: string
+          house_id: string
+          id?: string
+          issues?: Json
+          late_pickups?: number
+          missed_pickups?: number
+          notes?: string | null
+          overall_score?: number
+          report_month: string
+          total_scheduled_pickups?: number
+          updated_at?: string
+        }
+        Update: {
+          completed_pickups?: number
+          completion_rate?: number
+          created_at?: string
+          employees_assigned?: Json
+          generated_at?: string
+          house_id?: string
+          id?: string
+          issues?: Json
+          late_pickups?: number
+          missed_pickups?: number
+          notes?: string | null
+          overall_score?: number
+          report_month?: string
+          total_scheduled_pickups?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_integrity_reports_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           category: string
