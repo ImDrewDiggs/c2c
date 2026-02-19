@@ -198,11 +198,11 @@ async function handleCreateAdmin(
 }
 
 async function handleListUsers(supabaseUser: any, origin: string | null) {
-  // Get all users with their roles
+  // Get all users with their roles (without deleted profiles.role column)
   const { data: users, error } = await supabaseUser
     .from('profiles')
     .select(`
-      id, email, full_name, role, status, created_at,
+      id, email, full_name, status, created_at,
       user_roles:user_roles(role, is_active, expires_at)
     `)
     .order('created_at', { ascending: false });
@@ -261,23 +261,8 @@ async function handleRevokeAdmin(
     );
   }
 
-  // Update profile role to customer if no other admin roles exist
-  const { data: remainingAdminRoles } = await supabaseAdmin
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .in('role', ['admin', 'super_admin']);
-
-  if (!remainingAdminRoles || remainingAdminRoles.length === 0) {
-    await supabaseAdmin
-      .from('profiles')
-      .update({ 
-        role: 'customer',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', userId);
-  }
+  // Roles are managed entirely through user_roles table
+  // No need to update profiles - role column was removed
 
   // Log the action
   await supabaseAdmin.from('enhanced_security_logs').insert({

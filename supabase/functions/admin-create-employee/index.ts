@@ -144,11 +144,10 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Upsert profile
+    // Upsert profile (without role column - roles managed via user_roles table)
     const { error: profileError } = await supabaseAdmin.from("profiles").upsert({
       id: userId,
       email,
-      role: "employee",
       full_name: fullName,
       phone: phone ?? null,
       address: address ?? null,
@@ -163,6 +162,23 @@ serve(async (req) => {
       // Rollback auth user if profile insert fails
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return new Response(JSON.stringify({ error: profileError.message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+      });
+    }
+
+    // Assign employee role in user_roles table
+    const { error: roleError } = await supabaseAdmin.from("user_roles").upsert({
+      user_id: userId,
+      role: "employee",
+      assigned_by: userDataAuth.user.id,
+      is_active: true,
+    }, { onConflict: "user_id,role" });
+
+    if (roleError) {
+      // Rollback: delete auth user and profile
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return new Response(JSON.stringify({ error: roleError.message }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
       });
