@@ -118,6 +118,7 @@ export class EnhancedAuthService {
     userData?: {
       fullName?: string;
       phone?: string;
+      /** @deprecated Role is ignored - assigned server-side via trigger */
       role?: string;
     }
   ): Promise<{
@@ -338,18 +339,17 @@ export class EnhancedAuthService {
   private static async ensureUserProfile(
     userId: string, 
     email: string, 
-    role: string = 'customer',
+    _role: string = 'customer', // SECURITY: role param ignored - roles managed via user_roles table only
     fullName?: string,
     phone?: string
   ): Promise<boolean> {
     try {
-      // Create/update profile
+      // Create/update profile WITHOUT role column (removed in migration 20251005040659)
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: userId,
           email,
-          role,
           full_name: fullName || 'User',
           phone,
           updated_at: new Date().toISOString()
@@ -362,22 +362,9 @@ export class EnhancedAuthService {
         return false;
       }
 
-      // Assign role in new RBAC system
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .upsert({
-          user_id: userId,
-          role: role as any,
-          assigned_by: userId,
-          is_active: true
-        }, {
-          onConflict: 'user_id,role'
-        });
-
-      if (roleError) {
-        console.error('Role assignment error:', roleError);
-        // Don't fail completely if role assignment fails
-      }
+      // SECURITY: Role assignment happens server-side via handle_new_user() trigger
+      // Admin roles must be assigned through secure-admin-management edge function
+      // Do NOT allow client-side role self-assignment
 
       return true;
     } catch (error) {
