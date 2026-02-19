@@ -336,6 +336,151 @@ export type Database = {
         }
         Relationships: []
       }
+      iot_sensor_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          created_at: string
+          id: string
+          message: string
+          reading_value: number | null
+          resolved_at: string | null
+          sensor_id: string
+          severity: string
+          threshold_value: number | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          created_at?: string
+          id?: string
+          message: string
+          reading_value?: number | null
+          resolved_at?: string | null
+          sensor_id: string
+          severity?: string
+          threshold_value?: number | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          reading_value?: number | null
+          resolved_at?: string | null
+          sensor_id?: string
+          severity?: string
+          threshold_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iot_sensor_alerts_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "iot_sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iot_sensor_readings: {
+        Row: {
+          created_at: string
+          id: string
+          raw_data: Json | null
+          reading_type: string
+          recorded_at: string
+          sensor_id: string
+          unit: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          raw_data?: Json | null
+          reading_type: string
+          recorded_at?: string
+          sensor_id: string
+          unit?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          raw_data?: Json | null
+          reading_type?: string
+          recorded_at?: string
+          sensor_id?: string
+          unit?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iot_sensor_readings_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "iot_sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      iot_sensors: {
+        Row: {
+          alert_thresholds: Json | null
+          api_key: string
+          created_at: string
+          description: string | null
+          device_id: string
+          id: string
+          last_reading_at: string | null
+          location_label: string | null
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          name: string
+          sensor_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          alert_thresholds?: Json | null
+          api_key?: string
+          created_at?: string
+          description?: string | null
+          device_id: string
+          id?: string
+          last_reading_at?: string | null
+          location_label?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          name: string
+          sensor_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_thresholds?: Json | null
+          api_key?: string
+          created_at?: string
+          description?: string | null
+          device_id?: string
+          id?: string
+          last_reading_at?: string | null
+          location_label?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          name?: string
+          sensor_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       maintenance_schedules: {
         Row: {
           completed_date: string | null

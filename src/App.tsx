@@ -64,6 +64,7 @@ const AdminSubscriptions = lazy(() => import('./pages/admin/Subscriptions'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
 const AdminApiDocs = lazy(() => import('./pages/admin/ApiDocs'));
 const AdminServiceIntegrityReports = lazy(() => import('./pages/admin/ServiceIntegrityReports'));
+const AdminIoTSensors = lazy(() => import('./pages/admin/IoTSensors'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 
@@ -156,6 +157,7 @@ const App = () => {
                   <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
                   <Route path="/admin/api-docs" element={<AdminApiDocs />} />
                   <Route path="/admin/service-integrity" element={<AdminServiceIntegrityReports />} />
+                  <Route path="/admin/iot-sensors" element={<AdminIoTSensors />} />
                   <Route path="/documentation" element={<Documentation />} />
                   
                   <Route path="*" element={<NotFound />} />
