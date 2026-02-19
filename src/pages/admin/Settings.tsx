@@ -164,12 +164,16 @@ export default function AdminSettings() {
       description="Configure global site settings"
     >
       <Tabs defaultValue="general">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="api">API Keys</TabsTrigger>
+          <TabsTrigger value="iot" className="gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 18.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            IoT Sensors
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="general" className="space-y-6">
@@ -493,6 +497,24 @@ export default function AdminSettings() {
                   Generate New API Key
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="iot" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>IoT Sensor Management</CardTitle>
+              <CardDescription>Add, monitor, and manage IoT sensors connected to your operations.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Manage all your IoT sensors from the dedicated dashboard. Add sensors, configure alert thresholds, 
+                view real-time data, and monitor historical readings.
+              </p>
+              <Button onClick={() => window.location.href = '/admin/iot-sensors'}>
+                Open IoT Sensor Dashboard
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
