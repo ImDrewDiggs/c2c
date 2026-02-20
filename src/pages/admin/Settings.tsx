@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { IotSensorsInline } from "@/components/admin/IotSensorsInline";
 import { AdminPageLayout } from "@/components/admin/AdminPageLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -502,21 +503,17 @@ export default function AdminSettings() {
         </TabsContent>
 
         <TabsContent value="iot" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>IoT Sensor Management</CardTitle>
-              <CardDescription>Add, monitor, and manage IoT sensors connected to your operations.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Manage all your IoT sensors from the dedicated dashboard. Add sensors, configure alert thresholds, 
-                view real-time data, and monitor historical readings.
-              </p>
-              <Button onClick={() => window.location.href = '/admin/iot-sensors'}>
-                Open IoT Sensor Dashboard
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="text-lg font-semibold">IoT Sensor Management</h3>
+              <p className="text-sm text-muted-foreground">Add, monitor, and manage IoT sensors connected to your operations.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => window.open('/admin/iot-sensors', '_blank')}>
+              Open Full Dashboard
+            </Button>
+          </div>
+          {/* Lazy-load the IoT Sensors content inline */}
+          <IotSensorsInline />
         </TabsContent>
       </Tabs>
     </AdminPageLayout>
