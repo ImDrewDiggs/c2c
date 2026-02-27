@@ -37,8 +37,7 @@ export function ContentSecurityPolicy() {
     // Add additional security headers via meta tags
     const securityHeaders = [
       { name: 'X-Content-Type-Options', content: 'nosniff' },
-      { name: 'X-Frame-Options', content: 'DENY' },
-      { name: 'X-XSS-Protection', content: '1; mode=block' },
+      { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
       { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
       { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=()' }
     ];
