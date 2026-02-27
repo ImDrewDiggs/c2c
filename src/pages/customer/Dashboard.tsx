@@ -104,8 +104,8 @@ export default function CustomerDashboard() {
 
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <SchedulePickup userId={user.id} />
-                <BulkItemRequest userId={user.id} />
+                <SchedulePickup userId={user?.id || ''} />
+                <BulkItemRequest userId={user?.id || ''} />
               </div>
               <Card>
                 <CardHeader>
@@ -121,23 +121,23 @@ export default function CustomerDashboard() {
             </TabsContent>
 
             <TabsContent value="schedule">
-              <SchedulePickup userId={user.id} />
+              <SchedulePickup userId={user?.id || ''} />
             </TabsContent>
 
             <TabsContent value="bulk">
-              <BulkItemRequest userId={user.id} />
+              <BulkItemRequest userId={user?.id || ''} />
             </TabsContent>
 
             <TabsContent value="subscriptions">
-              <CustomerSubscriptions userId={user.id} />
+              <CustomerSubscriptions userId={user?.id || ''} />
             </TabsContent>
 
             <TabsContent value="profile">
-              <CustomerProfile userId={user.id} userData={userData} />
+              <CustomerProfile userId={user?.id || ''} userData={userData} />
             </TabsContent>
 
             <TabsContent value="history">
-              <ServiceHistory userId={user.id} />
+              <ServiceHistory userId={user?.id || ''} />
             </TabsContent>
           </Tabs>
         </div>

@@ -26,21 +26,11 @@ import React from "react";
 export function AdminDashboardContent() {
   const { user, userData, isSuperAdmin } = useAuth();
   
-  console.log('[AdminDashboardContent] Component rendering with auth state:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    isSuperAdmin
-  });
   
   try {
     const dashboardData = useSimpleDashboard();
     const { stats, serviceAreas, employeeLocations, scheduledJobs, activityLogs, currentLocation, maintenanceSchedules, loading, error, refresh } = dashboardData;
     
-    console.log('[AdminDashboardContent] Dashboard data received:', {
-      loading,
-      error,
-      hasStats: !!stats
-    });
   
     const handleRefresh = () => {
       if (refresh) {
@@ -52,9 +42,10 @@ export function AdminDashboardContent() {
 
     // Transform stats to match StatsOverview interface with safe fallbacks
     const transformedStats = {
-      dailyPickups: (stats?.completedJobs || 0) + (stats?.pendingJobs || 0),
-      pendingPickups: stats?.pendingJobs || 0,
-      todayRevenue: stats?.todayRevenue || 0
+      completedJobsToday: stats?.completedJobs || 0,
+      pendingJobs: stats?.pendingJobs || 0,
+      todayRevenue: stats?.todayRevenue || 0,
+      totalCustomers: stats?.totalCustomers || 0,
     };
 
     if (loading) {
@@ -155,31 +146,10 @@ export function AdminDashboardContent() {
           </TabsContent>
 
           <TabsContent value="operations" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* First column */}
-              <div className="space-y-6">
-                <ServiceAreasPanel serviceAreas={serviceAreas || []} />
-                <QuickActionsPanel />
-              </div>
-              
-              {/* Second column */}
-              <div className="space-y-6">
-                <EmployeeStatusPanel employees={employeeLocations || []} />
-                <ActivityLogsPanel logs={activityLogs || []} />
-              </div>
-              
-              {/* Third column */}
-              <div className="space-y-6">
-                <ScheduledJobsPanel jobs={scheduledJobs || []} />
-              </div>
-              
-              {/* Fourth column */}
-              <div className="space-y-6">
-                <MaintenanceSchedulePanel schedules={maintenanceSchedules || []} />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ScheduledJobsPanel jobs={scheduledJobs || []} />
+              <MaintenanceSchedulePanel schedules={maintenanceSchedules || []} />
             </div>
-            
-            {/* Full-width map section */}
             <LiveGpsMap 
               employeeLocations={employeeLocations || []} 
               serviceAreas={serviceAreas || []}
@@ -211,11 +181,6 @@ export function AdminDashboardContent() {
           </TabsContent>
         </Tabs>
         
-        {/* Additional Documentation Tab (Standalone) */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">System Documentation</h2>
-          <ComprehensiveDocumentation />
-        </div>
       </div>
     );
   } catch (error) {

@@ -81,7 +81,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetError
 export default function AdminDashboard() {
   const [isReady, setIsReady] = useState(false);
   
-  console.log('[AdminDashboard] Starting component render');
+  
   
   // Add a small delay to ensure auth context is ready
   useEffect(() => {
