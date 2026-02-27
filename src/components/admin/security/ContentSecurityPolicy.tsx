@@ -38,7 +38,6 @@ export function ContentSecurityPolicy() {
     const securityHeaders = [
       { name: 'X-Content-Type-Options', content: 'nosniff' },
       { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
-      { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
       { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=()' }
     ];
 
