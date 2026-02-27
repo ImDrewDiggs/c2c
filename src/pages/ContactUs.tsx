@@ -35,10 +35,10 @@ const ContactUs = () => {
                   <div>
                     <p className="font-medium">Email Us</p>
                     <a 
-                      href="mailto:support@wastemanagement.com" 
+                      href="mailto:support@can2curb.com" 
                       className="text-primary hover:underline"
                     >
-                      support@wastemanagement.com
+                      support@can2curb.com
                     </a>
                   </div>
                 </div>
@@ -94,11 +94,10 @@ const ContactUs = () => {
           </div>
           
           <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">Visit Our Office</h3>
+            <h3 className="text-xl font-semibold mb-4">Service Area</h3>
             <p className="text-muted-foreground">
-              1234 Waste Management Way<br />
-              Eco City, EC 12345<br />
-              United States
+              Currently serving Greater Cincinnati, Ohio and surrounding communities.
+              Contact us to check availability in your area.
             </p>
           </div>
         </div>

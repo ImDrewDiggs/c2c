@@ -58,7 +58,7 @@ export default function Navbar() {
               className="h-12 w-auto"
               width="48"
               height="48"
-              fetchPriority="high"
+              loading="eager"
               decoding="async"
             />
           </Link>
