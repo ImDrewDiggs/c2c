@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import Seo from "@/components/seo/Seo";
 
 const serviceTypes: ServiceType[] = [
   {
@@ -215,6 +216,11 @@ export default function Subscription() {
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
+      <Seo
+        title="Subscription Plans | Can2Curb"
+        description="Choose a Can2Curb subscription for single-family, multi-family, or business properties. Compare tiers, discounts, and add-on services."
+        path="/subscription"
+      />
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight">Choose Your Plan</h1>
         <p className="text-muted-foreground">
