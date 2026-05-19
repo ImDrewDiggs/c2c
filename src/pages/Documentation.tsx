@@ -17,10 +17,16 @@ import {
   Download,
   ExternalLink
 } from 'lucide-react';
+import Seo from '@/components/seo/Seo';
 
 export default function Documentation() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <Seo
+        title="Documentation | Can2Curb Platform Guide"
+        description="Comprehensive Can2Curb documentation: getting started, user manual, API reference, troubleshooting, and best practices."
+        path="/documentation"
+      />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -51,7 +57,7 @@ export default function Documentation() {
           <TabsContent value="getting-started" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle as="h2" className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
                   Getting Started Guide
                 </CardTitle>
@@ -167,7 +173,7 @@ export default function Documentation() {
           <TabsContent value="user-manual" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Complete User Manual</CardTitle>
+                <CardTitle as="h2">Complete User Manual</CardTitle>
                 <CardDescription>
                   Detailed instructions for all platform features and functionality
                 </CardDescription>
@@ -360,7 +366,7 @@ export default function Documentation() {
           <TabsContent value="api-docs" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>API Documentation</CardTitle>
+                <CardTitle as="h2">API Documentation</CardTitle>
                 <CardDescription>
                   REST API endpoints for integrating with Can2Curb platform
                 </CardDescription>
@@ -510,7 +516,7 @@ GET /api/v1/employees/tracking?active=true
           <TabsContent value="troubleshooting" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Troubleshooting Guide</CardTitle>
+                <CardTitle as="h2">Troubleshooting Guide</CardTitle>
                 <CardDescription>
                   Common issues and step-by-step solutions
                 </CardDescription>
@@ -646,7 +652,7 @@ GET /api/v1/employees/tracking?active=true
           <TabsContent value="faq" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Frequently Asked Questions</CardTitle>
+                <CardTitle as="h2">Frequently Asked Questions</CardTitle>
                 <CardDescription>
                   Quick answers to common questions about Can2Curb
                 </CardDescription>
@@ -765,7 +771,7 @@ GET /api/v1/employees/tracking?active=true
           <TabsContent value="best-practices" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Best Practices & Optimization</CardTitle>
+                <CardTitle as="h2">Best Practices & Optimization</CardTitle>
                 <CardDescription>
                   Recommended workflows and tips for getting the most out of Can2Curb
                 </CardDescription>
