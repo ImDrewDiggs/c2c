@@ -2,10 +2,51 @@
 import ChatBot from "@/components/contact/ChatBot";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, Clock } from "lucide-react";
+import Seo from "@/components/seo/Seo";
 
 const ContactUs = () => {
   return (
     <div className="container py-12">
+      <Seo
+        title="Contact Can2Curb | Support & Service Inquiries"
+        description="Reach Can2Curb support by email, phone, or our virtual assistant. Serving Greater Cincinnati with 24/7 emergency response and weekday customer service."
+        path="/contact"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "Can2Curb",
+          description:
+            "Trash can concierge service offering pickup, cleaning, and waste management.",
+          telephone: "+1-800-555-1234",
+          email: "support@can2curb.com",
+          url: "https://c2c.lovable.app",
+          image: "https://c2c.lovable.app/og-image.png",
+          areaServed: {
+            "@type": "Place",
+            name: "Greater Cincinnati, Ohio",
+          },
+          openingHoursSpecification: [
+            {
+              "@type": "OpeningHoursSpecification",
+              dayOfWeek: [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+              ],
+              opens: "08:00",
+              closes: "18:00",
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              dayOfWeek: "Saturday",
+              opens: "09:00",
+              closes: "14:00",
+            },
+          ],
+        }}
+      />
       <h1 className="text-4xl font-bold text-center mb-2">Contact Us</h1>
       <p className="text-center text-muted-foreground mb-8">
         We're here to help with any questions or concerns you may have.
