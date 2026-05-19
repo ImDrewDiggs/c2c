@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Seo from "@/components/seo/Seo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -13,6 +14,41 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <Seo
+        title="Can2Curb | Trash Can Concierge Service"
+        description="Professional trash can cleaning, pickup, and concierge service for homes and businesses in Greater Cincinnati. Reliable, eco-friendly, and hassle-free."
+        path="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Can2Curb",
+            url: "https://c2c.lovable.app",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://c2c.lovable.app/?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Can2Curb",
+            url: "https://c2c.lovable.app",
+            logo: "https://c2c.lovable.app/og-image.png",
+            description:
+              "Trash can concierge service offering reliable pickup, cleaning, and waste management for residential and commercial properties.",
+            areaServed: "Greater Cincinnati, Ohio",
+            contactPoint: {
+              "@type": "ContactPoint",
+              telephone: "+1-800-555-1234",
+              contactType: "customer service",
+              email: "support@can2curb.com",
+              availableLanguage: ["English", "Spanish", "French"],
+            },
+          },
+        ]}
+      />
       {/* Hero Section */}
       <section className="container py-20">
         <motion.div
