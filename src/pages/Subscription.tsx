@@ -247,7 +247,7 @@ export default function Subscription() {
             {/* Single Family Discounts */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Available Discounts</CardTitle>
+                <CardTitle as="h2" className="text-xl">Available Discounts</CardTitle>
                 <CardDescription>Save money with these residential discounts</CardDescription>
               </CardHeader>
               <CardContent>
@@ -299,7 +299,7 @@ export default function Subscription() {
             {/* Multi-Family Discounts */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Multi-Family Discounts</CardTitle>
+                <CardTitle as="h2" className="text-xl">Multi-Family Discounts</CardTitle>
                 <CardDescription>Volume and contract discounts for property managers</CardDescription>
               </CardHeader>
               <CardContent>
@@ -373,7 +373,7 @@ export default function Subscription() {
             {/* Business Discounts */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Business Discounts</CardTitle>
+                <CardTitle as="h2" className="text-xl">Business Discounts</CardTitle>
                 <CardDescription>Commercial service bundles and loyalty rewards</CardDescription>
               </CardHeader>
               <CardContent>
@@ -444,7 +444,7 @@ export default function Subscription() {
             {/* Add-On Discounts */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Add-On Discounts</CardTitle>
+                <CardTitle as="h2" className="text-xl">Add-On Discounts</CardTitle>
                 <CardDescription>Save when you bundle multiple add-on services</CardDescription>
               </CardHeader>
               <CardContent>
@@ -467,7 +467,7 @@ export default function Subscription() {
         {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
           <Card>
             <CardHeader>
-              <CardTitle>Contract Length</CardTitle>
+              <CardTitle as="h2">Contract Length</CardTitle>
               <CardDescription>Choose your contract length and save more</CardDescription>
             </CardHeader>
             <CardContent>
@@ -493,7 +493,7 @@ export default function Subscription() {
         {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
           <Card>
             <CardHeader>
-              <CardTitle>Select Add-Ons</CardTitle>
+              <CardTitle as="h2">Select Add-Ons</CardTitle>
               <CardDescription>Enhance your service with optional add-ons</CardDescription>
             </CardHeader>
             <CardContent>
