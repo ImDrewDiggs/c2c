@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Shield, FileText, AlertTriangle } from 'lucide-react';
 import { useTermsAcceptance } from '@/hooks/useTermsAcceptance';
 import { useToast } from '@/hooks/use-toast';
+import Seo from '@/components/seo/Seo';
 
 export default function TermsPage() {
   const [isChecked, setIsChecked] = useState(false);
@@ -61,6 +62,11 @@ export default function TermsPage() {
 
   return (
     <div className="container max-w-4xl mx-auto py-8">
+      <Seo
+        title="Confidentiality Agreement | Can2Curb"
+        description="Review and accept Can2Curb's non-disclosure and non-compete agreement before accessing detailed pricing information."
+        path="/terms"
+      />
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Shield className="h-8 w-8 text-primary" />
@@ -73,7 +79,7 @@ export default function TermsPage() {
 
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle as="h2" className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Non-Disclosure Agreement (NDA) & Non-Compete Terms
           </CardTitle>
