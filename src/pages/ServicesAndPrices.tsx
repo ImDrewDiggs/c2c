@@ -19,10 +19,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { serviceCategories, pricingPolicy, singleFamilyTiers, multiFamilyServiceDetails, businessServiceDetails } from "@/data/services";
+import Seo from "@/components/seo/Seo";
 
 export default function ServicesAndPrices() {
   return (
     <div className="container mx-auto py-12">
+      <Seo
+        title="Services & Prices | Can2Curb"
+        description="Browse Can2Curb subscription plans and individual services with transparent pricing for single-family, multi-family, and business customers."
+        path="/services-and-prices"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          serviceType: "Trash can concierge & waste management",
+          provider: {
+            "@type": "Organization",
+            name: "Can2Curb",
+            url: "https://c2c.lovable.app",
+          },
+          areaServed: "Greater Cincinnati, Ohio",
+          audience: {
+            "@type": "Audience",
+            audienceType:
+              "Single-family, multi-family, and business properties",
+          },
+        }}
+      />
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Services & Prices</h1>
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">

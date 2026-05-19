@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import { validateAndSanitizeCustomerInfo } from "@/utils/inputValidation";
 import { useSecureErrorHandler } from "@/utils/secureErrorHandler";
 import { supabase } from "@/integrations/supabase/client";
+import Seo from "@/components/seo/Seo";
 
 interface CheckoutData {
   subscriptionType: string;
@@ -189,6 +190,11 @@ export default function Checkout() {
   return (
     <RequireAuth allowedRoles={['customer']}>
       <div className="container mx-auto py-10 px-4 md:px-6">
+        <Seo
+          title="Checkout | Can2Curb"
+          description="Securely review your Can2Curb subscription order, enter customer details, and complete payment."
+          path="/checkout"
+        />
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight">Checkout</h1>
           <p className="text-muted-foreground">Review your order and complete your purchase</p>
@@ -203,7 +209,7 @@ export default function Checkout() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle as="h2">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
@@ -261,7 +267,7 @@ export default function Checkout() {
             {/* Customer Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Customer Information</CardTitle>
+                <CardTitle as="h2">Customer Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -377,7 +383,7 @@ export default function Checkout() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
+                <CardTitle as="h2">Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>

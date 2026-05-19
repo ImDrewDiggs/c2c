@@ -1,5 +1,6 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import Seo from "@/components/seo/Seo";
 
 const FAQ = () => {
   const faqItems = [
@@ -37,8 +38,27 @@ const FAQ = () => {
     }
   ];
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <div className="container max-w-4xl py-12">
+      <Seo
+        title="FAQs | Can2Curb Trash Concierge Service"
+        description="Answers to common questions about Can2Curb's pickup schedules, recycling, bulk items, pricing, and multi-family discounts."
+        path="/faq"
+        jsonLd={faqJsonLd}
+      />
       <h1 className="text-4xl font-bold text-center mb-8">Frequently Asked Questions</h1>
       <p className="text-center text-muted-foreground mb-8">
         Find answers to common questions about our waste management services.

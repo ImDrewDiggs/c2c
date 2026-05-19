@@ -1,7 +1,13 @@
+import Seo from "@/components/seo/Seo";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-background py-12">
+      <Seo
+        title="About Can2Curb | Our Mission & Values"
+        description="Learn how Can2Curb delivers reliable, eco-friendly trash can concierge service and the values that guide our team in Greater Cincinnati."
+        path="/about"
+      />
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <img 

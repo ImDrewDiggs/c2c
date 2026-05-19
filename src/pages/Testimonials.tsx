@@ -1,6 +1,7 @@
 
 import { Star, Play } from "lucide-react";
 import { useState } from "react";
+import Seo from "@/components/seo/Seo";
 
 const testimonials = [
   {
@@ -105,14 +106,27 @@ const VideoTestimonial = ({ testimonial }: { testimonial: typeof testimonials[0]
 export default function Testimonials() {
   return (
     <div className="min-h-screen bg-background py-12">
+      <Seo
+        title="Customer Testimonials | Can2Curb"
+        description="Read what Greater Cincinnati homeowners and property managers say about Can2Curb's reliable trash can concierge service."
+        path="/testimonials"
+      />
       <div className="container mx-auto px-4">
         <h1 className="text-4xl font-bold text-center mb-12">Customer Testimonials</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial) => (
             <div key={testimonial.id} className="bg-card p-6 rounded-lg shadow-lg">
-              <div className="flex items-center gap-1 mb-4">
+              <div
+                className="flex items-center gap-1 mb-4"
+                role="img"
+                aria-label={`Rating: ${testimonial.rating} out of 5 stars`}
+              >
                 {Array.from({ length: testimonial.rating }).map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                  <Star
+                    key={i}
+                    className="h-5 w-5 fill-primary text-primary"
+                    aria-hidden="true"
+                  />
                 ))}
               </div>
               <VideoTestimonial testimonial={testimonial} />

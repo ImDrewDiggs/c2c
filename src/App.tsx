@@ -102,6 +102,7 @@ const App = () => {
               <ContentSecurityPolicy />
               <Navbar />
               <Suspense fallback={<Loading fullscreen={true} size="large" message="Loading application..." />}>
+                <main id="main-content">
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Index />} />
@@ -162,6 +163,7 @@ const App = () => {
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </main>
               </Suspense>
               <Toaster />
             </div>

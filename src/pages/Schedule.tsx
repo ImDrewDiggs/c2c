@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
+import Seo from "@/components/seo/Seo";
 
 // Temporary interface until AppointmentRow is available
 interface TempAppointment {
@@ -70,6 +71,11 @@ export default function Schedule() {
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
+      <Seo
+        title="Schedule a Pickup | Can2Curb"
+        description="Schedule trash can pickups and manage your service calendar with Can2Curb's easy online scheduling tools."
+        path="/schedule"
+      />
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight">Schedule</h1>
         <p className="text-muted-foreground">
@@ -81,7 +87,7 @@ export default function Schedule() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle as="h2" className="flex items-center gap-2">
               <CalendarDays className="h-5 w-5" />
               Quick Actions
             </CardTitle>
@@ -171,7 +177,7 @@ export default function Schedule() {
         {/* Appointments List */}
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Appointments</CardTitle>
+            <CardTitle as="h2">Upcoming Appointments</CardTitle>
             <CardDescription>
               View and manage your scheduled appointments
             </CardDescription>
