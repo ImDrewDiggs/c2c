@@ -150,7 +150,7 @@ export function useIoTSensors() {
     try {
       const { error } = await supabase
         .from('iot_sensors')
-        .update(updates)
+        .update(updates as never)
         .eq('id', id);
 
       if (error) throw error;
