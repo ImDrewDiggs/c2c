@@ -15,8 +15,8 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Seo
-        title="Can2Curb | Trash Can Concierge Service"
-        description="Professional trash can cleaning, pickup, and concierge service for homes and businesses in Greater Cincinnati. Reliable, eco-friendly, and hassle-free."
+        title="Trash Can Cleaning Service in Cincinnati | Can2Curb"
+        description="Professional trash can cleaning and garbage bin cleaning service for homes and businesses in Greater Cincinnati. Reliable, eco-friendly, hassle-free pickup and sanitizing."
         path="/"
         jsonLd={[
           {
@@ -58,10 +58,10 @@ const Index = () => {
           className="text-center max-w-3xl mx-auto"
         >
           <h1 className="hero-text">
-            Your Trash Can Concierge
+            Trash Can Cleaning Service
           </h1>
           <p className="hero-subtitle" style={{ transform: 'translateZ(0)' }}>
-            Professional trash can maintenance services that keep your property clean and hygienic
+            Professional trash can and garbage bin cleaning in Greater Cincinnati — eco-friendly sanitizing that keeps your property clean and odor-free.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
