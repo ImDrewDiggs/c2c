@@ -67,6 +67,7 @@ const AdminServiceIntegrityReports = lazy(() => import('./pages/admin/ServiceInt
 const AdminIoTSensors = lazy(() => import('./pages/admin/IoTSensors'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
+const TrashCanCleaningCincinnati = lazy(() => import('./pages/TrashCanCleaningCincinnati'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
@@ -107,6 +108,7 @@ const App = () => {
                   {/* Public Routes */}
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/trash-can-cleaning-cincinnati" element={<TrashCanCleaningCincinnati />} />
                   <Route path="/testimonials" element={<Testimonials />} />
                   <Route path="/schedule" element={<Schedule />} />
                   <Route path="/faq" element={<FAQ />} />
