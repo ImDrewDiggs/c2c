@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /customer/dashboard
+Disallow: /customer/billing
+Disallow: /employee/
+Disallow: /checkout
+Disallow: /auth
+
+Sitemap: https://c2c.lovable.app/sitemap.xml
