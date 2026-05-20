@@ -8,7 +8,7 @@ export interface SecureError {
 }
 
 export class SecureErrorHandler {
-  private static isProduction = process.env.NODE_ENV === 'production';
+  private static isProduction = import.meta.env.MODE === 'production';
   
   static sanitizeError(error: any): SecureError {
     // Never expose internal error details in production

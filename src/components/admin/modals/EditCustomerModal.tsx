@@ -131,9 +131,10 @@ export function EditCustomerModal({ open, onOpenChange, customerId }: EditCustom
     setIsLoading(true);
     
     try {
+      const { role: _role, ...profileData } = data;
       const { error } = await supabase
         .from("profiles")
-        .update(data)
+        .update(profileData)
         .eq("id", customerId);
 
       if (error) throw error;
