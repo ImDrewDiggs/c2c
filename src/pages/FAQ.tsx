@@ -54,9 +54,10 @@ const FAQ = () => {
   return (
     <div className="container max-w-4xl py-12">
       <Seo
-        title="FAQs | Can2Curb Trash Concierge Service"
-        description="Answers to common questions about Can2Curb's pickup schedules, recycling, bulk items, pricing, and multi-family discounts."
+        title="Trash Can Service FAQs | Can2Curb Cincinnati"
+        description="Find answers about Can2Curb's trash can cleaning service: pickup schedules, recycling, bulk items, pricing, and multi-family discounts in Greater Cincinnati."
         path="/faq"
+
         jsonLd={faqJsonLd}
       />
       <h1 className="text-4xl font-bold text-center mb-8">Frequently Asked Questions</h1>
