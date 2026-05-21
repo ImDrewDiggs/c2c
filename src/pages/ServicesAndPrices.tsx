@@ -25,9 +25,10 @@ export default function ServicesAndPrices() {
   return (
     <div className="container mx-auto py-12">
       <Seo
-        title="Services & Prices | Can2Curb"
-        description="Browse Can2Curb subscription plans and individual services with transparent pricing for single-family, multi-family, and business customers."
+        title="Waste Management Services & Pricing | Can2Curb Cincinnati"
+        description="Explore Can2Curb's trash can concierge services and transparent pricing for single-family, multi-family, and commercial properties in Greater Cincinnati."
         path="/services-and-prices"
+
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Service",

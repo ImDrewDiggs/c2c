@@ -217,9 +217,10 @@ export default function Subscription() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <Seo
-        title="Subscription Plans | Can2Curb"
-        description="Choose a Can2Curb subscription for single-family, multi-family, or business properties. Compare tiers, discounts, and add-on services."
+        title="Trash Can Service Plans & Subscriptions | Can2Curb"
+        description="Compare Can2Curb subscription plans for single-family homes, multi-family communities, and businesses in Greater Cincinnati. Monthly and annual options available."
         path="/subscription"
+
       />
       <div className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight">Choose Your Plan</h1>

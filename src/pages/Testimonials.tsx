@@ -107,9 +107,10 @@ export default function Testimonials() {
   return (
     <div className="min-h-screen bg-background py-12">
       <Seo
-        title="Customer Testimonials | Can2Curb"
-        description="Read what Greater Cincinnati homeowners and property managers say about Can2Curb's reliable trash can concierge service."
+        title="Can2Curb Reviews & Testimonials | Cincinnati Customers"
+        description="See what homeowners and property managers across Greater Cincinnati say about Can2Curb's reliable trash can cleaning and concierge service."
         path="/testimonials"
+
       />
       <div className="container mx-auto px-4">
         <h1 className="text-4xl font-bold text-center mb-12">Customer Testimonials</h1>
