@@ -22,27 +22,5 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     cssCodeSplit: true, // Enable CSS code splitting to reduce render blocking
-    rollupOptions: {
-      external: [
-        // Add FullCalendar packages to external
-        "@fullcalendar/core",
-      ],
-      output: {
-        manualChunks: {
-          // Core React dependencies
-          'react-vendor': ['react', 'react-dom'],
-          // UI components that are likely to be used across pages
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
-          // Admin pages group
-          'admin-pages': [
-            './src/pages/admin/Dashboard.tsx',
-            './src/pages/admin/Employees.tsx',
-            './src/pages/admin/Customers.tsx'
-          ],
-          // Auth related
-          'auth-vendor': ['@supabase/supabase-js']
-        }
-      }
-    }
   }
 }));
