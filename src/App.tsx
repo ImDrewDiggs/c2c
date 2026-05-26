@@ -68,6 +68,7 @@ const AdminIoTSensors = lazy(() => import('./pages/admin/IoTSensors'));
 const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const TrashCanCleaningCincinnati = lazy(() => import('./pages/TrashCanCleaningCincinnati'));
+const QuoteSuccess = lazy(() => import('./pages/QuoteSuccess'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
@@ -116,6 +117,7 @@ const App = () => {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />
                   <Route path="/checkout/error" element={<CheckoutError />} />
+                  <Route path="/quote/success" element={<QuoteSuccess />} />
 
                   {/* Maintenance */}
                   <Route path="/maintenance" element={<Maintenance />} />

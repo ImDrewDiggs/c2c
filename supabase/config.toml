@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.iot-sensor-webhook]
 verify_jwt = false
+
+[functions.instant-quote-checkout]
+verify_jwt = false
+
+[functions.provision-quote]
+verify_jwt = false

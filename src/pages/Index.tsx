@@ -3,15 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Seo from "@/components/seo/Seo";
+import InstantQuoteFlow from "@/components/quote/InstantQuoteFlow";
 
 const Index = () => {
   const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    console.log("Navigating to customer registration");
-    navigate("/customer/register");
-  };
-
   return (
     <div className="min-h-screen">
       <Seo
@@ -58,28 +53,26 @@ const Index = () => {
           className="text-center max-w-3xl mx-auto"
         >
           <h1 className="hero-text">
-            Trash Can Cleaning Service
+            Never touch your trash cans again
           </h1>
           <p className="hero-subtitle" style={{ transform: 'translateZ(0)' }}>
-            Professional trash can and garbage bin cleaning in Greater Cincinnati — eco-friendly sanitizing that keeps your property clean and odor-free.
+            Greater Cincinnati's trash can concierge. Get an instant quote and start service in under 2 minutes — no calls, no waiting.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={handleGetStarted} 
-              className="btn-primary inline-flex items-center group"
-            >
-              Get Started Today
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button 
-              onClick={() => navigate("/terms")} 
-              className="btn-secondary inline-flex items-center group"
-            >
-              View Detailed Pricing
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
         </motion.div>
+
+        <div className="mt-10">
+          <InstantQuoteFlow />
+        </div>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => navigate("/terms")}
+            className="text-sm text-muted-foreground hover:text-primary inline-flex items-center group"
+          >
+            View detailed pricing & terms
+            <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
       </section>
 
       {/* Features Section */}
