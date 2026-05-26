@@ -70,9 +70,9 @@ export default function InstantQuoteFlow() {
   const next = () => {
     if (!stepValid) return;
     if (step === 1 && !trashDay) setTrashDay(detectedDay);
-    setStep((s) => Math.min(3, (s + 1) as Step));
+    setStep((s) => (Math.min(3, s + 1) as Step));
   };
-  const back = () => setStep((s) => Math.max(0, (s - 1) as Step));
+  const back = () => setStep((s) => (Math.max(0, s - 1) as Step));
 
   const submit = async () => {
     if (submitting || !stepValid) return;
