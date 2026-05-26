@@ -7,12 +7,6 @@ import InstantQuoteFlow from "@/components/quote/InstantQuoteFlow";
 
 const Index = () => {
   const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    console.log("Navigating to customer registration");
-    navigate("/customer/register");
-  };
-
   return (
     <div className="min-h-screen">
       <Seo
