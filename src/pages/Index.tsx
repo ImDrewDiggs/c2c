@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Seo from "@/components/seo/Seo";
 import InstantQuoteFlow from "@/components/quote/InstantQuoteFlow";
+import TrustStrip from "@/components/home/TrustStrip";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,10 +28,12 @@ const Index = () => {
           },
           {
             "@context": "https://schema.org",
-            "@type": "Organization",
+            "@type": "LocalBusiness",
             name: "Can2Curb",
             url: "https://c2c.lovable.app",
             logo: "https://c2c.lovable.app/og-image.png",
+            priceRange: "$$",
+            image: "https://c2c.lovable.app/og-image.png",
             description:
               "Trash can concierge service offering reliable pickup, cleaning, and waste management for residential and commercial properties.",
             areaServed: "Greater Cincinnati, Ohio",
@@ -74,6 +77,9 @@ const Index = () => {
           </button>
         </div>
       </section>
+
+      {/* Trust strip — badges + testimonials */}
+      <TrustStrip />
 
       {/* Features Section */}
       <section className="container py-20">
