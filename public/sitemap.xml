@@ -10,4 +10,7 @@
   <url><loc>https://c2c.lovable.app/services-and-prices</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://c2c.lovable.app/subscription</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://c2c.lovable.app/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://c2c.lovable.app/hoa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://c2c.lovable.app/airbnb-str</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://c2c.lovable.app/seniors</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>

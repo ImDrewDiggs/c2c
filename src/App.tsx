@@ -69,6 +69,9 @@ const Documentation = lazy(() => import('./pages/Documentation'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const TrashCanCleaningCincinnati = lazy(() => import('./pages/TrashCanCleaningCincinnati'));
 const QuoteSuccess = lazy(() => import('./pages/QuoteSuccess'));
+const HOA = lazy(() => import('./pages/niche/HOA'));
+const Airbnb = lazy(() => import('./pages/niche/Airbnb'));
+const Seniors = lazy(() => import('./pages/niche/Seniors'));
 
 const App = () => {
   // Create memoized QueryClient to prevent unnecessary re-instantiation
@@ -118,6 +121,11 @@ const App = () => {
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />
                   <Route path="/checkout/error" element={<CheckoutError />} />
                   <Route path="/quote/success" element={<QuoteSuccess />} />
+
+                  {/* Niche landing pages (SEO + targeted conversion) */}
+                  <Route path="/hoa" element={<HOA />} />
+                  <Route path="/airbnb-str" element={<Airbnb />} />
+                  <Route path="/seniors" element={<Seniors />} />
 
                   {/* Maintenance */}
                   <Route path="/maintenance" element={<Maintenance />} />
