@@ -11,6 +11,7 @@ import MaintenanceGate from "@/components/auth/MaintenanceGate";
 import { ContentSecurityPolicy } from "@/components/admin/security/ContentSecurityPolicy";
 import { sessionManager } from "@/utils/sessionManager";
 import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
+import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
 
 // Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
@@ -178,6 +179,7 @@ const App = () => {
                 </main>
               </Suspense>
               <Toaster />
+              <DiagnosticsPanel />
             </div>
           </MaintenanceGate>
             </SubscriptionProvider>
