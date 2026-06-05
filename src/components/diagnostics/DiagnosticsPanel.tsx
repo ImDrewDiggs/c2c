@@ -213,12 +213,6 @@ export function DiagnosticsPanel() {
 
   if (!isAdmin && !isSuperAdmin) return null;
 
-  const clear = useCallback(() => {
-    buffer.length = 0;
-    setEntries([]);
-    setUnread(0);
-  }, []);
-
   return (
     <>
       {/* Floating toggle */}
