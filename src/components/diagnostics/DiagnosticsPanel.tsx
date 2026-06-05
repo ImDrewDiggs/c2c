@@ -164,6 +164,7 @@ const SEVERITY_TONE: Record<Severity, string> = {
 };
 
 export function DiagnosticsPanel() {
+  const { isAdmin, isSuperAdmin } = useAuth();
   const [entries, setEntries] = useState<DiagnosticEntry[]>(buffer);
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -171,7 +172,9 @@ export function DiagnosticsPanel() {
   useEffect(() => {
     initGlobalCapture();
 
-    // Restore last open state + diagnostic mode
+    // Restore last open state + diagnostic mode (admin only)
+    if (!isAdmin && !isSuperAdmin) return;
+
     try {
       const url = new URL(window.location.href);
       const fromQuery = url.searchParams.get("debug") === "1";
@@ -190,7 +193,9 @@ export function DiagnosticsPanel() {
     return () => {
       listeners.delete(listener);
     };
-  }, [open]);
+  }, [open, isAdmin, isSuperAdmin]);
+
+  if (!isAdmin && !isSuperAdmin) return null;
 
   useEffect(() => {
     try {
