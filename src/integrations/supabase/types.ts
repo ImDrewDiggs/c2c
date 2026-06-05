@@ -784,6 +784,89 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          joined_at: string
+          organization_id: string
+          role: Database["public"]["Enums"]["org_member_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          billing_address: Json | null
+          billing_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          settings: Json
+          status: string
+          type: Database["public"]["Enums"]["organization_type"]
+          updated_at: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          billing_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          settings?: Json
+          status?: string
+          type?: Database["public"]["Enums"]["organization_type"]
+          updated_at?: string
+        }
+        Update: {
+          billing_address?: Json | null
+          billing_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          settings?: Json
+          status?: string
+          type?: Database["public"]["Enums"]["organization_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       otps: {
         Row: {
           created_at: string
@@ -941,6 +1024,92 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      properties: {
+        Row: {
+          access_notes: string | null
+          address_line1: string
+          address_line2: string | null
+          can_count: number
+          city: string | null
+          created_at: string
+          gate_code: string | null
+          house_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          metadata: Json
+          nickname: string | null
+          organization_id: string | null
+          owner_user_id: string | null
+          property_type: Database["public"]["Enums"]["property_type"]
+          recycle_day: string | null
+          recycling_enabled: boolean
+          state: string | null
+          status: string
+          trash_day: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          access_notes?: string | null
+          address_line1: string
+          address_line2?: string | null
+          can_count?: number
+          city?: string | null
+          created_at?: string
+          gate_code?: string | null
+          house_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          metadata?: Json
+          nickname?: string | null
+          organization_id?: string | null
+          owner_user_id?: string | null
+          property_type?: Database["public"]["Enums"]["property_type"]
+          recycle_day?: string | null
+          recycling_enabled?: boolean
+          state?: string | null
+          status?: string
+          trash_day?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          access_notes?: string | null
+          address_line1?: string
+          address_line2?: string | null
+          can_count?: number
+          city?: string | null
+          created_at?: string
+          gate_code?: string | null
+          house_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          metadata?: Json
+          nickname?: string | null
+          organization_id?: string | null
+          owner_user_id?: string | null
+          property_type?: Database["public"]["Enums"]["property_type"]
+          recycle_day?: string | null
+          recycling_enabled?: boolean
+          state?: string | null
+          status?: string
+          trash_day?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_service_catalog: {
         Row: {
@@ -1586,6 +1755,14 @@ export type Database = {
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin_by_email: { Args: never; Returns: boolean }
       is_admin_user: { Args: { check_user_id?: string }; Returns: boolean }
+      is_org_manager: {
+        Args: { _org_id: string; _user_id?: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id?: string }
+        Returns: boolean
+      }
       is_super_admin_user: {
         Args: { check_user_id?: string }
         Returns: boolean
@@ -1610,6 +1787,13 @@ export type Database = {
       }
     }
     Enums: {
+      org_member_role: "owner" | "manager" | "member"
+      organization_type:
+        | "individual"
+        | "hoa"
+        | "airbnb"
+        | "property_management"
+        | "commercial"
       permission:
         | "read_users"
         | "write_users"
@@ -1626,6 +1810,12 @@ export type Database = {
         | "manage_settings"
         | "view_audit_logs"
         | "manage_roles"
+      property_type:
+        | "single_family"
+        | "multi_family"
+        | "short_term_rental"
+        | "commercial"
+        | "other"
       user_role: "customer" | "employee" | "admin" | "super_admin"
     }
     CompositeTypes: {
@@ -1754,6 +1944,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      org_member_role: ["owner", "manager", "member"],
+      organization_type: [
+        "individual",
+        "hoa",
+        "airbnb",
+        "property_management",
+        "commercial",
+      ],
       permission: [
         "read_users",
         "write_users",
@@ -1770,6 +1968,13 @@ export const Constants = {
         "manage_settings",
         "view_audit_logs",
         "manage_roles",
+      ],
+      property_type: [
+        "single_family",
+        "multi_family",
+        "short_term_rental",
+        "commercial",
+        "other",
       ],
       user_role: ["customer", "employee", "admin", "super_admin"],
     },
