@@ -195,16 +195,23 @@ export function DiagnosticsPanel() {
     };
   }, [open, isAdmin, isSuperAdmin]);
 
-  if (!isAdmin && !isSuperAdmin) return null;
-
   useEffect(() => {
+    if (!isAdmin && !isSuperAdmin) return;
     try {
       localStorage.setItem(STORAGE_KEY, open ? "1" : "0");
     } catch {
       /* noop */
     }
     if (open) setUnread(0);
-  }, [open]);
+  }, [open, isAdmin, isSuperAdmin]);
+
+  const clear = useCallback(() => {
+    buffer.length = 0;
+    setEntries([]);
+    setUnread(0);
+  }, []);
+
+  if (!isAdmin && !isSuperAdmin) return null;
 
   const clear = useCallback(() => {
     buffer.length = 0;
