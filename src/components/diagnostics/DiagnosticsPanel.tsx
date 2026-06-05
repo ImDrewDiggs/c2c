@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Bug, X, Trash2, AlertTriangle, Info, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Severity = "error" | "warning" | "info";
 type Category = "module" | "auth" | "network" | "runtime";
@@ -163,6 +164,7 @@ const SEVERITY_TONE: Record<Severity, string> = {
 };
 
 export function DiagnosticsPanel() {
+  const { isAdmin, isSuperAdmin } = useAuth();
   const [entries, setEntries] = useState<DiagnosticEntry[]>(buffer);
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -170,7 +172,9 @@ export function DiagnosticsPanel() {
   useEffect(() => {
     initGlobalCapture();
 
-    // Restore last open state + diagnostic mode
+    // Restore last open state + diagnostic mode (admin only)
+    if (!isAdmin && !isSuperAdmin) return;
+
     try {
       const url = new URL(window.location.href);
       const fromQuery = url.searchParams.get("debug") === "1";
@@ -189,22 +193,25 @@ export function DiagnosticsPanel() {
     return () => {
       listeners.delete(listener);
     };
-  }, [open]);
+  }, [open, isAdmin, isSuperAdmin]);
 
   useEffect(() => {
+    if (!isAdmin && !isSuperAdmin) return;
     try {
       localStorage.setItem(STORAGE_KEY, open ? "1" : "0");
     } catch {
       /* noop */
     }
     if (open) setUnread(0);
-  }, [open]);
+  }, [open, isAdmin, isSuperAdmin]);
 
   const clear = useCallback(() => {
     buffer.length = 0;
     setEntries([]);
     setUnread(0);
   }, []);
+
+  if (!isAdmin && !isSuperAdmin) return null;
 
   return (
     <>
