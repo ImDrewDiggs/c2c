@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Bug, X, Trash2, AlertTriangle, Info, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Severity = "error" | "warning" | "info";
 type Category = "module" | "auth" | "network" | "runtime";
