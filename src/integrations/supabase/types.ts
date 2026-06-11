@@ -217,6 +217,59 @@ export type Database = {
           },
         ]
       }
+      diagnostics_logs: {
+        Row: {
+          category: string
+          created_at: string
+          guidance: string | null
+          id: string
+          message: string
+          metadata: Json
+          severity: string
+          source: string | null
+          title: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          guidance?: string | null
+          id?: string
+          message: string
+          metadata?: Json
+          severity?: string
+          source?: string | null
+          title?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          guidance?: string | null
+          id?: string
+          message?: string
+          metadata?: Json
+          severity?: string
+          source?: string | null
+          title?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostics_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_locations: {
         Row: {
           created_at: string
