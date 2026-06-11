@@ -3,6 +3,7 @@ import { Bug, X, Trash2, AlertTriangle, Info, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Severity = "error" | "warning" | "info";
 type Category = "module" | "auth" | "network" | "runtime";
@@ -106,6 +107,35 @@ function emit(entry: DiagnosticEntry) {
       /* noop */
     }
   });
+  // Best-effort persist to Supabase for admin review. RLS blocks reads for
+  // non-admins, so this is write-only from the client perspective.
+  void persistEntry(entry);
+}
+
+async function persistEntry(entry: DiagnosticEntry) {
+  try {
+    const { data: userRes } = await supabase.auth.getUser();
+    const userId = userRes?.user?.id ?? null;
+    const sevMap: Record<Severity, "info" | "warning" | "error" | "critical"> = {
+      info: "info",
+      warning: "warning",
+      error: "error",
+    };
+    await (supabase.from as any)("diagnostics_logs").insert({
+      user_id: userId,
+      category: entry.category,
+      severity: sevMap[entry.severity] ?? "error",
+      title: entry.title,
+      message: entry.message.slice(0, 4000),
+      source: entry.source?.slice(0, 2000) ?? null,
+      guidance: entry.guidance,
+      url: typeof window !== "undefined" ? window.location.href : null,
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+      metadata: {},
+    });
+  } catch {
+    /* swallow — never let diagnostics persistence cause more errors */
+  }
 }
 
 /** Programmatic API for the rest of the app to log diagnostic events. */
