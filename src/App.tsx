@@ -121,6 +121,7 @@ const App = () => {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />
                   <Route path="/checkout/error" element={<CheckoutError />} />
+                  <Route path="/checkout/cancel" element={<CheckoutError />} />
                   <Route path="/quote/success" element={<QuoteSuccess />} />
 
                   {/* Niche landing pages (SEO + targeted conversion) */}

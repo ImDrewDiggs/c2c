@@ -149,8 +149,8 @@ export default function Checkout() {
         if (error) throw error;
 
         if (data?.url) {
-          // Open Stripe checkout in a new tab
-          window.open(data.url, '_blank');
+          // Redirect to Stripe Checkout (same tab so success/cancel routes return here)
+          window.location.href = data.url;
         } else {
           throw new Error('No checkout URL received');
         }

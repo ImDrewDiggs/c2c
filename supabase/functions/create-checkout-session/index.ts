@@ -234,8 +234,8 @@ serve(async (req) => {
       customer_email: customerId ? undefined : (user?.email || "guest@example.com"),
       line_items: lineItems,
       mode,
-      success_url: `${requestOrigin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${requestOrigin}/subscription`,
+      success_url: `${requestOrigin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${requestOrigin}/checkout/cancel`,
       metadata: {
         subscriptionType: subscriptionType || "",
         selectedTier: selectedTier || "",
