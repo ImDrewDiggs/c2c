@@ -79,7 +79,7 @@ export default function CheckoutSuccess() {
         title="Order Confirmed | Can2Curb"
         description="Your Can2Curb subscription is confirmed. Service will begin shortly."
         path="/checkout/success"
-        noindex
+       
       />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
