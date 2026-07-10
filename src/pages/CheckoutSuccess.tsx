@@ -3,167 +3,166 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Home, FileText } from "lucide-react";
+import { CheckCircle, Home, FileText, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Seo } from "@/components/seo/Seo";
+
+type PaymentData = {
+  status?: string;
+  customerEmail?: string;
+  amountTotal?: number | null;
+  metadata?: Record<string, string>;
+};
 
 export default function CheckoutSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const [paymentVerified, setPaymentVerified] = useState(false);
-  const [paymentData, setPaymentData] = useState<any>(null);
-  
+  const [loading, setLoading] = useState(true);
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+
   const orderData = location.state?.orderData;
-  const sessionId = searchParams.get('session_id');
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
+    let active = true;
     const verifyPayment = async () => {
-      if (sessionId) {
-        try {
-          const { data, error } = await supabase.functions.invoke('verify-payment', {
-            body: { sessionId }
-          });
-
-          if (error) throw error;
-
-          setPaymentData(data);
-          setPaymentVerified(true);
-          
-          if (data.status === 'paid') {
-            toast({
-              title: "Payment Verified",
-              description: "Your payment has been processed successfully.",
-            });
-          }
-        } catch (error) {
-          console.error('Error verifying payment:', error);
-          toast({
-            variant: "destructive",
-            title: "Verification Error",
-            description: "Could not verify payment status.",
-          });
+      if (!sessionId) {
+        setLoading(false);
+        if (!orderData) navigate("/", { replace: true });
+        return;
+      }
+      try {
+        const { data, error } = await supabase.functions.invoke("verify-payment", {
+          body: { sessionId },
+        });
+        if (error) throw error;
+        if (!active) return;
+        setPaymentData(data as PaymentData);
+        if ((data as PaymentData)?.status === "paid") {
+          toast({ title: "Payment Verified", description: "Your payment was processed successfully." });
         }
-      } else if (!orderData) {
-        navigate('/');
+      } catch (err) {
+        console.error("Error verifying payment:", err);
+        toast({
+          variant: "destructive",
+          title: "Verification Error",
+          description: "We couldn't verify your payment status. Please contact support if you were charged.",
+        });
+      } finally {
+        if (active) setLoading(false);
       }
     };
-
     verifyPayment();
+    return () => {
+      active = false;
+    };
   }, [sessionId, orderData, navigate, toast]);
 
-  if (!orderData) {
-    return <div className="container mx-auto py-10">Loading...</div>;
-  }
-
-  const { checkoutData, customerInfo, paymentMethod, total } = orderData;
+  const amount =
+    paymentData?.amountTotal != null
+      ? (paymentData.amountTotal / 100).toFixed(2)
+      : orderData?.total != null
+      ? Number(orderData.total).toFixed(2)
+      : null;
+  const email = paymentData?.customerEmail || orderData?.customerInfo?.email;
+  const tier = paymentData?.metadata?.selectedTier || orderData?.checkoutData?.selectedTier;
+  const subType = paymentData?.metadata?.subscriptionType || orderData?.checkoutData?.subscriptionType;
+  const paid = paymentData?.status === "paid" || !!orderData;
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto"
-      >
+      <Seo
+        title="Order Confirmed | Can2Curb"
+        description="Your Can2Curb subscription is confirmed. Service will begin shortly."
+        path="/checkout/success"
+        noindex
+      />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
+            {loading ? (
+              <Loader2 className="w-16 h-16 text-primary mx-auto mb-4 animate-spin" />
+            ) : (
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            )}
           </motion.div>
           <h1 className="text-4xl font-bold tracking-tight text-green-600">
-            Order Confirmed!
+            {loading ? "Verifying payment…" : paid ? "Order Confirmed!" : "Payment Pending"}
           </h1>
           <p className="text-muted-foreground mt-2">
-            Thank you for your subscription. Your service will begin shortly.
+            {loading
+              ? "Hang tight while we confirm your payment with Stripe."
+              : paid
+              ? "Thank you for your subscription. Your service will begin shortly."
+              : "Your payment is still processing. You'll get an email once it's complete."}
           </p>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Order Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Order Number</p>
-                <p className="font-medium">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+        {!loading && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle as="h2">Order Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {amount && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Amount</p>
+                    <p className="font-medium">${amount}</p>
+                  </div>
+                )}
+                {paymentData?.status && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <Badge variant={paid ? "default" : "secondary"} className="capitalize">
+                      {paymentData.status}
+                    </Badge>
+                  </div>
+                )}
+                {subType && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Service Type</p>
+                    <p className="font-medium capitalize">{String(subType).replace("_", " ")}</p>
+                  </div>
+                )}
+                {tier && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Plan</p>
+                    <p className="font-medium capitalize">{tier}</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Amount</p>
-                <p className="font-medium">${total.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Service Type</p>
-                <p className="font-medium capitalize">
-                  {checkoutData.subscriptionType.replace('_', ' ')} Service
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Payment Method</p>
-                <Badge variant="secondary" className="capitalize">
-                  {paymentMethod}
-                </Badge>
-              </div>
-            </div>
+              {email && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">Receipt sent to</p>
+                  <p className="font-medium">{email}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground">Service Address</p>
-              <p className="font-medium">
-                {customerInfo.serviceAddress}<br />
-                {customerInfo.city}, {customerInfo.state} {customerInfo.zipCode}
-              </p>
-            </div>
-
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground">Contact Information</p>
-              <p className="font-medium">
-                {customerInfo.firstName} {customerInfo.lastName}<br />
-                {customerInfo.email}<br />
-                {customerInfo.phone}
-              </p>
-            </div>
-
-            {customerInfo.specialInstructions && (
-              <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground">Special Instructions</p>
-                <p className="font-medium">{customerInfo.specialInstructions}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            What happens next?
-          </h3>
-          <ul className="space-y-2 text-blue-800 dark:text-blue-200 text-sm">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 mb-6">
+          <h2 className="font-semibold mb-2">What happens next?</h2>
+          <ul className="space-y-2 text-sm text-muted-foreground">
             <li>• You'll receive a confirmation email within 5 minutes</li>
             <li>• Our team will contact you within 24 hours to schedule your first service</li>
-            <li>• Service will begin according to your selected schedule</li>
-            <li>• You can manage your subscription anytime from your dashboard</li>
+            <li>• Manage your subscription anytime from your billing dashboard</li>
           </ul>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button 
-            onClick={() => navigate('/')}
-            className="flex-1"
-            variant="outline"
-          >
+          <Button onClick={() => navigate("/")} className="flex-1" variant="outline">
             <Home className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-          <Button 
-            onClick={() => navigate('/customer/dashboard')}
-            className="flex-1"
-          >
+          <Button onClick={() => navigate("/customer/billing")} className="flex-1">
             <FileText className="w-4 h-4 mr-2" />
-            View Dashboard
+            View Billing
           </Button>
         </div>
       </motion.div>
