@@ -18,6 +18,12 @@ export default function CustomerRegister() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/services-and-prices';
+  const referralCode = (searchParams.get('ref') || (typeof window !== 'undefined' ? window.localStorage.getItem('pending_ref') : null) || '').toUpperCase().trim();
+
+  // Persist ref across the register/verify hop
+  if (typeof window !== 'undefined' && searchParams.get('ref')) {
+    try { window.localStorage.setItem('pending_ref', searchParams.get('ref') || ''); } catch {}
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,12 +63,23 @@ export default function CustomerRegister() {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            role: 'customer'
+            role: 'customer',
+            ...(referralCode ? { referral_code: referralCode } : {})
           }
         }
       });
 
       if (error) throw error;
+
+      // If we got an immediate session, record the referral now
+      if (data.session && referralCode) {
+        try {
+          await supabase.rpc('record_referral', { _code: referralCode });
+          try { window.localStorage.removeItem('pending_ref'); } catch {}
+        } catch (err) {
+          console.warn('Referral record failed:', err);
+        }
+      }
 
       // Check if email confirmation is required
       const isConfirmationRequired = !data.session;

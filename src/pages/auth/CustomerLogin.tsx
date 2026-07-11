@@ -8,6 +8,7 @@ import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/employee/dashboard/LoadingState";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CustomerLogin() {
   const [email, setEmail] = useState("");
@@ -51,6 +52,16 @@ export default function CustomerLogin() {
       
       // Allow both customer and admin roles to access customer dashboard
       if (role === 'customer' || role === 'admin') {
+        // Redeem any pending referral code captured before verification
+        try {
+          const pendingRef = window.localStorage.getItem('pending_ref');
+          if (pendingRef) {
+            await supabase.rpc('record_referral', { _code: pendingRef.toUpperCase().trim() });
+            window.localStorage.removeItem('pending_ref');
+          }
+        } catch (err) {
+          console.warn('Referral redeem skipped:', err);
+        }
         // Redirect to the intended destination or dashboard
         navigate(redirectTo || '/customer/dashboard', { replace: true });
       } else if (role === 'employee') {

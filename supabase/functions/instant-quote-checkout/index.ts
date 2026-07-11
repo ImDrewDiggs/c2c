@@ -77,6 +77,7 @@ serve(async (req) => {
     const trashDay = sanitize(body.trashDay, 20).toLowerCase();
     const cans = Number(body.cans);
     const recycle = !!body.recycle;
+    const referralCode = sanitize(body.referralCode, 32).toUpperCase() || null;
 
     // Validate
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -135,6 +136,7 @@ serve(async (req) => {
         tier,
         monthly_price: String(price),
         email,
+        ...(referralCode ? { referral_code: referralCode } : {}),
       },
     });
 

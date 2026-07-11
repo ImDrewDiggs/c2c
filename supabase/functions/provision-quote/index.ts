@@ -140,6 +140,44 @@ serve(async (req) => {
       if (sErr) console.error("subscription insert error:", sErr.message);
     }
 
+    // If the quote flow passed a referral code, record it now that we have the user id
+    if (m.referral_code) {
+      try {
+        // record_referral checks auth.uid(); we bypass by using service_role rpc-safe inserts:
+        // find referrer via code and insert the referral directly.
+        const { data: codeRow } = await admin
+          .from("referral_codes")
+          .select("user_id")
+          .eq("code", String(m.referral_code).toUpperCase())
+          .maybeSingle();
+        if (codeRow?.user_id && codeRow.user_id !== userId) {
+          const { data: alreadyReferred } = await admin
+            .from("referrals")
+            .select("id")
+            .eq("referee_user_id", userId)
+            .maybeSingle();
+          if (!alreadyReferred) {
+            await admin.from("referrals").insert({
+              referrer_user_id: codeRow.user_id,
+              referee_user_id: userId,
+              referee_email: email,
+              code: String(m.referral_code).toUpperCase(),
+              status: "pending",
+            });
+          }
+        }
+      } catch (refErr) {
+        console.warn("attach referral skipped:", refErr);
+      }
+    }
+
+    // Reward the referrer (payment already succeeded to reach this point)
+    try {
+      await admin.rpc("qualify_referral", { _referee_user_id: userId });
+    } catch (qErr) {
+      console.warn("qualify_referral skipped:", qErr);
+    }
+
     // Send magic link so they can sign in to dashboard without a password
     let magicLink: string | null = null;
     const { data: linkData } = await admin.auth.admin.generateLink({

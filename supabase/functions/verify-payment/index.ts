@@ -81,6 +81,16 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         });
       }
+
+      // Qualify any pending referral for this user (idempotent)
+      const refereeId = session.metadata?.userId;
+      if (refereeId) {
+        try {
+          await supabaseService.rpc("qualify_referral", { _referee_user_id: refereeId });
+        } catch (refErr) {
+          console.warn("qualify_referral skipped:", refErr);
+        }
+      }
     }
 
     return new Response(JSON.stringify({ 

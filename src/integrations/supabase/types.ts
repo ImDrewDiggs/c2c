@@ -1239,6 +1239,119 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_credit_ledger: {
+        Row: {
+          created_at: string
+          delta_cents: number
+          id: string
+          reason: string
+          related_referral_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta_cents: number
+          id?: string
+          reason: string
+          related_referral_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta_cents?: number
+          id?: string
+          reason?: string
+          related_referral_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_credit_ledger_related_referral_id_fkey"
+            columns: ["related_referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_credits: {
+        Row: {
+          balance_cents: number
+          lifetime_earned_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_cents?: number
+          lifetime_earned_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_cents?: number
+          lifetime_earned_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          qualified_at: string | null
+          referee_email: string | null
+          referee_user_id: string | null
+          referrer_user_id: string
+          reward_amount_cents: number
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          qualified_at?: string | null
+          referee_email?: string | null
+          referee_user_id?: string | null
+          referrer_user_id: string
+          reward_amount_cents?: number
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          qualified_at?: string | null
+          referee_email?: string | null
+          referee_user_id?: string | null
+          referrer_user_id?: string
+          reward_amount_cents?: number
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           created_at: string
@@ -1769,6 +1882,10 @@ export type Database = {
         Returns: Json
       }
       cleanup_old_employee_locations: { Args: never; Returns: undefined }
+      consume_referral_credit: {
+        Args: { _max_cents: number; _user_id: string }
+        Returns: number
+      }
       create_admin_profile_safe: {
         Args: { admin_email: string; admin_user_id: string }
         Returns: undefined
@@ -1785,6 +1902,8 @@ export type Database = {
         Args: { data: string; field_name: string }
         Returns: string
       }
+      ensure_referral_code: { Args: { _user_id?: string }; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       get_user_roles: {
         Args: { check_user_id?: string }
@@ -1820,6 +1939,8 @@ export type Database = {
         Args: { check_user_id?: string }
         Returns: boolean
       }
+      qualify_referral: { Args: { _referee_user_id: string }; Returns: Json }
+      record_referral: { Args: { _code: string }; Returns: Json }
       record_terms_acceptance: {
         Args: {
           p_ip_address?: string
