@@ -78,6 +78,17 @@ export default function InstantQuoteFlow() {
     if (submitting || !stepValid) return;
     setSubmitting(true);
     try {
+      // Pull a referral code from ?ref= or a previously persisted value
+      let referralCode: string | null = null;
+      try {
+        const url = new URL(window.location.href);
+        referralCode = url.searchParams.get("ref") || window.localStorage.getItem("pending_ref");
+        if (referralCode) {
+          referralCode = referralCode.toUpperCase().trim();
+          window.localStorage.setItem("pending_ref", referralCode);
+        }
+      } catch {}
+
       const { data, error } = await supabase.functions.invoke("instant-quote-checkout", {
         body: {
           address: address.trim(),
@@ -88,6 +99,7 @@ export default function InstantQuoteFlow() {
           trashDay: (trashDay || detectedDay).toLowerCase(),
           cans,
           recycle,
+          referralCode,
         },
       });
       if (error) throw error;
