@@ -12,7 +12,7 @@ import SchedulePickup from "@/components/customer/SchedulePickup";
 import BulkItemRequest from "@/components/customer/BulkItemRequest";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ChangePasswordModal } from "@/components/auth/ChangePasswordModal";
-import { Calendar, Package, CreditCard, User, History, Home } from "lucide-react";
+import { Calendar, Package, CreditCard, User, History, Home, Gift } from "lucide-react";
 
 export default function CustomerDashboard() {
   const { user, userData } = useAuth();
@@ -90,6 +90,23 @@ export default function CustomerDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Refer a friend card */}
+          <Card
+            className="cursor-pointer hover:shadow-lg transition-shadow border-primary/30 bg-primary/5"
+            onClick={() => navigate('/customer/referrals')}
+          >
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Gift className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Refer a friend</p>
+                <p className="text-lg font-bold">Give $20, Get $20</p>
+              </div>
+              <Button variant="secondary" size="sm">Share link</Button>
+            </CardContent>
+          </Card>
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
