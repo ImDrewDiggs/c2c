@@ -124,8 +124,7 @@ export default function CustomerReferrals() {
       <Seo
         title="Refer a Friend — Give $20, Get $20 | Can2Curb"
         description="Share Can2Curb with a friend in Cincinnati. They get $20 off their first month, you get $20 credit when they subscribe."
-        canonical="/customer/referrals"
-        robots="noindex"
+        path="/customer/referrals"
       />
       <div className="container mx-auto py-10 px-4 md:px-6 space-y-8">
         <div className="flex items-center gap-3">
