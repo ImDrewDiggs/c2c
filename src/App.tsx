@@ -42,6 +42,7 @@ const SecureAuth = lazy(() => import('./pages/auth/SecureAuth'));
 // Dashboard routes - heavy components, only load when authenticated
 const CustomerDashboard = lazy(() => import('./pages/customer/Dashboard'));
 const CustomerBilling = lazy(() => import('./pages/customer/Billing'));
+const CustomerReferrals = lazy(() => import('./pages/customer/Referrals'));
 const EmployeeDashboard = lazy(() => import('./pages/employee/Dashboard'));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 
@@ -147,6 +148,7 @@ const App = () => {
                   <Route path="/customer/register" element={<CustomerRegister />} />
                   <Route path="/customer/dashboard" element={<CustomerDashboard />} />
                   <Route path="/customer/billing" element={<CustomerBilling />} />
+                  <Route path="/customer/referrals" element={<CustomerReferrals />} />
                   <Route path="/employee/login" element={<EmployeeLogin />} />
                   <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
