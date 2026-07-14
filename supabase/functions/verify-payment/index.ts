@@ -91,6 +91,15 @@ serve(async (req) => {
           console.warn("qualify_referral skipped:", refErr);
         }
       }
+
+      // Mark abandoned-quote as converted so no reminder is sent.
+      const resumeToken = session.metadata?.resume_token;
+      if (resumeToken) {
+        await supabaseService
+          .from("abandoned_quotes")
+          .update({ converted_at: new Date().toISOString() })
+          .eq("resume_token", resumeToken);
+      }
     }
 
     return new Response(JSON.stringify({ 
