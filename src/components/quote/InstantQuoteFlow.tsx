@@ -75,27 +75,15 @@ export default function InstantQuoteFlow() {
           hydrated.current = true;
           return;
         }
-        const { data, error } = await supabase.functions.invoke("get-quote", {
-          method: "GET" as any,
-          body: undefined,
-          headers: {},
-          // functions.invoke doesn't take query params; call fetch directly
-        } as any).catch(() => ({ data: null, error: null }));
-        // Fallback: use direct fetch since functions.invoke lacks GET query support
-        let quote: any = data?.quote ?? null;
-        if (!quote) {
-          const base = (supabase as any).functionsUrl || `${(supabase as any).supabaseUrl}/functions/v1`;
-          const res = await fetch(`${base}/get-quote?token=${encodeURIComponent(token)}`, {
-            headers: {
-              apikey: (supabase as any).supabaseKey ?? "",
-              Authorization: `Bearer ${(supabase as any).supabaseKey ?? ""}`,
-            },
-          });
-          if (res.ok) {
-            const j = await res.json();
-            quote = j.quote;
-          }
-        }
+        const anySb = supabase as any;
+        const base =
+          anySb.functionsUrl ||
+          `${anySb.supabaseUrl || import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+        const apikey = anySb.supabaseKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const res = await fetch(`${base}/get-quote?token=${encodeURIComponent(token)}`, {
+          headers: { apikey, Authorization: `Bearer ${apikey}` },
+        });
+        const quote: any = res.ok ? (await res.json()).quote : null;
         if (quote && !quote.converted_at) {
           setResumeToken(quote.resume_token);
           window.localStorage.setItem("quote_resume_token", quote.resume_token);
