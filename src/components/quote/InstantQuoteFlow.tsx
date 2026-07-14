@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, MapPin, Calendar, Trash2, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,9 +56,109 @@ export default function InstantQuoteFlow() {
   const [cans, setCans] = useState<number>(1);
   const [recycle, setRecycle] = useState(false);
   const [email, setEmail] = useState("");
+  const [resumeToken, setResumeToken] = useState<string | null>(null);
+  const hydrated = useRef(false);
+  const saveTimer = useRef<number | null>(null);
 
   const detectedDay = useMemo(() => (zip.length === 5 ? ZIP_DAYS[zip] || "" : ""), [zip]);
   const { tier, price } = priceFor(cans, recycle);
+
+  // Hydrate from ?resume=TOKEN or localStorage
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = new URL(window.location.href);
+        const urlToken = url.searchParams.get("resume");
+        const stored = window.localStorage.getItem("quote_resume_token");
+        const token = urlToken || stored;
+        if (!token) {
+          hydrated.current = true;
+          return;
+        }
+        const { data, error } = await supabase.functions.invoke("get-quote", {
+          method: "GET" as any,
+          body: undefined,
+          headers: {},
+          // functions.invoke doesn't take query params; call fetch directly
+        } as any).catch(() => ({ data: null, error: null }));
+        // Fallback: use direct fetch since functions.invoke lacks GET query support
+        let quote: any = data?.quote ?? null;
+        if (!quote) {
+          const base = (supabase as any).functionsUrl || `${(supabase as any).supabaseUrl}/functions/v1`;
+          const res = await fetch(`${base}/get-quote?token=${encodeURIComponent(token)}`, {
+            headers: {
+              apikey: (supabase as any).supabaseKey ?? "",
+              Authorization: `Bearer ${(supabase as any).supabaseKey ?? ""}`,
+            },
+          });
+          if (res.ok) {
+            const j = await res.json();
+            quote = j.quote;
+          }
+        }
+        if (quote && !quote.converted_at) {
+          setResumeToken(quote.resume_token);
+          window.localStorage.setItem("quote_resume_token", quote.resume_token);
+          if (quote.address) setAddress(quote.address);
+          if (quote.city) setCity(quote.city);
+          if (quote.state) setState(quote.state);
+          if (quote.zip) setZip(quote.zip);
+          if (quote.trash_day) setTrashDay(quote.trash_day);
+          if (typeof quote.cans === "number") setCans(quote.cans);
+          if (typeof quote.recycle === "boolean") setRecycle(quote.recycle);
+          if (quote.email) setEmail(quote.email);
+          if (typeof quote.step === "number") setStep(Math.max(0, Math.min(3, quote.step)) as Step);
+          if (urlToken) {
+            toast({ title: "Welcome back", description: "We loaded where you left off." });
+          }
+        } else if (quote?.converted_at) {
+          window.localStorage.removeItem("quote_resume_token");
+        }
+      } catch (e) {
+        console.warn("quote resume skipped:", e);
+      } finally {
+        hydrated.current = true;
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debounced save on any change once the user has entered enough to be useful.
+  useEffect(() => {
+    if (!hydrated.current) return;
+    const enough = address.trim().length > 4 || /^\d{5}$/.test(zip) || email.includes("@");
+    if (!enough) return;
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(async () => {
+      try {
+        let referralCode: string | null = null;
+        try {
+          const url = new URL(window.location.href);
+          referralCode = url.searchParams.get("ref") || window.localStorage.getItem("pending_ref");
+        } catch {}
+        const { data, error } = await supabase.functions.invoke("save-quote", {
+          body: {
+            resumeToken,
+            address, city, state, zip,
+            trashDay: trashDay || detectedDay,
+            cans, recycle,
+            email,
+            step,
+            referralCode,
+          },
+        });
+        if (!error && data?.resumeToken) {
+          setResumeToken(data.resumeToken);
+          window.localStorage.setItem("quote_resume_token", data.resumeToken);
+        }
+      } catch (e) {
+        console.warn("save-quote skipped:", e);
+      }
+    }, 800);
+    return () => {
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    };
+  }, [address, city, state, zip, trashDay, detectedDay, cans, recycle, email, step, resumeToken]);
 
   const stepValid = useMemo(() => {
     if (step === 0) return address.trim().length > 4 && city.trim().length > 1 && /^\d{5}$/.test(zip);
@@ -100,6 +200,7 @@ export default function InstantQuoteFlow() {
           cans,
           recycle,
           referralCode,
+          resumeToken,
         },
       });
       if (error) throw error;
