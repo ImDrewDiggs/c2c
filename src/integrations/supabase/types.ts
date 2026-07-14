@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_quotes: {
+        Row: {
+          address: string | null
+          cans: number | null
+          city: string | null
+          converted_at: string | null
+          created_at: string
+          email: string | null
+          id: string
+          price_cents: number | null
+          recycle: boolean | null
+          referral_code: string | null
+          reminder_sent_at: string | null
+          resume_token: string
+          state: string | null
+          step: number | null
+          tier: string | null
+          trash_day: string | null
+          updated_at: string
+          user_agent: string | null
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          cans?: number | null
+          city?: string | null
+          converted_at?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          price_cents?: number | null
+          recycle?: boolean | null
+          referral_code?: string | null
+          reminder_sent_at?: string | null
+          resume_token?: string
+          state?: string | null
+          step?: number | null
+          tier?: string | null
+          trash_day?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          cans?: number | null
+          city?: string | null
+          converted_at?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          price_cents?: number | null
+          recycle?: boolean | null
+          referral_code?: string | null
+          reminder_sent_at?: string | null
+          resume_token?: string
+          state?: string | null
+          step?: number | null
+          tier?: string | null
+          trash_day?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
       admin_security_logs: {
         Row: {
           action_details: Json | null
