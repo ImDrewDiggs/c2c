@@ -38,3 +38,12 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.save-quote]
+verify_jwt = false
+
+[functions.get-quote]
+verify_jwt = false
+
+[functions.send-abandoned-quote-reminders]
+verify_jwt = false

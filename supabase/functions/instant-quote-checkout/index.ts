@@ -78,6 +78,7 @@ serve(async (req) => {
     const cans = Number(body.cans);
     const recycle = !!body.recycle;
     const referralCode = sanitize(body.referralCode, 32).toUpperCase() || null;
+    const resumeToken = sanitize(body.resumeToken, 64) || null;
 
     // Validate
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -137,6 +138,7 @@ serve(async (req) => {
         monthly_price: String(price),
         email,
         ...(referralCode ? { referral_code: referralCode } : {}),
+        ...(resumeToken ? { resume_token: resumeToken } : {}),
       },
     });
 
@@ -156,6 +158,19 @@ serve(async (req) => {
     }).then(({ error }) => {
       if (error) console.error("orders insert failed (non-fatal):", error.message);
     });
+
+    // Suppress abandoned-quote reminder while the user is on the Stripe page.
+    // Final conversion is marked by verify-payment / provision-quote.
+    if (resumeToken) {
+      await supabaseService
+        .from("abandoned_quotes")
+        .update({ reminder_sent_at: new Date().toISOString() })
+        .eq("resume_token", resumeToken)
+        .is("converted_at", null)
+        .then(({ error }) => {
+          if (error) console.error("abandoned_quotes suppress failed:", error.message);
+        });
+    }
 
     return new Response(JSON.stringify({ url: session.url, tier, price }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

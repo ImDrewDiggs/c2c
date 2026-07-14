@@ -178,6 +178,14 @@ serve(async (req) => {
       console.warn("qualify_referral skipped:", qErr);
     }
 
+    // Mark the abandoned-quote row as converted (blocks any pending reminder)
+    if (m.resume_token) {
+      await admin
+        .from("abandoned_quotes")
+        .update({ converted_at: new Date().toISOString() })
+        .eq("resume_token", String(m.resume_token));
+    }
+
     // Send magic link so they can sign in to dashboard without a password
     let magicLink: string | null = null;
     const { data: linkData } = await admin.auth.admin.generateLink({
