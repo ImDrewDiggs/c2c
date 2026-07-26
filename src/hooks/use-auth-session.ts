@@ -11,6 +11,7 @@ export function useAuthSession() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [sessionCheckError, setSessionCheckError] = useState<Error | null>(null);
   const initialSessionCheckComplete = useRef(false);
+  const lastFetchedUserId = useRef<string | null>(null);
   const authChangeSubscription = useRef<{ unsubscribe: () => void } | null>(null);
 
   const { fetchUserData } = useUserProfile();
@@ -38,13 +39,16 @@ export function useAuthSession() {
           
           // Only fetch profile data for non-admin users to prevent recursion
           // Admin users will be handled by the auth state directly
-          setTimeout(() => {
-            if (isMounted()) {
-              fetchUserData(session.user.id).catch(err => {
-                console.warn('[AuthSession] Profile fetch error (continuing anyway):', err.message);
-              });
-            }
-          }, 100);
+          if (lastFetchedUserId.current !== session.user.id) {
+            lastFetchedUserId.current = session.user.id;
+            setTimeout(() => {
+              if (isMounted()) {
+                fetchUserData(session.user.id).catch(err => {
+                  console.warn('[AuthSession] Profile fetch error (continuing anyway):', err.message);
+                });
+              }
+            }, 100);
+          }
         } else if (isMounted()) {
           console.log('[AuthSession] No user in session during initial check');
           setUser(null);
@@ -83,22 +87,27 @@ export function useAuthSession() {
       
       if (event === 'SIGNED_OUT') {
         console.log('[AuthSession] SIGNED_OUT event received, clearing user state');
+        lastFetchedUserId.current = null;
         setUser(null);
         setLoading(false);
         return;
       }
       
       if (session?.user) {
-        setUser(session.user);
-        // Only defer profile fetch for non-recursive scenarios
-        setTimeout(() => {
-          if (isMounted()) {
-            fetchUserData(session.user.id).catch(err => {
-              console.warn('[AuthSession] Profile fetch after state change error:', err.message);
-            });
-          }
-        }, 100);
+        setUser(prev => (prev?.id === session.user.id ? prev : session.user));
+        // Only fetch the profile once per user to avoid render loops
+        if (lastFetchedUserId.current !== session.user.id) {
+          lastFetchedUserId.current = session.user.id;
+          setTimeout(() => {
+            if (isMounted()) {
+              fetchUserData(session.user.id).catch(err => {
+                console.warn('[AuthSession] Profile fetch after state change error:', err.message);
+              });
+            }
+          }, 100);
+        }
       } else {
+        lastFetchedUserId.current = null;
         setUser(null);
       }
       

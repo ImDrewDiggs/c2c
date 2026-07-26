@@ -1,4 +1,4 @@
-import { useAuthState } from "@/hooks/use-auth-state";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Shield } from "lucide-react";
@@ -10,7 +10,7 @@ interface AuthenticatedPricingGuardProps {
 }
 
 export function AuthenticatedPricingGuard({ children, fallback }: AuthenticatedPricingGuardProps) {
-  const { user, loading } = useAuthState();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
