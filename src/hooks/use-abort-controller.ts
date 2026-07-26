@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export function useAbortController() {
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -15,15 +15,15 @@ export function useAbortController() {
     };
   }, []);
 
-  const getController = () => {
+  const getController = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     abortControllerRef.current = new AbortController();
     return abortControllerRef.current;
-  };
+  }, []);
 
-  const isMounted = () => isMountedRef.current;
+  const isMounted = useCallback(() => isMountedRef.current, []);
 
   return { getController, isMounted };
 }

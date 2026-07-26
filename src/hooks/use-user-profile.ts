@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { supabase, UserData } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/AuthService';
@@ -12,7 +12,7 @@ export function useUserProfile() {
   // Use the static property from AuthService
   const ADMIN_EMAILS = AuthService.ADMIN_EMAILS;
 
-  async function fetchUserData(userId: string) {
+  const fetchUserData = useCallback(async (userId: string) => {
     try {
       console.log('[UserProfile] Fetching user data for ID:', userId);
       
@@ -117,10 +117,10 @@ export function useUserProfile() {
       setIsSuperAdmin(false);
       return null;
     }
-  }
+  }, []);
 
   // Helper function to create missing profile for known users
-  async function createMissingUserProfile(userId: string, isAdmin: boolean = false): Promise<boolean> {
+  const createMissingUserProfile = useCallback(async (userId: string, isAdmin: boolean = false): Promise<boolean> => {
     try {
       const { data: authUser } = await supabase.auth.getUser();
       const email = authUser?.user?.email || '';
@@ -134,7 +134,7 @@ export function useUserProfile() {
       console.error('Error creating user profile:', error);
       return false;
     }
-  }
+  }, []);
 
   return {
     userData,
