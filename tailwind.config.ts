@@ -32,6 +32,19 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        green: {
+          50: "hsl(95 100% 96%)",
+          100: "hsl(95 100% 92%)",
+          200: "hsl(95 100% 84%)",
+          300: "hsl(95 100% 72%)",
+          400: "hsl(95 100% 58%)",
+          500: "hsl(95 100% 45%)",
+          600: "hsl(95 100% 38%)",
+          700: "hsl(95 100% 30%)",
+          800: "hsl(95 100% 22%)",
+          900: "hsl(95 100% 16%)",
+          950: "hsl(95 100% 10%)",
+        },
       },
       keyframes: {
         "accordion-down": {
