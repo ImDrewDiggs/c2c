@@ -12,6 +12,7 @@ import { ContentSecurityPolicy } from "@/components/admin/security/ContentSecuri
 import { sessionManager } from "@/utils/sessionManager";
 import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
+import Maintenance from './pages/Maintenance';
 
 // Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
@@ -29,7 +30,6 @@ const FAQ = lazy(() => import('./pages/FAQ'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutError = lazy(() => import('./pages/CheckoutError'));
-const Maintenance = lazy(() => import('./pages/Maintenance'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Auth routes - only load when needed
