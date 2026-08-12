@@ -1,69 +1,94 @@
+# Employee GPS Connection Plan
 
-# What's Missing — Gap Analysis
+## Goal
+Let employees connect to the app on their personal phones through the browser so admins can see their live GPS positions. Capture both continuous tracking while they are clocked in and snapshot locations when they clock in/out.
 
-Based on the current state of Can2Curb (trash concierge + cleaning platform for Cincinnati), here are the meaningful gaps I see, grouped by impact. Pick any combination and I'll build them.
+## Current State
+- Employees already sign in at `/employee/login` and land on `/employee/dashboard`.
+- The `TimeTracker` component records clock-in/out times and can optionally capture a GPS coordinate, but it falls back silently when location is unavailable.
+- A `Map` component contains a `LocationTracker` that updates `employee_locations` every 15 seconds, but it only runs while the map is rendered.
+- The admin GPS page (`/admin/gps-tracking`) already reads from `employee_locations` and shows a real-time map.
+- The `employee_locations` table exists with RLS, audit triggers, and a cleanup function.
+- No standalone, always-on location service exists for the employee dashboard.
+- The app is wrapped in Capacitor but has no background-geolocation plugin installed yet.
 
-## 1. Revenue-critical gaps (fix first)
+## Proposed Architecture
 
-- **Stripe webhook secret not configured** — payments work, but `orders`/`subscribers`/`payments` tables won't auto-sync on successful checkout. Right now you're relying on `verify-payment` being called from the success page, which misses failed redirects, refunds, disputes, cancellations, and renewals.
-- **No referral / affiliate system** — highest-ROI growth channel for local service businesses ("Give $20, Get $20"). Missing entirely.
-- **No abandoned-quote recovery** — the InstantQuoteFlow captures address + service details but doesn't save partial quotes or email/SMS a recovery link.
-- **No annual prepay discount surfacing** — subscription billing rules exist in memory (1/6/12 mo discounts) but the quote flow only sells monthly.
-- **No upsell after checkout** — success page just confirms, doesn't offer add-ons (bulk pickup, deep clean, extra can, holiday service).
+```text
+Employee phone (browser)
+  -> Employee Dashboard mounts
+     -> LocationService hook starts
+        -> On clock-in: high-accuracy snapshot saved to work_sessions
+        -> While active session: periodic medium-accuracy updates to employee_locations
+        -> On clock-out: high-accuracy snapshot saved to work_sessions
+  -> Supabase Realtime broadcasts changes
+  -> Admin GPS page reads employee_locations and shows live markers
+```
 
-## 2. Operational gaps (you'll hit these in week 1 of real customers)
+## Implementation Steps
 
-- **No customer-facing service calendar** — customer dashboard shows subscriptions but no "your next 4 pickups" view with skip/reschedule buttons.
-- **No "skip a week" / vacation hold** — table + UI + credit logic missing. This is the #1 support ticket for concierge services.
-- **No proof-of-service delivery** — employees can upload photos, but customers never see them. No auto-email "your cans were serviced today [photo]".
-- **No SMS notifications** — only in-app. Trash service customers overwhelmingly want text reminders ("cans out tonight", "serviced today").
-- **No route sheet / driver mobile view** — employee dashboard exists but I don't see an optimized "today's stops in order with nav links" screen for the field.
-- **No customer complaint / redo request flow** — support tickets exist but no structured "missed pickup → auto-schedule redo → credit" workflow.
+1. **Create a standalone `useEmployeeLocationTracking` hook**
+   - Runs inside `EmployeeDashboard` whenever an authenticated employee is present.
+   - Watches the active `work_sessions` row to know when the employee is "on the clock".
+   - Uses `navigator.geolocation.watchPosition` while clocked in and `clearWatch` when clocked out or signed out.
+   - Throttles Supabase writes to once every 30 seconds to preserve battery and avoid rate limits.
+   - Stores the latest location in a ref so React re-renders do not restart the watcher.
 
-## 3. Growth & retention gaps
+2. **Refactor `TimeTracker` to use the shared location service**
+   - Remove duplicated `getCurrentPosition` calls.
+   - Request high-accuracy location on clock-in and clock-out.
+   - Pass the captured coordinates into the `work_sessions` insert/update.
+   - Show a clear message when location permission is denied, with instructions to enable it.
 
-- **No email marketing integration** — no welcome series, no win-back for cancelled, no seasonal promos. Resend or similar not wired up.
-- **No review-generation flow** — after N successful services, auto-ask for a Google review (huge for local SEO).
-- **No neighborhood referral map** — "3 of your neighbors already subscribe" social proof on the quote page by ZIP.
-- **Blog / content hub missing** — you have SEO landing pages but no `/blog` for ranking on long-tail queries ("how often should I clean my trash can", etc.).
-- **Gift subscriptions** — common for senior parents; missing.
+3. **Add a location-permission helper**
+   - Detect `PermissionStatus.state` for geolocation.
+   - Show an onboarding card on the employee dashboard if permission is `prompt` or `denied`.
+   - Explain that location is only tracked during active work sessions.
 
-## 4. Trust & conversion gaps
+4. **Tighten RLS and policies on `employee_locations`**
+   - Employees can insert/update only rows where `employee_id = auth.uid()`.
+   - Employees can read only their own row.
+   - Admins and super admins can read all rows.
+   - No `anon` access.
 
-- **No real testimonials with photos/names/neighborhoods** — Testimonials page uses generic content.
-- **No service-area map** — visitors from outside Cincinnati can't self-qualify; you're wasting quote attempts.
-- **No live chat or scheduled callback** — ChatBot component exists but I'd verify it's connected to a real backend / human handoff.
-- **No pricing transparency page** — pricing is behind NDA/terms gate. That protects competitive info but tanks conversion vs. competitors who show prices.
-- **No FAQ schema on FAQ page** — wait, this is done. Skip.
-- **No trust badges: insured / bonded / BBB / satisfaction guarantee** — TrustStrip exists but I'd audit what's on it.
+5. **Add a small edge function `record-location`**
+   - Accept `{ latitude, longitude, accuracy, timestamp }`.
+   - Verify the caller is an authenticated employee via `supabase.auth.getUser()`.
+   - Upsert the `employee_locations` row.
+   - Returns generic success/error messages (no sensitive details).
+   - This keeps location writes behind server-side validation and makes future mobile plugins easier to integrate.
 
-## 5. Admin & business-intelligence gaps
+6. **Update the admin GPS page to remove mock-data fallback**
+   - `useEmployeeLocations` should show an empty state when no locations exist instead of generating fake Boston coordinates.
+   - Keep real-time Supabase channel subscription.
 
-- **No churn dashboard** — no MRR, churn %, LTV, CAC anywhere in admin analytics.
-- **No cohort retention view** — critical for a subscription business.
-- **No route profitability report** — which ZIPs/routes lose money.
-- **No employee performance scorecards** — completions/hour, complaint rate, on-time %.
-- **No automated invoicing for HOA / commercial** — HOA landing page exists but no B2B invoice flow (net-30, PO numbers, multi-property billing).
+7. **Add privacy/consent UI**
+   - Short notice on the employee dashboard: "Your location is tracked only while you are clocked in."
+   - Link to the existing privacy/terms content.
 
-## 6. Technical / platform gaps
+8. **Prepare the Capacitor path (no-op for now)**
+   - Document the exact background-geolocation plugin to install later (`@capacitor-community/background-geolocation`).
+   - Keep the web service interface identical so switching to company phones later is a drop-in replacement.
 
-- **Stripe webhook** (repeat — it belongs here too).
-- **No email deliverability setup** — no custom domain for transactional email = magic links land in spam.
-- **PWA / installability** — you have Capacitor for native but no PWA manifest for "add to home screen" on the web.
-- **No error monitoring beyond diagnostics panel** — Sentry or equivalent for production error tracking with alerting.
-- **No uptime monitoring / status page**.
-- **No automated database backups verification** — Supabase does backups; no restore drill documented.
-- **No rate limiting on quote endpoint** — someone can spam `instant-quote-checkout` and rack up Stripe API cost.
-- **Accessibility audit not done** — no lighthouse-a11y CI gate.
+## Technical Details
 
-## My recommendation — top 5 to build next, in order
+- **Tracking interval**: 30 seconds while clocked in; high-accuracy snapshot on clock events.
+- **Battery strategy**: Use `enableHighAccuracy: false` for continuous pings; `enableHighAccuracy: true` only for clock-in/out.
+- **Table writes**: Upsert on `employee_id` so each employee has exactly one live row.
+- **Cleanup**: Existing `cleanup_old_employee_locations()` already anonymizes after 7 days and deletes after 30 days.
+- **Security**: Location data is high-risk PII; keep audit triggers, restrict reads to admins/self, and never return employee locations to customers.
 
-1. **Stripe webhook** (15 min once you paste the secret) — closes the payment loop.
-2. **Customer service calendar + skip-a-week + vacation hold** — kills the biggest support-ticket category.
-3. **SMS notifications + service-completion photo email** — the single biggest driver of retention and reviews for this industry.
-4. **Referral program** ($20/$20) — cheapest acquisition channel you'll ever have.
-5. **Churn / MRR / LTV admin dashboard** — you can't improve what you don't measure.
+## Limitations on Personal Phones
 
-## What I need from you
+- Browser geolocation only works while the employee has the app open in an active tab. If they lock the phone or switch apps, updates stop.
+- For true background tracking on company phones, the Capacitor build will need `@capacitor-community/background-geolocation` and additional native permissions. This plan keeps that as a future, plug-compatible upgrade.
 
-Tell me which of these to build (numbers, names, or "top 5"), and for anything ambiguous I'll ask one follow-up before starting.
+## Files to Touch
+- `src/hooks/useEmployeeLocationTracking.ts` (new)
+- `src/components/employee/TimeTracker.tsx`
+- `src/components/employee/dashboard/DashboardContent.tsx`
+- `src/components/employee/dashboard/DashboardHeader.tsx` or a new `LocationPermissionCard.tsx`
+- `src/components/admin/dashboard/hooks/useEmployeeLocations.ts`
+- `supabase/functions/record-location/index.ts` (new)
+- `supabase/config.toml` (register new function)
+- Database migration for `employee_locations` RLS refresh
