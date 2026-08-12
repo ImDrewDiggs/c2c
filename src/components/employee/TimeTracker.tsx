@@ -209,46 +209,6 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
     }
   };
 
-  const clockOutWithoutLocation = async () => {
-    if (!currentSession) return;
-    
-    try {
-      const clockOutTime = new Date().toISOString();
-      const clockInTime = new Date(currentSession.clock_in_time);
-      const clockOut = new Date(clockOutTime);
-      
-      // Calculate total hours with 0.01 precision
-      const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
-      const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
-      
-      const { error } = await supabase
-        .from('work_sessions')
-        .update({ 
-          clock_out_time: clockOutTime,
-          total_hours: totalHours,
-          status: 'completed'
-        })
-        .eq('id', currentSession.id);
-        
-      if (error) throw error;
-      
-      setCurrentSession(null);
-      setIsWorking(false);
-      toast({
-        title: "Clocked Out",
-        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
-      });
-      
-      await fetchWorkSessions();
-    } catch (error) {
-      console.error('Error clocking out without location:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to clock out. Please try again."
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
