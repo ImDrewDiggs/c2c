@@ -4,108 +4,55 @@ import { supabase } from "@/integrations/supabase/client";
 import { EmployeeLocation } from "@/types/map";
 import { EmployeeLocationRow } from "@/lib/supabase-types";
 
+const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
- * Hook to fetch and subscribe to employee locations
- * Returns employee locations and active employee count
+ * Hook to fetch and subscribe to employee locations.
+ *
+ * - Reads live rows from employee_locations.
+ * - Marks employees as offline if their last_seen_at is older than 5 minutes.
+ * - Sets up a realtime subscription so the admin dashboard updates as locations arrive.
  */
 export function useEmployeeLocations() {
   const [employeeLocations, setEmployeeLocations] = useState<EmployeeLocation[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<number>(0);
 
-  /**
-   * Safe fetch employee locations function
-   * Fetches current employee locations from Supabase and handles errors
-   */
+  const normalizeLocations = useCallback((locations: EmployeeLocationRow[]): EmployeeLocation[] => {
+    const now = Date.now();
+
+    return locations.map((loc) => {
+      const lastSeenMs = loc.last_seen_at ? new Date(loc.last_seen_at).getTime() : 0;
+      const isFresh = now - lastSeenMs < OFFLINE_THRESHOLD_MS;
+
+      return {
+        employee_id: loc.employee_id,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        timestamp: loc.timestamp,
+        is_online: loc.is_online && isFresh,
+        last_seen_at: loc.last_seen_at,
+      };
+    });
+  }, []);
+
   const fetchEmployeeLocations = useCallback(async () => {
     try {
       const { data: locations, error } = await supabase
         .from('employee_locations')
         .select('*') as { data: EmployeeLocationRow[] | null, error: any };
-      
-      if (!error && locations && locations.length > 0) {
-        console.log("Employee locations loaded from database:", locations.length);
-        
-        const mappedLocations: EmployeeLocation[] = locations.map(loc => ({
-          employee_id: loc.employee_id,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          timestamp: loc.timestamp,
-          is_online: loc.is_online,
-          last_seen_at: loc.last_seen_at
-        }));
-        
-        setEmployeeLocations(mappedLocations);
-        setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
-      } else {
-        // Generate realistic mock data for Boston area if no database data
-        console.log("Using mock employee location data");
-        const mockLocations: EmployeeLocation[] = [
-          {
-            employee_id: "750e8400-e29b-41d4-a716-446655440000",
-            latitude: 42.3601,
-            longitude: -71.0589,
-            timestamp: new Date().toISOString(),
-            is_online: true,
-            last_seen_at: new Date().toISOString()
-          },
-          {
-            employee_id: "750e8400-e29b-41d4-a716-446655440001",
-            latitude: 42.3475,
-            longitude: -71.0972,
-            timestamp: new Date().toISOString(),
-            is_online: true,
-            last_seen_at: new Date().toISOString()
-          },
-          {
-            employee_id: "750e8400-e29b-41d4-a716-446655440002",
-            latitude: 42.3736,
-            longitude: -71.1097,
-            timestamp: new Date().toISOString(),
-            is_online: true,
-            last_seen_at: new Date().toISOString()
-          },
-          {
-            employee_id: "750e8400-e29b-41d4-a716-446655440003",
-            latitude: 42.3523,
-            longitude: -71.0748,
-            timestamp: new Date().toISOString(),
-            is_online: true,
-            last_seen_at: new Date().toISOString()
-          },
-          {
-            employee_id: "750e8400-e29b-41d4-a716-446655440004",
-            latitude: 42.3412,
-            longitude: -71.1212,
-            timestamp: new Date().toISOString(),
-            is_online: false,
-            last_seen_at: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-          },
-          {
-            employee_id: "750e8400-e29b-41d4-a716-446655440005",
-            latitude: 42.3502,
-            longitude: -71.0652,
-            timestamp: new Date().toISOString(),
-            is_online: true,
-            last_seen_at: new Date().toISOString()
-          },
-        ];
-        
-        setEmployeeLocations(mockLocations);
-        setActiveEmployees(mockLocations.filter(loc => loc.is_online).length);
-      }
+
+      if (error) throw error;
+
+      const mappedLocations = normalizeLocations(locations || []);
+      setEmployeeLocations(mappedLocations);
+      setActiveEmployees(mappedLocations.filter(loc => loc.is_online).length);
     } catch (error) {
       console.error("Error fetching employee locations:", error);
-      // Ensure we set a default value even on error
-      if (employeeLocations.length === 0) {
-        setEmployeeLocations([]);
-      }
+      setEmployeeLocations([]);
+      setActiveEmployees(0);
     }
-  }, [employeeLocations.length]);
+  }, [normalizeLocations]);
 
-  /**
-   * Fetch employee locations and set up real-time listener
-   * Uses Supabase realtime to update employee locations when they change
-   */
   useEffect(() => {
     fetchEmployeeLocations();
 
