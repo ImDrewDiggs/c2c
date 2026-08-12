@@ -83,55 +83,9 @@ function AutoCenter({ currentLocation }: { currentLocation: Location | null }) {
 
 
 export default function Map({ houses, assignments, currentLocation, employeeLocations = [] }: MapProps) {
-  const { user, userData } = useAuth();
+  const { userData } = useAuth();
   const mapRef = useRef<L.Map | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Update employee location in real-time
-  const updateLocation = async (userId: string, location: Location) => {
-    if (!userId || !location) return;
-    
-    const locationData = {
-      employee_id: userId,
-      latitude: location.latitude,
-      longitude: location.longitude,
-      timestamp: new Date().toISOString(),
-      is_online: true,
-      last_seen_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from('employee_locations')
-      .upsert(locationData, { 
-        onConflict: 'employee_id',
-        ignoreDuplicates: false 
-      });
-
-    if (error) {
-      console.error('Error updating location:', error);
-    } else {
-      console.log('Location updated successfully');
-    }
-  };
-
-  useEffect(() => {
-    if (!user || !currentLocation || userData?.role !== 'employee') return;
-
-    const updateEmployeeLocation = async () => {
-      await updateLocation(user.id, currentLocation);
-    };
-
-    updateEmployeeLocation();
-    
-    // Set up interval to update location regularly
-    const intervalId = setInterval(() => {
-      if (user && currentLocation) {
-        updateEmployeeLocation();
-      }
-    }, 30000); // Update every 30 seconds
-    
-    return () => clearInterval(intervalId);
-  }, [currentLocation, user, userData]);
 
   if (!currentLocation) {
     return <div>Loading map...</div>;
