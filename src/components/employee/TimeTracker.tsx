@@ -203,41 +203,49 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
     if (!currentSession) return;
 
     try {
-      // Get current location for clock-out
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const clockOutTime = new Date().toISOString();
-        const clockInTime = new Date(currentSession.clock_in_time);
-        const clockOut = new Date(clockOutTime);
-        
-        // Calculate total hours with 0.01 precision
-        const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
-        const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+      // Capture high-accuracy location snapshot before clocking out
+      const location = await captureSnapshot();
 
-        const { error } = await supabase
-          .from('work_sessions')
-          .update({
-            clock_out_time: clockOutTime,
-            clock_out_location_lat: position.coords.latitude,
-            clock_out_location_lng: position.coords.longitude,
-            total_hours: totalHours,
-            status: 'completed'
-          })
-          .eq('id', currentSession.id);
+      const clockOutTime = new Date().toISOString();
+      const clockInTime = new Date(currentSession.clock_in_time);
+      const clockOut = new Date(clockOutTime);
 
-        if (error) throw error;
+      // Calculate total hours with 0.01 precision
+      const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
+      const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
 
-        setCurrentSession(null);
-        setIsWorking(false);
-        toast({
-          title: "Clocked Out",
-          description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
-        });
-        
-        await fetchWorkSessions();
-      }, (error) => {
-        // Clock out without location if geolocation fails
-        clockOutWithoutLocation();
+      const updatePayload: {
+        clock_out_time: string;
+        total_hours: number;
+        status: 'completed';
+        clock_out_location_lat?: number;
+        clock_out_location_lng?: number;
+      } = {
+        clock_out_time: clockOutTime,
+        total_hours: totalHours,
+        status: 'completed',
+      };
+
+      if (location) {
+        updatePayload.clock_out_location_lat = location.latitude;
+        updatePayload.clock_out_location_lng = location.longitude;
+      }
+
+      const { error } = await supabase
+        .from('work_sessions')
+        .update(updatePayload)
+        .eq('id', currentSession.id);
+
+      if (error) throw error;
+
+      setCurrentSession(null);
+      setIsWorking(false);
+      toast({
+        title: "Clocked Out",
+        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`,
       });
+
+      await fetchWorkSessions();
     } catch (error) {
       console.error('Error clocking out:', error);
       toast({
