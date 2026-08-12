@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Play, Square, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useEmployeeLocationTracking } from "@/hooks/useEmployeeLocationTracking";
 import { format } from "date-fns";
 
 interface TimeTrackerProps {
