@@ -3,9 +3,11 @@ import { TimeTracker } from "@/components/employee/TimeTracker";
 import { TimeCard } from "@/components/employee/TimeCard";
 import { RouteOptimizer } from "@/components/employee/RouteOptimizer";
 import { FieldWorkerGroups } from "./FieldWorkerGroups";
+import { LocationPermissionCard } from "./LocationPermissionCard";
 import { Assignment, Location } from "@/types/map";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEmployeeLocationTracking } from "@/hooks/useEmployeeLocationTracking";
 
 interface DashboardContentProps {
   activeTab: string;
