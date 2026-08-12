@@ -27,6 +27,7 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   const [sessions, setSessions] = useState<WorkSession[]>([]);
   const [totalHours, setTotalHours] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { captureSnapshot, isTracking, permissionState, lastError } = useEmployeeLocationTracking(userId);
 
   useEffect(() => {
     fetchWorkSessions();
