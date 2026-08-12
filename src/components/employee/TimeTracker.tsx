@@ -110,7 +110,12 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       // Capture high-accuracy location snapshot before clocking in
       const location = await captureSnapshot();
 
-      const insertPayload: Record<string, unknown> = {
+      const insertPayload: {
+        employee_id: string;
+        status: 'active';
+        clock_in_location_lat?: number;
+        clock_in_location_lng?: number;
+      } = {
         employee_id: userId,
         status: 'active',
       };
