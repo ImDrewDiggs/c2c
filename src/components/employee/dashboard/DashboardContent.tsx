@@ -29,6 +29,7 @@ export function DashboardContent({
   userId
 }: DashboardContentProps) {
   const { toast } = useToast();
+  const { isTracking, permissionState, lastError } = useEmployeeLocationTracking(userId);
 
   const handleViewRoute = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
