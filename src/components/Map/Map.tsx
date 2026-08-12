@@ -239,7 +239,6 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
         })}
 
         <AutoCenter currentLocation={currentLocation} />
-        <LocationTracker />
       </MapContainer>
     </div>
   );
