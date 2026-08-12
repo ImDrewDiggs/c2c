@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.send-abandoned-quote-reminders]
 verify_jwt = false
+
+[functions.record-location]
+verify_jwt = true

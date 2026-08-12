@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useMemo, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -12,6 +12,7 @@ import { ContentSecurityPolicy } from "@/components/admin/security/ContentSecuri
 import { sessionManager } from "@/utils/sessionManager";
 import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
+import Maintenance from './pages/Maintenance';
 
 // Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
@@ -29,7 +30,6 @@ const FAQ = lazy(() => import('./pages/FAQ'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutError = lazy(() => import('./pages/CheckoutError'));
-const Maintenance = lazy(() => import('./pages/Maintenance'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Auth routes - only load when needed
@@ -75,18 +75,19 @@ const HOA = lazy(() => import('./pages/niche/HOA'));
 const Airbnb = lazy(() => import('./pages/niche/Airbnb'));
 const Seniors = lazy(() => import('./pages/niche/Seniors'));
 
-const App = () => {
-  // Create memoized QueryClient to prevent unnecessary re-instantiation
-  const queryClient = useMemo(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchOnWindowFocus: false,
-        retry: 1,
-        networkMode: 'online',
-      },
+// Module-level QueryClient prevents re-instantiation across renders and avoids hook issues
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+      networkMode: 'online',
     },
-  }), []);
+  },
+});
+
+const App = () => {
 
   useEffect(() => {
     // Initialize session management and security monitoring

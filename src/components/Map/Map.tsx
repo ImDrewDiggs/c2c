@@ -5,7 +5,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { House, Location, Assignment, EmployeeLocation } from '@/types/map';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 // Fix Leaflet default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -81,124 +80,11 @@ function AutoCenter({ currentLocation }: { currentLocation: Location | null }) {
   return null;
 }
 
-// Real-time location tracking
-function LocationTracker() {
-  const map = useMap();
-  const { user, userData } = useAuth();
-  const watchId = useRef<number | null>(null);
-  
-  useEffect(() => {
-    if (!user) return;
-    
-    // Only track location for employees and admins
-    if (userData?.role !== 'employee' && userData?.role !== 'admin') return;
-    
-    // Update location every 15 seconds
-    const updateInterval = setInterval(async () => {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            
-            // Update Supabase with current location
-            if (userData?.role === 'employee') {
-              try {
-                const locationData = {
-                  employee_id: user.id,
-                  latitude: latitude,
-                  longitude: longitude,
-                  timestamp: new Date().toISOString(),
-                  is_online: true,
-                  last_seen_at: new Date().toISOString(),
-                };
-                
-                const { error } = await supabase
-                  .from('employee_locations')
-                  .upsert(locationData, { 
-                    onConflict: 'employee_id',
-                    ignoreDuplicates: false 
-                  });
-                
-                if (error) {
-                  console.error('Error updating location:', error);
-                } else {
-                  console.log('Location updated successfully');
-                }
-              } catch (error) {
-                console.error('Error in location tracking:', error);
-              }
-            }
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-          },
-          { enableHighAccuracy: true }
-        );
-      }
-    }, 15000);
-    
-    return () => {
-      clearInterval(updateInterval);
-      if (watchId.current !== null) {
-        navigator.geolocation.clearWatch(watchId.current);
-      }
-    };
-  }, [user, userData]);
-  
-  return null;
-}
 
 export default function Map({ houses, assignments, currentLocation, employeeLocations = [] }: MapProps) {
-  const { user, userData } = useAuth();
+  const { userData } = useAuth();
   const mapRef = useRef<L.Map | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Update employee location in real-time
-  const updateLocation = async (userId: string, location: Location) => {
-    if (!userId || !location) return;
-    
-    const locationData = {
-      employee_id: userId,
-      latitude: location.latitude,
-      longitude: location.longitude,
-      timestamp: new Date().toISOString(),
-      is_online: true,
-      last_seen_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from('employee_locations')
-      .upsert(locationData, { 
-        onConflict: 'employee_id',
-        ignoreDuplicates: false 
-      });
-
-    if (error) {
-      console.error('Error updating location:', error);
-    } else {
-      console.log('Location updated successfully');
-    }
-  };
-
-  useEffect(() => {
-    if (!user || !currentLocation || userData?.role !== 'employee') return;
-
-    const updateEmployeeLocation = async () => {
-      await updateLocation(user.id, currentLocation);
-    };
-
-    updateEmployeeLocation();
-    
-    // Set up interval to update location regularly
-    const intervalId = setInterval(() => {
-      if (user && currentLocation) {
-        updateEmployeeLocation();
-      }
-    }, 30000); // Update every 30 seconds
-    
-    return () => clearInterval(intervalId);
-  }, [currentLocation, user, userData]);
 
   if (!currentLocation) {
     return <div>Loading map...</div>;
@@ -306,7 +192,6 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
         })}
 
         <AutoCenter currentLocation={currentLocation} />
-        <LocationTracker />
       </MapContainer>
     </div>
   );

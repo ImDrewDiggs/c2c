@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Play, Square, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useEmployeeLocationTracking } from "@/hooks/useEmployeeLocationTracking";
 import { format } from "date-fns";
 
 interface TimeTrackerProps {
@@ -26,6 +27,7 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   const [sessions, setSessions] = useState<WorkSession[]>([]);
   const [totalHours, setTotalHours] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { captureSnapshot, isTracking, permissionState, lastError } = useEmployeeLocationTracking(userId);
 
   useEffect(() => {
     fetchWorkSessions();
@@ -105,30 +107,39 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
         return;
       }
 
-      // Get current location for clock-in
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { data, error } = await supabase
-          .from('work_sessions')
-          .insert({
-            employee_id: userId,
-            clock_in_location_lat: position.coords.latitude,
-            clock_in_location_lng: position.coords.longitude,
-            status: 'active'
-          })
-          .select()
-          .single();
+      // Capture high-accuracy location snapshot before clocking in
+      const location = await captureSnapshot();
 
-        if (error) throw error;
+      const insertPayload: {
+        employee_id: string;
+        status: 'active';
+        clock_in_location_lat?: number;
+        clock_in_location_lng?: number;
+      } = {
+        employee_id: userId,
+        status: 'active',
+      };
 
-        setCurrentSession(data);
-        setIsWorking(true);
-        toast({
-          title: "Clocked In",
-          description: "Your work session has started successfully.",
-        });
-      }, (error) => {
-        // Clock in without location if geolocation fails
-        clockInWithoutLocation();
+      if (location) {
+        insertPayload.clock_in_location_lat = location.latitude;
+        insertPayload.clock_in_location_lng = location.longitude;
+      }
+
+      const { data, error } = await supabase
+        .from('work_sessions')
+        .insert(insertPayload)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCurrentSession(data);
+      setIsWorking(true);
+      toast({
+        title: "Clocked In",
+        description: location
+          ? "Your work session has started and your location was recorded."
+          : "Your work session has started successfully.",
       });
     } catch (error) {
       console.error('Error clocking in:', error);
@@ -140,93 +151,54 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
     }
   };
 
-  const clockInWithoutLocation = async () => {
-    try {
-      // Check for existing active session first
-      const { data: existingSession } = await supabase
-        .from('work_sessions')
-        .select('*')
-        .eq('employee_id', userId)
-        .eq('status', 'active')
-        .limit(1);
-
-      if (existingSession && existingSession.length > 0) {
-        toast({
-          variant: "destructive",
-          title: "Already Clocked In",
-          description: "You already have an active work session.",
-        });
-        setCurrentSession(existingSession[0]);
-        setIsWorking(true);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('work_sessions')
-        .insert({
-          employee_id: userId,
-          status: 'active'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCurrentSession(data);
-      setIsWorking(true);
-      toast({
-        title: "Clocked In",
-        description: "Your work session has started successfully.",
-      });
-    } catch (error) {
-      console.error('Error clocking in without location:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to clock in. Please try again.",
-      });
-    }
-  };
 
   const handleClockOut = async () => {
     if (!currentSession) return;
 
     try {
-      // Get current location for clock-out
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const clockOutTime = new Date().toISOString();
-        const clockInTime = new Date(currentSession.clock_in_time);
-        const clockOut = new Date(clockOutTime);
-        
-        // Calculate total hours with 0.01 precision
-        const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
-        const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+      // Capture high-accuracy location snapshot before clocking out
+      const location = await captureSnapshot();
 
-        const { error } = await supabase
-          .from('work_sessions')
-          .update({
-            clock_out_time: clockOutTime,
-            clock_out_location_lat: position.coords.latitude,
-            clock_out_location_lng: position.coords.longitude,
-            total_hours: totalHours,
-            status: 'completed'
-          })
-          .eq('id', currentSession.id);
+      const clockOutTime = new Date().toISOString();
+      const clockInTime = new Date(currentSession.clock_in_time);
+      const clockOut = new Date(clockOutTime);
 
-        if (error) throw error;
+      // Calculate total hours with 0.01 precision
+      const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
+      const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
 
-        setCurrentSession(null);
-        setIsWorking(false);
-        toast({
-          title: "Clocked Out",
-          description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
-        });
-        
-        await fetchWorkSessions();
-      }, (error) => {
-        // Clock out without location if geolocation fails
-        clockOutWithoutLocation();
+      const updatePayload: {
+        clock_out_time: string;
+        total_hours: number;
+        status: 'completed';
+        clock_out_location_lat?: number;
+        clock_out_location_lng?: number;
+      } = {
+        clock_out_time: clockOutTime,
+        total_hours: totalHours,
+        status: 'completed',
+      };
+
+      if (location) {
+        updatePayload.clock_out_location_lat = location.latitude;
+        updatePayload.clock_out_location_lng = location.longitude;
+      }
+
+      const { error } = await supabase
+        .from('work_sessions')
+        .update(updatePayload)
+        .eq('id', currentSession.id);
+
+      if (error) throw error;
+
+      setCurrentSession(null);
+      setIsWorking(false);
+      toast({
+        title: "Clocked Out",
+        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`,
       });
+
+      await fetchWorkSessions();
     } catch (error) {
       console.error('Error clocking out:', error);
       toast({
@@ -237,46 +209,6 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
     }
   };
 
-  const clockOutWithoutLocation = async () => {
-    if (!currentSession) return;
-    
-    try {
-      const clockOutTime = new Date().toISOString();
-      const clockInTime = new Date(currentSession.clock_in_time);
-      const clockOut = new Date(clockOutTime);
-      
-      // Calculate total hours with 0.01 precision
-      const totalMinutes = (clockOut.getTime() - clockInTime.getTime()) / (1000 * 60);
-      const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
-      
-      const { error } = await supabase
-        .from('work_sessions')
-        .update({ 
-          clock_out_time: clockOutTime,
-          total_hours: totalHours,
-          status: 'completed'
-        })
-        .eq('id', currentSession.id);
-        
-      if (error) throw error;
-      
-      setCurrentSession(null);
-      setIsWorking(false);
-      toast({
-        title: "Clocked Out",
-        description: `Session completed: ${totalHours.toFixed(2)} hours recorded`
-      });
-      
-      await fetchWorkSessions();
-    } catch (error) {
-      console.error('Error clocking out without location:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to clock out. Please try again."
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -331,7 +263,7 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
               <div className="flex items-center justify-center mb-2">
                 <div 
                   className={`w-16 h-16 rounded-full ${
-                    isWorking ? 'bg-green-500' : 'bg-red-500'
+                    isWorking ? 'bg-primary' : 'bg-muted-foreground/40'
                   }`}
                 />
               </div>
