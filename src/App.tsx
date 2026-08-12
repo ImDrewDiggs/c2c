@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useMemo, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
