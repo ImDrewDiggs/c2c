@@ -263,7 +263,7 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
               <div className="flex items-center justify-center mb-2">
                 <div 
                   className={`w-16 h-16 rounded-full ${
-                    isWorking ? 'bg-green-500' : 'bg-red-500'
+                    isWorking ? 'bg-primary' : 'bg-muted-foreground/40'
                   }`}
                 />
               </div>
