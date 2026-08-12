@@ -83,6 +83,13 @@ export function DashboardContent({
 
   return (
     <div className="space-y-6">
+      {/* Location permission onboarding and status */}
+      <LocationPermissionCard
+        permissionState={permissionState}
+        isTracking={isTracking}
+        error={lastError}
+      />
+
       {/* Field Worker Groups - Primary Interface */}
       <FieldWorkerGroups
         assignments={assignments}
