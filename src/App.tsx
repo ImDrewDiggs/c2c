@@ -75,18 +75,19 @@ const HOA = lazy(() => import('./pages/niche/HOA'));
 const Airbnb = lazy(() => import('./pages/niche/Airbnb'));
 const Seniors = lazy(() => import('./pages/niche/Seniors'));
 
-const App = () => {
-  // Create memoized QueryClient to prevent unnecessary re-instantiation
-  const queryClient = useMemo(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchOnWindowFocus: false,
-        retry: 1,
-        networkMode: 'online',
-      },
+// Module-level QueryClient prevents re-instantiation across renders and avoids hook issues
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+      networkMode: 'online',
     },
-  }), []);
+  },
+});
+
+const App = () => {
 
   useEffect(() => {
     // Initialize session management and security monitoring
