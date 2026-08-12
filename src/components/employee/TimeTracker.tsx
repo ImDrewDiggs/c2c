@@ -107,30 +107,34 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
         return;
       }
 
-      // Get current location for clock-in
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { data, error } = await supabase
-          .from('work_sessions')
-          .insert({
-            employee_id: userId,
-            clock_in_location_lat: position.coords.latitude,
-            clock_in_location_lng: position.coords.longitude,
-            status: 'active'
-          })
-          .select()
-          .single();
+      // Capture high-accuracy location snapshot before clocking in
+      const location = await captureSnapshot();
 
-        if (error) throw error;
+      const insertPayload: Record<string, unknown> = {
+        employee_id: userId,
+        status: 'active',
+      };
 
-        setCurrentSession(data);
-        setIsWorking(true);
-        toast({
-          title: "Clocked In",
-          description: "Your work session has started successfully.",
-        });
-      }, (error) => {
-        // Clock in without location if geolocation fails
-        clockInWithoutLocation();
+      if (location) {
+        insertPayload.clock_in_location_lat = location.latitude;
+        insertPayload.clock_in_location_lng = location.longitude;
+      }
+
+      const { data, error } = await supabase
+        .from('work_sessions')
+        .insert(insertPayload)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCurrentSession(data);
+      setIsWorking(true);
+      toast({
+        title: "Clocked In",
+        description: location
+          ? "Your work session has started and your location was recorded."
+          : "Your work session has started successfully.",
       });
     } catch (error) {
       console.error('Error clocking in:', error);
