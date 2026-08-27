@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, MapPin, Calendar, Trash2, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, MapPin, Calendar, Trash2, Loader2, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,16 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-// Mirrors the server-side ladder so the user sees the same price.
-// Server is authoritative — this is for display only.
-const PRICE_LADDER: Record<number, { tier: string; price: number }> = {
-  1: { tier: "Basic", price: 24.99 },
-  2: { tier: "Standard", price: 49.99 },
-  3: { tier: "Premium", price: 79.99 },
-  4: { tier: "Comprehensive", price: 119.99 },
-  5: { tier: "Elite", price: 169.99 },
-};
+import {
+  QUOTE_PLANS,
+  MAX_CANS,
+  calculateQuotePrice,
+  type QuotePlanId,
+} from "@/lib/quotePricing";
 
 const ZIP_DAYS: Record<string, string> = {
   "45202": "monday", "45203": "monday", "45204": "tuesday", "45205": "tuesday",
@@ -36,12 +32,8 @@ const ZIP_DAYS: Record<string, string> = {
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
 
-const priceFor = (cans: number, recycle: boolean) => {
-  const effective = Math.max(1, Math.min(5, (recycle ? cans + 1 : cans)));
-  return PRICE_LADDER[effective];
-};
-
-type Step = 0 | 1 | 2 | 3;
+type Step = 0 | 1 | 2 | 3 | 4;
+const LAST_STEP: Step = 4;
 
 export default function InstantQuoteFlow() {
   const { toast } = useToast();
@@ -53,6 +45,7 @@ export default function InstantQuoteFlow() {
   const [state, setState] = useState("OH");
   const [zip, setZip] = useState("");
   const [trashDay, setTrashDay] = useState<string>("");
+  const [planId, setPlanId] = useState<QuotePlanId>("basic");
   const [cans, setCans] = useState<number>(1);
   const [recycle, setRecycle] = useState(false);
   const [email, setEmail] = useState("");
@@ -61,7 +54,10 @@ export default function InstantQuoteFlow() {
   const saveTimer = useRef<number | null>(null);
 
   const detectedDay = useMemo(() => (zip.length === 5 ? ZIP_DAYS[zip] || "" : ""), [zip]);
-  const { tier, price } = priceFor(cans, recycle);
+  const breakdown = useMemo(() => calculateQuotePrice(planId, cans, recycle), [planId, cans, recycle]);
+  const plan = breakdown.plan;
+  const tier = plan.name;
+  const price = breakdown.total;
 
   // Hydrate from ?resume=TOKEN or localStorage
   useEffect(() => {
@@ -93,9 +89,10 @@ export default function InstantQuoteFlow() {
           if (quote.zip) setZip(quote.zip);
           if (quote.trash_day) setTrashDay(quote.trash_day);
           if (typeof quote.cans === "number") setCans(quote.cans);
+          if (typeof quote.plan_id === "string") setPlanId(quote.plan_id as QuotePlanId);
           if (typeof quote.recycle === "boolean") setRecycle(quote.recycle);
           if (quote.email) setEmail(quote.email);
-          if (typeof quote.step === "number") setStep(Math.max(0, Math.min(3, quote.step)) as Step);
+          if (typeof quote.step === "number") setStep(Math.max(0, Math.min(LAST_STEP, quote.step)) as Step);
           if (urlToken) {
             toast({ title: "Welcome back", description: "We loaded where you left off." });
           }
@@ -130,6 +127,7 @@ export default function InstantQuoteFlow() {
             address, city, state, zip,
             trashDay: trashDay || detectedDay,
             cans, recycle,
+            planId,
             email,
             step,
             referralCode,
@@ -146,19 +144,20 @@ export default function InstantQuoteFlow() {
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [address, city, state, zip, trashDay, detectedDay, cans, recycle, email, step, resumeToken]);
+  }, [address, city, state, zip, trashDay, detectedDay, cans, recycle, planId, email, step, resumeToken]);
 
   const stepValid = useMemo(() => {
     if (step === 0) return address.trim().length > 4 && city.trim().length > 1 && /^\d{5}$/.test(zip);
     if (step === 1) return DAYS.includes((trashDay || detectedDay) as typeof DAYS[number]);
-    if (step === 2) return cans >= 1 && cans <= 5;
+    if (step === 2) return QUOTE_PLANS.some((p) => p.id === planId);
+    if (step === 3) return cans >= 1 && cans <= MAX_CANS;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }, [step, address, city, zip, trashDay, detectedDay, cans, email]);
+  }, [step, address, city, zip, trashDay, detectedDay, planId, cans, email]);
 
   const next = () => {
     if (!stepValid) return;
     if (step === 1 && !trashDay) setTrashDay(detectedDay);
-    setStep((s) => (Math.min(3, s + 1) as Step));
+    setStep((s) => (Math.min(LAST_STEP, s + 1) as Step));
   };
   const back = () => setStep((s) => (Math.max(0, s - 1) as Step));
 
@@ -185,6 +184,7 @@ export default function InstantQuoteFlow() {
           zip: zip.trim(),
           email: email.trim().toLowerCase(),
           trashDay: (trashDay || detectedDay).toLowerCase(),
+          planId,
           cans,
           recycle,
           referralCode,
@@ -210,7 +210,7 @@ export default function InstantQuoteFlow() {
       <CardContent className="p-6 md:p-8">
         {/* Progress */}
         <div className="flex items-center gap-2 mb-6" aria-label="Quote progress">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
@@ -295,15 +295,67 @@ export default function InstantQuoteFlow() {
             {step === 2 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
-                  <Trash2 className="w-5 h-5" />
-                  <h2 className="text-xl font-semibold">How many cans?</h2>
+                  <Sparkles className="w-5 h-5" />
+                  <h2 className="text-xl font-semibold">Choose your plan</h2>
                 </div>
-                <div className="flex items-center gap-3">
-                  {[1, 2, 3, 4, 5].map((n) => (
+                <p className="text-sm text-muted-foreground">
+                  Pick the level of service you want — you'll set your can count next.
+                </p>
+                <div className="space-y-2">
+                  {QUOTE_PLANS.map((p) => {
+                    const active = planId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPlanId(p.id)}
+                        aria-pressed={active}
+                        className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                          active
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-background hover:border-primary/60"
+                        }`}
+                      >
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className={`font-semibold ${active ? "text-primary" : ""}`}>{p.name}</span>
+                          <span className="text-sm">
+                            <span className="font-bold">${p.basePrice.toFixed(2)}</span>
+                            <span className="text-muted-foreground">/mo</span>
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Includes {p.includedCans} can{p.includedCans > 1 ? "s" : ""}
+                          {p.recycleIncluded ? " + recycle" : ""} · ${p.extraCanPrice.toFixed(2)}/mo per extra can
+                        </div>
+                        <ul className="mt-2 space-y-0.5">
+                          {p.highlights.map((h) => (
+                            <li key={h} className="text-xs text-muted-foreground">• {h}</li>
+                          ))}
+                        </ul>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <div className="flex items-center gap-2 text-primary">
+                  <Trash2 className="w-5 h-5" />
+                  <h2 className="text-xl font-semibold">How many cans do you have?</h2>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Your {plan.name} plan includes {plan.includedCans} can{plan.includedCans > 1 ? "s" : ""}. Extra cans are
+                  ${plan.extraCanPrice.toFixed(2)}/mo each.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {Array.from({ length: MAX_CANS }, (_, i) => i + 1).map((n) => (
                     <button
                       key={n}
                       type="button"
                       onClick={() => setCans(n)}
+                      aria-pressed={cans === n}
                       className={`w-12 h-12 rounded-md border font-semibold transition-colors ${
                         cans === n
                           ? "bg-primary text-primary-foreground border-primary"
@@ -314,27 +366,46 @@ export default function InstantQuoteFlow() {
                     </button>
                   ))}
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer pt-2">
-                  <Checkbox checked={recycle} onCheckedChange={(v) => setRecycle(!!v)} />
-                  <span className="text-sm">Add recycle bin pickup (+$ tier bump)</span>
-                </label>
+                {!plan.recycleIncluded && (
+                  <label className="flex items-center gap-2 cursor-pointer pt-2">
+                    <Checkbox checked={recycle} onCheckedChange={(v) => setRecycle(!!v)} />
+                    <span className="text-sm">
+                      Add recycle bin pickup (+${plan.recycleAddOn.toFixed(2)}/mo)
+                    </span>
+                  </label>
+                )}
+                {plan.recycleIncluded && (
+                  <p className="text-sm text-muted-foreground pt-1">Recycle bin pickup is included in {plan.name}.</p>
+                )}
 
-                <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/30">
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Your plan</div>
-                      <div className="text-lg font-semibold text-primary">{tier}</div>
+                <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{plan.name} base</span>
+                    <span>${plan.basePrice.toFixed(2)}</span>
+                  </div>
+                  {breakdown.extraCans > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {breakdown.extraCans} extra can{breakdown.extraCans > 1 ? "s" : ""} × ${plan.extraCanPrice.toFixed(2)}
+                      </span>
+                      <span>${breakdown.extraCansCost.toFixed(2)}</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold">${price.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground">/month</div>
+                  )}
+                  {breakdown.recycleCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Recycle bin</span>
+                      <span>${breakdown.recycleCost.toFixed(2)}</span>
                     </div>
+                  )}
+                  <div className="flex items-baseline justify-between border-t border-primary/30 pt-2 mt-2">
+                    <span className="font-semibold">Monthly total</span>
+                    <span className="text-2xl font-bold">${price.toFixed(2)}</span>
                   </div>
                 </div>
               </>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
                   <CheckCircle2 className="w-5 h-5" />
@@ -343,8 +414,14 @@ export default function InstantQuoteFlow() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">Address</span><span className="text-right">{address}, {city}, {state} {zip}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Trash day</span><span className="capitalize">{trashDay || detectedDay}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Cans</span><span>{cans}{recycle ? " + recycle" : ""}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><span className="text-primary font-medium">{tier}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Cans</span><span>{cans}{(recycle || plan.recycleIncluded) ? " + recycle" : ""}</span></div>
+                  {breakdown.extraCans > 0 && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Extra cans</span><span>+${breakdown.extraCansCost.toFixed(2)}</span></div>
+                  )}
+                  {breakdown.recycleCost > 0 && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Recycle bin</span><span>+${breakdown.recycleCost.toFixed(2)}</span></div>
+                  )}
                   <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="font-semibold">Monthly total</span><span className="font-bold">${price.toFixed(2)}</span></div>
                 </div>
                 <div className="pt-2">
@@ -354,6 +431,7 @@ export default function InstantQuoteFlow() {
                 </div>
               </>
             )}
+
           </motion.div>
         </AnimatePresence>
 
@@ -361,7 +439,7 @@ export default function InstantQuoteFlow() {
           <Button type="button" variant="ghost" onClick={back} disabled={step === 0 || submitting}>
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </Button>
-          {step < 3 ? (
+          {step < LAST_STEP ? (
             <Button type="button" onClick={next} disabled={!stepValid}>
               Continue <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
