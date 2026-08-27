@@ -295,15 +295,67 @@ export default function InstantQuoteFlow() {
             {step === 2 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
-                  <Trash2 className="w-5 h-5" />
-                  <h2 className="text-xl font-semibold">How many cans?</h2>
+                  <Sparkles className="w-5 h-5" />
+                  <h2 className="text-xl font-semibold">Choose your plan</h2>
                 </div>
-                <div className="flex items-center gap-3">
-                  {[1, 2, 3, 4, 5].map((n) => (
+                <p className="text-sm text-muted-foreground">
+                  Pick the level of service you want — you'll set your can count next.
+                </p>
+                <div className="space-y-2">
+                  {QUOTE_PLANS.map((p) => {
+                    const active = planId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPlanId(p.id)}
+                        aria-pressed={active}
+                        className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                          active
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-background hover:border-primary/60"
+                        }`}
+                      >
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className={`font-semibold ${active ? "text-primary" : ""}`}>{p.name}</span>
+                          <span className="text-sm">
+                            <span className="font-bold">${p.basePrice.toFixed(2)}</span>
+                            <span className="text-muted-foreground">/mo</span>
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Includes {p.includedCans} can{p.includedCans > 1 ? "s" : ""}
+                          {p.recycleIncluded ? " + recycle" : ""} · ${p.extraCanPrice.toFixed(2)}/mo per extra can
+                        </div>
+                        <ul className="mt-2 space-y-0.5">
+                          {p.highlights.map((h) => (
+                            <li key={h} className="text-xs text-muted-foreground">• {h}</li>
+                          ))}
+                        </ul>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <div className="flex items-center gap-2 text-primary">
+                  <Trash2 className="w-5 h-5" />
+                  <h2 className="text-xl font-semibold">How many cans do you have?</h2>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Your {plan.name} plan includes {plan.includedCans} can{plan.includedCans > 1 ? "s" : ""}. Extra cans are
+                  ${plan.extraCanPrice.toFixed(2)}/mo each.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {Array.from({ length: MAX_CANS }, (_, i) => i + 1).map((n) => (
                     <button
                       key={n}
                       type="button"
                       onClick={() => setCans(n)}
+                      aria-pressed={cans === n}
                       className={`w-12 h-12 rounded-md border font-semibold transition-colors ${
                         cans === n
                           ? "bg-primary text-primary-foreground border-primary"
@@ -314,27 +366,46 @@ export default function InstantQuoteFlow() {
                     </button>
                   ))}
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer pt-2">
-                  <Checkbox checked={recycle} onCheckedChange={(v) => setRecycle(!!v)} />
-                  <span className="text-sm">Add recycle bin pickup (+$ tier bump)</span>
-                </label>
+                {!plan.recycleIncluded && (
+                  <label className="flex items-center gap-2 cursor-pointer pt-2">
+                    <Checkbox checked={recycle} onCheckedChange={(v) => setRecycle(!!v)} />
+                    <span className="text-sm">
+                      Add recycle bin pickup (+${plan.recycleAddOn.toFixed(2)}/mo)
+                    </span>
+                  </label>
+                )}
+                {plan.recycleIncluded && (
+                  <p className="text-sm text-muted-foreground pt-1">Recycle bin pickup is included in {plan.name}.</p>
+                )}
 
-                <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/30">
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Your plan</div>
-                      <div className="text-lg font-semibold text-primary">{tier}</div>
+                <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{plan.name} base</span>
+                    <span>${plan.basePrice.toFixed(2)}</span>
+                  </div>
+                  {breakdown.extraCans > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {breakdown.extraCans} extra can{breakdown.extraCans > 1 ? "s" : ""} × ${plan.extraCanPrice.toFixed(2)}
+                      </span>
+                      <span>${breakdown.extraCansCost.toFixed(2)}</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold">${price.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground">/month</div>
+                  )}
+                  {breakdown.recycleCost > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Recycle bin</span>
+                      <span>${breakdown.recycleCost.toFixed(2)}</span>
                     </div>
+                  )}
+                  <div className="flex items-baseline justify-between border-t border-primary/30 pt-2 mt-2">
+                    <span className="font-semibold">Monthly total</span>
+                    <span className="text-2xl font-bold">${price.toFixed(2)}</span>
                   </div>
                 </div>
               </>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
                   <CheckCircle2 className="w-5 h-5" />
@@ -343,8 +414,14 @@ export default function InstantQuoteFlow() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-muted-foreground">Address</span><span className="text-right">{address}, {city}, {state} {zip}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Trash day</span><span className="capitalize">{trashDay || detectedDay}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Cans</span><span>{cans}{recycle ? " + recycle" : ""}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><span className="text-primary font-medium">{tier}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Cans</span><span>{cans}{(recycle || plan.recycleIncluded) ? " + recycle" : ""}</span></div>
+                  {breakdown.extraCans > 0 && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Extra cans</span><span>+${breakdown.extraCansCost.toFixed(2)}</span></div>
+                  )}
+                  {breakdown.recycleCost > 0 && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Recycle bin</span><span>+${breakdown.recycleCost.toFixed(2)}</span></div>
+                  )}
                   <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="font-semibold">Monthly total</span><span className="font-bold">${price.toFixed(2)}</span></div>
                 </div>
                 <div className="pt-2">
@@ -354,6 +431,7 @@ export default function InstantQuoteFlow() {
                 </div>
               </>
             )}
+
           </motion.div>
         </AnimatePresence>
 
