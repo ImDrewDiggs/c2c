@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, MapPin, Calendar, Trash2, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, MapPin, Calendar, Trash2, Loader2, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,16 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-// Mirrors the server-side ladder so the user sees the same price.
-// Server is authoritative — this is for display only.
-const PRICE_LADDER: Record<number, { tier: string; price: number }> = {
-  1: { tier: "Basic", price: 24.99 },
-  2: { tier: "Standard", price: 49.99 },
-  3: { tier: "Premium", price: 79.99 },
-  4: { tier: "Comprehensive", price: 119.99 },
-  5: { tier: "Elite", price: 169.99 },
-};
+import {
+  QUOTE_PLANS,
+  MAX_CANS,
+  calculateQuotePrice,
+  type QuotePlanId,
+} from "@/lib/quotePricing";
 
 const ZIP_DAYS: Record<string, string> = {
   "45202": "monday", "45203": "monday", "45204": "tuesday", "45205": "tuesday",
@@ -36,12 +32,8 @@ const ZIP_DAYS: Record<string, string> = {
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
 
-const priceFor = (cans: number, recycle: boolean) => {
-  const effective = Math.max(1, Math.min(5, (recycle ? cans + 1 : cans)));
-  return PRICE_LADDER[effective];
-};
-
-type Step = 0 | 1 | 2 | 3;
+type Step = 0 | 1 | 2 | 3 | 4;
+const LAST_STEP: Step = 4;
 
 export default function InstantQuoteFlow() {
   const { toast } = useToast();
@@ -53,6 +45,7 @@ export default function InstantQuoteFlow() {
   const [state, setState] = useState("OH");
   const [zip, setZip] = useState("");
   const [trashDay, setTrashDay] = useState<string>("");
+  const [planId, setPlanId] = useState<QuotePlanId>("basic");
   const [cans, setCans] = useState<number>(1);
   const [recycle, setRecycle] = useState(false);
   const [email, setEmail] = useState("");
@@ -61,7 +54,10 @@ export default function InstantQuoteFlow() {
   const saveTimer = useRef<number | null>(null);
 
   const detectedDay = useMemo(() => (zip.length === 5 ? ZIP_DAYS[zip] || "" : ""), [zip]);
-  const { tier, price } = priceFor(cans, recycle);
+  const breakdown = useMemo(() => calculateQuotePrice(planId, cans, recycle), [planId, cans, recycle]);
+  const plan = breakdown.plan;
+  const tier = plan.name;
+  const price = breakdown.total;
 
   // Hydrate from ?resume=TOKEN or localStorage
   useEffect(() => {
@@ -93,9 +89,10 @@ export default function InstantQuoteFlow() {
           if (quote.zip) setZip(quote.zip);
           if (quote.trash_day) setTrashDay(quote.trash_day);
           if (typeof quote.cans === "number") setCans(quote.cans);
+          if (typeof quote.plan_id === "string") setPlanId(quote.plan_id as QuotePlanId);
           if (typeof quote.recycle === "boolean") setRecycle(quote.recycle);
           if (quote.email) setEmail(quote.email);
-          if (typeof quote.step === "number") setStep(Math.max(0, Math.min(3, quote.step)) as Step);
+          if (typeof quote.step === "number") setStep(Math.max(0, Math.min(LAST_STEP, quote.step)) as Step);
           if (urlToken) {
             toast({ title: "Welcome back", description: "We loaded where you left off." });
           }
@@ -130,6 +127,7 @@ export default function InstantQuoteFlow() {
             address, city, state, zip,
             trashDay: trashDay || detectedDay,
             cans, recycle,
+            planId,
             email,
             step,
             referralCode,
@@ -146,19 +144,20 @@ export default function InstantQuoteFlow() {
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [address, city, state, zip, trashDay, detectedDay, cans, recycle, email, step, resumeToken]);
+  }, [address, city, state, zip, trashDay, detectedDay, cans, recycle, planId, email, step, resumeToken]);
 
   const stepValid = useMemo(() => {
     if (step === 0) return address.trim().length > 4 && city.trim().length > 1 && /^\d{5}$/.test(zip);
     if (step === 1) return DAYS.includes((trashDay || detectedDay) as typeof DAYS[number]);
-    if (step === 2) return cans >= 1 && cans <= 5;
+    if (step === 2) return QUOTE_PLANS.some((p) => p.id === planId);
+    if (step === 3) return cans >= 1 && cans <= MAX_CANS;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }, [step, address, city, zip, trashDay, detectedDay, cans, email]);
+  }, [step, address, city, zip, trashDay, detectedDay, planId, cans, email]);
 
   const next = () => {
     if (!stepValid) return;
     if (step === 1 && !trashDay) setTrashDay(detectedDay);
-    setStep((s) => (Math.min(3, s + 1) as Step));
+    setStep((s) => (Math.min(LAST_STEP, s + 1) as Step));
   };
   const back = () => setStep((s) => (Math.max(0, s - 1) as Step));
 
@@ -185,6 +184,7 @@ export default function InstantQuoteFlow() {
           zip: zip.trim(),
           email: email.trim().toLowerCase(),
           trashDay: (trashDay || detectedDay).toLowerCase(),
+          planId,
           cans,
           recycle,
           referralCode,
@@ -210,7 +210,7 @@ export default function InstantQuoteFlow() {
       <CardContent className="p-6 md:p-8">
         {/* Progress */}
         <div className="flex items-center gap-2 mb-6" aria-label="Quote progress">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
@@ -361,7 +361,7 @@ export default function InstantQuoteFlow() {
           <Button type="button" variant="ghost" onClick={back} disabled={step === 0 || submitting}>
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </Button>
-          {step < 3 ? (
+          {step < LAST_STEP ? (
             <Button type="button" onClick={next} disabled={!stepValid}>
               Continue <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
