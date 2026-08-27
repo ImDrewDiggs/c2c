@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Ensure a single React copy so hooks share one dispatcher
+    dedupe: ["react", "react-dom", "react-router-dom"],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router-dom"],
   },
   build: {
     cssCodeSplit: true, // Enable CSS code splitting to reduce render blocking
