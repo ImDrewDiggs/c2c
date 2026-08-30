@@ -42,7 +42,7 @@ const serviceTypes: ServiceType[] = [
 
 export default function Subscription() {
   const [selectedTab, setSelectedTab] = useState("single-family");
-  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [selectedTiers, setSelectedTiers] = useState<string[]>([]);
   const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
   const [unitCount, setUnitCount] = useState(1);
   const [selectedCommunityTierId, setSelectedCommunityTierId] = useState("basic-community");
