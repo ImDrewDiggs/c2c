@@ -57,10 +57,18 @@ export default function Subscription() {
   const navigate = useNavigate();
 
   const handleServiceTypeSelect = (serviceTypeId: string) => {
-    setSelectedServiceTypes(prev => 
+    setSelectedServiceTypes(prev =>
       prev.includes(serviceTypeId)
         ? prev.filter(id => id !== serviceTypeId)
         : [...prev, serviceTypeId]
+    );
+  };
+
+  const handleTierToggle = (tierId: string) => {
+    setSelectedTiers(prev =>
+      prev.includes(tierId)
+        ? prev.filter(id => id !== tierId)
+        : [...prev, tierId]
     );
   };
 
@@ -101,25 +109,26 @@ export default function Subscription() {
     return total;
   };
 
-  const getSelectedTier = (): ServiceTier | CommunityTier | null => {
-    if (selectedTab === "single-family" && selectedTier) {
-      return singleFamilyTiers.find(tier => tier.id === selectedTier) || null;
+  const getSelectedTiers = (): ServiceTier[] => {
+    if (selectedTab === "single-family") {
+      return singleFamilyTiers.filter(tier => selectedTiers.includes(tier.id));
     }
-    if (selectedTab === "multi-family" && selectedTier) {
-      return multiFamilyTiers.find(tier => tier.id === selectedTier) || null;
+    if (selectedTab === "multi-family") {
+      return multiFamilyTiers.filter(tier => selectedTiers.includes(tier.id)) as unknown as ServiceTier[];
     }
-    return null;
+    return [];
   };
 
   const getBasePrice = (): number => {
-    if (selectedTab === "single-family" && selectedTier) {
-      const tier = singleFamilyTiers.find(t => t.id === selectedTier);
-      return tier?.price || 0;
+    if (selectedTab === "single-family") {
+      return getSelectedTiers().reduce((sum, tier) => sum + (tier.price || 0), 0);
     } else if (selectedTab === "multi-family") {
       return selectedServiceTypes.length * 25; // Simplified calculation
     }
     return 0;
   };
+
+  const hasPlanSelection = selectedTiers.length > 0;
 
   const calculateTotal = (): number => {
     const basePrice = getBasePrice();
