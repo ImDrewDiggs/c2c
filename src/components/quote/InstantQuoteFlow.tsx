@@ -416,29 +416,8 @@ export default function InstantQuoteFlow() {
                   <p className="text-sm text-muted-foreground pt-1">Recycle bin pickup is included in {plan.name}.</p>
                 )}
 
-                <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{plan.name} base</span>
-                    <span>${plan.basePrice.toFixed(2)}</span>
-                  </div>
-                  {breakdown.extraCans > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {breakdown.extraCans} extra can{breakdown.extraCans > 1 ? "s" : ""} × ${plan.extraCanPrice.toFixed(2)}
-                      </span>
-                      <span>${breakdown.extraCansCost.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {breakdown.recycleCost > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Recycle bin</span>
-                      <span>${breakdown.recycleCost.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline justify-between border-t border-primary/30 pt-2 mt-2">
-                    <span className="font-semibold">Monthly total</span>
-                    <span className="text-2xl font-bold">${price.toFixed(2)}</span>
-                  </div>
+                <div className="mt-4">
+                  <PriceBreakdownCard breakdown={breakdown} />
                 </div>
               </>
             )}
