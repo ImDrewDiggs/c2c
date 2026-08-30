@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          plan_id: string | null
           price_cents: number | null
           recycle: boolean | null
           referral_code: string | null
@@ -44,6 +45,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          plan_id?: string | null
           price_cents?: number | null
           recycle?: boolean | null
           referral_code?: string | null
@@ -65,6 +67,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          plan_id?: string | null
           price_cents?: number | null
           recycle?: boolean | null
           referral_code?: string | null
