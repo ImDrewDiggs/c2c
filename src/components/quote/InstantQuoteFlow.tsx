@@ -13,6 +13,7 @@ import {
   MAX_CANS,
   calculateQuotePrice,
   type QuotePlanId,
+  type QuotePriceBreakdown,
 } from "@/lib/quotePricing";
 
 const ZIP_DAYS: Record<string, string> = {
@@ -34,6 +35,43 @@ const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
 
 type Step = 0 | 1 | 2 | 3 | 4;
 const LAST_STEP: Step = 4;
+
+function PriceBreakdownCard({ breakdown }: { breakdown: QuotePriceBreakdown }) {
+  const { plan, extraCans, extraCansCost, recycleCost, total } = breakdown;
+  const showsIncludedRecycle = plan.recycleIncluded && recycleCost === 0;
+  return (
+    <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">{plan.name} base</span>
+        <span>${plan.basePrice.toFixed(2)}</span>
+      </div>
+      {extraCans > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">
+            {extraCans} extra can{extraCans > 1 ? "s" : ""} × ${plan.extraCanPrice.toFixed(2)}
+          </span>
+          <span>${extraCansCost.toFixed(2)}</span>
+        </div>
+      )}
+      {recycleCost > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Recycle bin</span>
+          <span>${recycleCost.toFixed(2)}</span>
+        </div>
+      )}
+      {showsIncludedRecycle && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Recycle bin</span>
+          <span className="text-primary">Included</span>
+        </div>
+      )}
+      <div className="flex items-baseline justify-between border-t border-primary/30 pt-2 mt-2">
+        <span className="font-semibold">Monthly total</span>
+        <span className="text-2xl font-bold">${total.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function InstantQuoteFlow() {
   const { toast } = useToast();
@@ -378,29 +416,8 @@ export default function InstantQuoteFlow() {
                   <p className="text-sm text-muted-foreground pt-1">Recycle bin pickup is included in {plan.name}.</p>
                 )}
 
-                <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{plan.name} base</span>
-                    <span>${plan.basePrice.toFixed(2)}</span>
-                  </div>
-                  {breakdown.extraCans > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {breakdown.extraCans} extra can{breakdown.extraCans > 1 ? "s" : ""} × ${plan.extraCanPrice.toFixed(2)}
-                      </span>
-                      <span>${breakdown.extraCansCost.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {breakdown.recycleCost > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Recycle bin</span>
-                      <span>${breakdown.recycleCost.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline justify-between border-t border-primary/30 pt-2 mt-2">
-                    <span className="font-semibold">Monthly total</span>
-                    <span className="text-2xl font-bold">${price.toFixed(2)}</span>
-                  </div>
+                <div className="mt-4">
+                  <PriceBreakdownCard breakdown={breakdown} />
                 </div>
               </>
             )}
@@ -416,14 +433,8 @@ export default function InstantQuoteFlow() {
                   <div className="flex justify-between"><span className="text-muted-foreground">Trash day</span><span className="capitalize">{trashDay || detectedDay}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><span className="text-primary font-medium">{tier}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Cans</span><span>{cans}{(recycle || plan.recycleIncluded) ? " + recycle" : ""}</span></div>
-                  {breakdown.extraCans > 0 && (
-                    <div className="flex justify-between"><span className="text-muted-foreground">Extra cans</span><span>+${breakdown.extraCansCost.toFixed(2)}</span></div>
-                  )}
-                  {breakdown.recycleCost > 0 && (
-                    <div className="flex justify-between"><span className="text-muted-foreground">Recycle bin</span><span>+${breakdown.recycleCost.toFixed(2)}</span></div>
-                  )}
-                  <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="font-semibold">Monthly total</span><span className="font-bold">${price.toFixed(2)}</span></div>
                 </div>
+                <PriceBreakdownCard breakdown={breakdown} />
                 <div className="pt-2">
                   <Label htmlFor="q-email">Email for receipts & dashboard access</Label>
                   <Input id="q-email" type="email" autoComplete="email" value={email}
