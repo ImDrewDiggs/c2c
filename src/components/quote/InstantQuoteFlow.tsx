@@ -433,14 +433,8 @@ export default function InstantQuoteFlow() {
                   <div className="flex justify-between"><span className="text-muted-foreground">Trash day</span><span className="capitalize">{trashDay || detectedDay}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><span className="text-primary font-medium">{tier}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Cans</span><span>{cans}{(recycle || plan.recycleIncluded) ? " + recycle" : ""}</span></div>
-                  {breakdown.extraCans > 0 && (
-                    <div className="flex justify-between"><span className="text-muted-foreground">Extra cans</span><span>+${breakdown.extraCansCost.toFixed(2)}</span></div>
-                  )}
-                  {breakdown.recycleCost > 0 && (
-                    <div className="flex justify-between"><span className="text-muted-foreground">Recycle bin</span><span>+${breakdown.recycleCost.toFixed(2)}</span></div>
-                  )}
-                  <div className="flex justify-between border-t border-border pt-2 mt-2"><span className="font-semibold">Monthly total</span><span className="font-bold">${price.toFixed(2)}</span></div>
                 </div>
+                <PriceBreakdownCard breakdown={breakdown} />
                 <div className="pt-2">
                   <Label htmlFor="q-email">Email for receipts & dashboard access</Label>
                   <Input id="q-email" type="email" autoComplete="email" value={email}
