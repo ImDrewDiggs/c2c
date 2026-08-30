@@ -35,6 +35,43 @@ const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
 type Step = 0 | 1 | 2 | 3 | 4;
 const LAST_STEP: Step = 4;
 
+function PriceBreakdownCard({ breakdown }: { breakdown: QuotePriceBreakdown }) {
+  const { plan, extraCans, extraCansCost, recycleCost, total } = breakdown;
+  const showsIncludedRecycle = plan.recycleIncluded && recycleCost === 0;
+  return (
+    <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">{plan.name} base</span>
+        <span>${plan.basePrice.toFixed(2)}</span>
+      </div>
+      {extraCans > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">
+            {extraCans} extra can{extraCans > 1 ? "s" : ""} × ${plan.extraCanPrice.toFixed(2)}
+          </span>
+          <span>${extraCansCost.toFixed(2)}</span>
+        </div>
+      )}
+      {recycleCost > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Recycle bin</span>
+          <span>${recycleCost.toFixed(2)}</span>
+        </div>
+      )}
+      {showsIncludedRecycle && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Recycle bin</span>
+          <span className="text-primary">Included</span>
+        </div>
+      )}
+      <div className="flex items-baseline justify-between border-t border-primary/30 pt-2 mt-2">
+        <span className="font-semibold">Monthly total</span>
+        <span className="text-2xl font-bold">${total.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function InstantQuoteFlow() {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>(0);
