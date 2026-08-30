@@ -9,13 +9,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PRICE_LADDER: Record<number, { tier: string; price: number }> = {
-  1: { tier: "Basic", price: 24.99 },
-  2: { tier: "Standard", price: 49.99 },
-  3: { tier: "Premium", price: 79.99 },
-  4: { tier: "Comprehensive", price: 119.99 },
-  5: { tier: "Elite", price: 169.99 },
-};
 
 const clampStr = (v: unknown, max = 200) =>
   typeof v === "string" ? v.trim().slice(0, max) : null;

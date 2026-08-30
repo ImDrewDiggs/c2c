@@ -22,13 +22,6 @@ function getCorsHeaders(origin: string | null) {
 }
 
 // Server-side price ladder (USD/month). Source of truth — DO NOT trust client.
-const PRICE_LADDER: Record<number, { tier: string; price: number }> = {
-  1: { tier: "Basic", price: 24.99 },
-  2: { tier: "Standard", price: 49.99 },
-  3: { tier: "Premium", price: 79.99 },
-  4: { tier: "Comprehensive", price: 119.99 },
-  5: { tier: "Elite", price: 169.99 },
-};
 
 // Greater Cincinnati pickup-day defaults by ZIP prefix (Rumpke/city public schedule).
 // Customers can override; this only pre-fills the selector.
