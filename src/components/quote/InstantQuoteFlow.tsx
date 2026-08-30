@@ -13,6 +13,7 @@ import {
   MAX_CANS,
   calculateQuotePrice,
   type QuotePlanId,
+  type QuotePriceBreakdown,
 } from "@/lib/quotePricing";
 
 const ZIP_DAYS: Record<string, string> = {
