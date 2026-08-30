@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { calculateQuotePrice, getQuotePlan, MAX_CANS } from "../_shared/quotePricing.ts";
 
 const allowedOrigins = [
   'https://100289ea-3c34-415f-a645-b7b29b76a548.lovableproject.com',
@@ -21,13 +22,6 @@ function getCorsHeaders(origin: string | null) {
 }
 
 // Server-side price ladder (USD/month). Source of truth — DO NOT trust client.
-const PRICE_LADDER: Record<number, { tier: string; price: number }> = {
-  1: { tier: "Basic", price: 24.99 },
-  2: { tier: "Standard", price: 49.99 },
-  3: { tier: "Premium", price: 79.99 },
-  4: { tier: "Comprehensive", price: 119.99 },
-  5: { tier: "Elite", price: 169.99 },
-};
 
 // Greater Cincinnati pickup-day defaults by ZIP prefix (Rumpke/city public schedule).
 // Customers can override; this only pre-fills the selector.
@@ -45,11 +39,6 @@ const CINCY_ZIP_DAYS: Record<string, string> = {
   "45248": "monday", "45249": "tuesday", "45251": "wednesday", "45252": "thursday",
   "45255": "friday",
 };
-
-function priceFor(cans: number) {
-  const capped = Math.max(1, Math.min(5, Math.floor(cans)));
-  return PRICE_LADDER[capped] ?? PRICE_LADDER[5];
-}
 
 function sanitize(input: unknown, max = 200): string {
   if (typeof input !== "string") return "";
@@ -76,6 +65,7 @@ serve(async (req) => {
     const email = sanitize(body.email, 254).toLowerCase();
     const trashDay = sanitize(body.trashDay, 20).toLowerCase();
     const cans = Number(body.cans);
+    const planId = getQuotePlan(body.planId).id;
     const recycle = !!body.recycle;
     const referralCode = sanitize(body.referralCode, 32).toUpperCase() || null;
     const resumeToken = sanitize(body.resumeToken, 64) || null;
@@ -84,15 +74,17 @@ serve(async (req) => {
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const zipOk = /^\d{5}$/.test(zip);
     const dayOk = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].includes(trashDay);
-    if (!address || !city || !state || !zipOk || !emailOk || !dayOk || !Number.isFinite(cans) || cans < 1) {
+    if (!address || !city || !state || !zipOk || !emailOk || !dayOk || !Number.isFinite(cans) || cans < 1 || cans > MAX_CANS) {
       return new Response(JSON.stringify({ error: "Invalid quote data" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // SERVER price (effective cans = cans + recycle add-on counts as 1)
-    const effectiveCans = recycle ? cans + 1 : cans;
-    const { tier, price } = priceFor(effectiveCans);
+    // SERVER price: plan base + extra cans (+ recycle add-on when not included)
+    const quote = calculateQuotePrice(planId, cans, recycle);
+    const tier = quote.plan.name;
+    const price = quote.total;
+    const billedCans = quote.cans;
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -119,7 +111,7 @@ serve(async (req) => {
           currency: "usd",
           product_data: {
             name: `Can2Curb ${tier} Plan`,
-            description: `${effectiveCans} can${effectiveCans > 1 ? "s" : ""} concierge — pickup ${trashDay[0].toUpperCase() + trashDay.slice(1)}`,
+            description: `${billedCans} can${billedCans > 1 ? "s" : ""}${(recycle || quote.plan.recycleIncluded) ? " + recycle" : ""} concierge — pickup ${trashDay[0].toUpperCase() + trashDay.slice(1)}`,
           },
           unit_amount: Math.round(price * 100),
           recurring: { interval: "month" },
@@ -132,8 +124,9 @@ serve(async (req) => {
         flow: "instant_quote",
         address, city, state, zip,
         trash_day: trashDay,
-        cans: String(cans),
+        cans: String(billedCans),
         recycle: recycle ? "1" : "0",
+        plan_id: planId,
         tier,
         monthly_price: String(price),
         email,
@@ -154,7 +147,7 @@ serve(async (req) => {
       stripe_session_id: session.id,
       customer_email: email,
       service_address: `${address}, ${city}, ${state} ${zip}`,
-      metadata: { flow: "instant_quote", tier, cans, recycle, trash_day: trashDay },
+      metadata: { flow: "instant_quote", tier, plan_id: planId, cans: billedCans, recycle, trash_day: trashDay },
     }).then(({ error }) => {
       if (error) console.error("orders insert failed (non-fatal):", error.message);
     });
