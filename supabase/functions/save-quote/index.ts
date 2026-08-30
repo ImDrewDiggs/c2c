@@ -2,6 +2,7 @@
 // Public endpoint. Anyone can create/update a quote by resume_token.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { calculateQuotePrice, getQuotePlan, MAX_CANS } from "../_shared/quotePricing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,15 +38,15 @@ serve(async (req) => {
       { auth: { persistSession: false } },
     );
 
-    const cans = clampInt(body.cans, 1, 5);
+    const cans = clampInt(body.cans, 1, MAX_CANS);
     const recycle = !!body.recycle;
+    const planId = getQuotePlan(body.planId).id;
     let tier: string | null = null;
     let priceCents: number | null = null;
     if (cans) {
-      const effective = Math.max(1, Math.min(5, recycle ? cans + 1 : cans));
-      const p = PRICE_LADDER[effective];
-      tier = p.tier;
-      priceCents = Math.round(p.price * 100);
+      const quote = calculateQuotePrice(planId, cans, recycle);
+      tier = quote.plan.name;
+      priceCents = Math.round(quote.total * 100);
     }
 
     const payload = {
@@ -57,8 +58,9 @@ serve(async (req) => {
       trash_day: clampStr(body.trashDay, 20)?.toLowerCase() || null,
       cans,
       recycle,
+      plan_id: planId,
       referral_code: clampStr(body.referralCode, 32)?.toUpperCase() || null,
-      step: clampInt(body.step, 0, 3) ?? 0,
+      step: clampInt(body.step, 0, 4) ?? 0,
       tier,
       price_cents: priceCents,
       user_agent: clampStr(req.headers.get("user-agent"), 300),

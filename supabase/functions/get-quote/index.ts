@@ -30,7 +30,7 @@ serve(async (req) => {
     const { data, error } = await admin
       .from("abandoned_quotes")
       .select(
-        "resume_token,email,address,city,state,zip,trash_day,cans,recycle,referral_code,step,tier,price_cents,converted_at",
+        "resume_token,email,address,city,state,zip,trash_day,cans,recycle,plan_id,referral_code,step,tier,price_cents,converted_at",
       )
       .eq("resume_token", token)
       .maybeSingle();
