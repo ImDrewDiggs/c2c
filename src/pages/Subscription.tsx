@@ -559,7 +559,7 @@ export default function Subscription() {
         )}
 
         {/* Add-Ons Selection */}
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+        {hasPlanSelection && (
           <Card>
             <CardHeader>
               <CardTitle as="h2">Select Add-Ons</CardTitle>
@@ -590,15 +590,15 @@ export default function Subscription() {
           </Card>
         )}
 
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+        {hasPlanSelection && (
           <PricingDisplay
             total={calculateTotal()}
             discount={getContractLengthDiscount() * 100}
             subscriptionType={selectedTab}
             selectedPlan={
-              selectedTab === "single-family" 
-                ? singleFamilyTiers.find(t => t.id === selectedTier)?.name
-                : multiFamilyTiers.find(t => t.id === selectedTier)?.unitRange
+              selectedTab === "single-family"
+                ? getSelectedTiers().map(t => t.name).join(" + ")
+                : multiFamilyTiers.find(t => t.id === selectedCommunityTierId)?.unitRange
             }
             contractLength={contractLength === "1" ? "Monthly" : contractLength === "6" ? "6 Months" : "12 Months"}
             selectedServices={selectedAddOns}
@@ -615,7 +615,7 @@ export default function Subscription() {
               size="lg"
               onClick={handleContinueToCheckout}
               disabled={
-                (selectedTab === "single-family" && !selectedTier) ||
+                (selectedTab === "single-family" && selectedTiers.length === 0) ||
                 (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
                 isProcessing
               }
