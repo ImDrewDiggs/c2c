@@ -128,7 +128,9 @@ export default function Subscription() {
     return 0;
   };
 
-  const hasPlanSelection = selectedTiers.length > 0;
+  const hasPlanSelection =
+    (selectedTab === "single-family" && selectedTiers.length > 0) ||
+    (selectedTab === "multi-family" && !!selectedCommunityTierId && !!selectedServiceId);
 
   const calculateTotal = (): number => {
     const basePrice = getBasePrice();
@@ -183,11 +185,11 @@ export default function Subscription() {
     }
 
     // Validate selections
-    if (selectedTab === "single-family" && !selectedTier) {
+    if (selectedTab === "single-family" && selectedTiers.length === 0) {
       toast({
         variant: "destructive",
         title: "Selection Required",
-        description: "Please select a service tier to continue.",
+        description: "Please select at least one service plan to continue.",
       });
       return;
     }
@@ -204,7 +206,8 @@ export default function Subscription() {
     // Prepare checkout data
     const checkoutData = {
       subscriptionType: selectedTab,
-      selectedTier,
+      selectedTiers,
+      selectedTierNames: getSelectedTiers().map(t => t.name),
       selectedServiceTypes,
       selectedCommunityTierId,
       selectedServiceId,
@@ -212,9 +215,9 @@ export default function Subscription() {
       total: calculateTotal(),
       contractLength,
       monthlyPrice: getBasePrice() + calculateAddOnsTotal(),
-      services: services.filter(service => 
-        selectedTab === "single-family" 
-          ? service.category === 'single_family' && service.id === selectedTier
+      services: services.filter(service =>
+        selectedTab === "single-family"
+          ? service.category === 'single_family' && selectedTiers.includes(service.id)
           : service.category === 'multi_family'
       )
     };
@@ -250,8 +253,8 @@ export default function Subscription() {
           <TabsContent value="single-family" className="space-y-6">
             <SingleFamilyPlans
               tiers={singleFamilyTiers}
-              selectedTier={selectedTier || ''}
-              onTierSelect={setSelectedTier}
+              selectedTiers={selectedTiers}
+              onTierToggle={handleTierToggle}
             />
             
             {/* Single Family Discounts */}
@@ -474,7 +477,63 @@ export default function Subscription() {
         </Tabs>
 
         {/* Contract Length Selection */}
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+        {/* Running Total */}
+        {hasPlanSelection && (
+          <Card className="border-primary/40">
+            <CardHeader>
+              <CardTitle as="h2">Your Selection</CardTitle>
+              <CardDescription>Running total of everything you've selected</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {selectedTab === "single-family" &&
+                  getSelectedTiers().map((tier) => (
+                    <li key={tier.id} className="flex justify-between text-sm">
+                      <span>{tier.name} Plan</span>
+                      <span className="font-medium">${tier.price.toFixed(2)}/mo</span>
+                    </li>
+                  ))}
+                {selectedTab === "multi-family" && (
+                  <li className="flex justify-between text-sm">
+                    <span>Multi-Family Service ({unitCount} units)</span>
+                    <span className="font-medium">${getBasePrice().toFixed(2)}/mo</span>
+                  </li>
+                )}
+                {selectedAddOns.map((addOnName, index) => {
+                  const addOn = addOnServices[0].services.find(s => s.name === addOnName);
+                  if (!addOn) return null;
+                  const discounted = index === 1 && selectedAddOns.length >= 2;
+                  const price = discounted ? getAddOnPrice(addOn) * 0.75 : getAddOnPrice(addOn);
+                  return (
+                    <li key={addOnName} className="flex justify-between text-sm">
+                      <span>
+                        {addOn.name}
+                        {discounted && <span className="text-primary"> (25% off)</span>}
+                      </span>
+                      <span className="font-medium">${price.toFixed(2)}/mo</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-4 pt-4 border-t flex justify-between font-semibold">
+                <span>Monthly subtotal</span>
+                <span className="text-primary">${(getBasePrice() + calculateAddOnsTotal()).toFixed(2)}/mo</span>
+              </div>
+              {getContractLengthDiscount() > 0 && (
+                <div className="mt-1 flex justify-between text-sm text-primary">
+                  <span>Contract discount ({getContractLengthDiscount() * 100}% off)</span>
+                  <span>-${((getBasePrice() + calculateAddOnsTotal()) * getContractLengthDiscount()).toFixed(2)}/mo</span>
+                </div>
+              )}
+              <div className="mt-2 flex justify-between font-bold text-lg">
+                <span>Total due today ({contractLength} {parseInt(contractLength) === 1 ? "month" : "months"})</span>
+                <span className="text-primary">${calculateTotal().toFixed(2)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {hasPlanSelection && (
           <Card>
             <CardHeader>
               <CardTitle as="h2">Contract Length</CardTitle>
@@ -500,7 +559,7 @@ export default function Subscription() {
         )}
 
         {/* Add-Ons Selection */}
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+        {hasPlanSelection && (
           <Card>
             <CardHeader>
               <CardTitle as="h2">Select Add-Ons</CardTitle>
@@ -531,15 +590,15 @@ export default function Subscription() {
           </Card>
         )}
 
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+        {hasPlanSelection && (
           <PricingDisplay
             total={calculateTotal()}
             discount={getContractLengthDiscount() * 100}
             subscriptionType={selectedTab}
             selectedPlan={
-              selectedTab === "single-family" 
-                ? singleFamilyTiers.find(t => t.id === selectedTier)?.name
-                : multiFamilyTiers.find(t => t.id === selectedTier)?.unitRange
+              selectedTab === "single-family"
+                ? getSelectedTiers().map(t => t.name).join(" + ")
+                : multiFamilyTiers.find(t => t.id === selectedCommunityTierId)?.unitRange
             }
             contractLength={contractLength === "1" ? "Monthly" : contractLength === "6" ? "6 Months" : "12 Months"}
             selectedServices={selectedAddOns}
@@ -556,7 +615,7 @@ export default function Subscription() {
               size="lg"
               onClick={handleContinueToCheckout}
               disabled={
-                (selectedTab === "single-family" && !selectedTier) ||
+                (selectedTab === "single-family" && selectedTiers.length === 0) ||
                 (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
                 isProcessing
               }
