@@ -128,7 +128,9 @@ export default function Subscription() {
     return 0;
   };
 
-  const hasPlanSelection = selectedTiers.length > 0;
+  const hasPlanSelection =
+    (selectedTab === "single-family" && selectedTiers.length > 0) ||
+    (selectedTab === "multi-family" && !!selectedCommunityTierId && !!selectedServiceId);
 
   const calculateTotal = (): number => {
     const basePrice = getBasePrice();
