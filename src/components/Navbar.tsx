@@ -7,16 +7,36 @@ import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 import { useAuth } from "@/contexts/AuthContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-const navigation = [
+interface NavItem {
+  nameKey: string;
+  path: string;
+  requiresTerms?: boolean;
+}
+
+/** Headline destinations, shown as full-width rows in the mobile menu. */
+const primaryNavigation: NavItem[] = [
   { nameKey: "nav.home", path: "/" },
-  { nameKey: "nav.about", path: "/about" },
-  { nameKey: "nav.testimonials", path: "/testimonials" },
   { nameKey: "nav.servicesAndPricing", path: "/services-and-prices", requiresTerms: true },
   { nameKey: "nav.subscription", path: "/subscription", requiresTerms: true },
+  { nameKey: "nav.about", path: "/about" },
+];
+
+/** Supporting pages, shown as a compact two-column grid in the mobile menu. */
+const secondaryNavigation: NavItem[] = [
   { nameKey: "nav.documentation", path: "/documentation" },
+  { nameKey: "nav.testimonials", path: "/testimonials" },
   { nameKey: "nav.faq", path: "/faq" },
   { nameKey: "nav.contact", path: "/contact" },
 ];
+
+/** Role-based sign-in destinations, shown as a three-up portal grid. */
+const portalLinks = [
+  { labelKey: "nav.customer", fallback: "User", path: "/customer/login" },
+  { labelKey: "nav.employee", fallback: "Staff", path: "/employee/login" },
+  { labelKey: "nav.admin", fallback: "Admin", path: "/admin/login" },
+];
+
+const navigation: NavItem[] = [...primaryNavigation, ...secondaryNavigation];
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
