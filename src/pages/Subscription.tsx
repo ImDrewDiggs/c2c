@@ -477,7 +477,63 @@ export default function Subscription() {
         </Tabs>
 
         {/* Contract Length Selection */}
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && selectedTier && (
+        {/* Running Total */}
+        {hasPlanSelection && (
+          <Card className="border-primary/40">
+            <CardHeader>
+              <CardTitle as="h2">Your Selection</CardTitle>
+              <CardDescription>Running total of everything you've selected</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {selectedTab === "single-family" &&
+                  getSelectedTiers().map((tier) => (
+                    <li key={tier.id} className="flex justify-between text-sm">
+                      <span>{tier.name} Plan</span>
+                      <span className="font-medium">${tier.price.toFixed(2)}/mo</span>
+                    </li>
+                  ))}
+                {selectedTab === "multi-family" && (
+                  <li className="flex justify-between text-sm">
+                    <span>Multi-Family Service ({unitCount} units)</span>
+                    <span className="font-medium">${getBasePrice().toFixed(2)}/mo</span>
+                  </li>
+                )}
+                {selectedAddOns.map((addOnName, index) => {
+                  const addOn = addOnServices[0].services.find(s => s.name === addOnName);
+                  if (!addOn) return null;
+                  const discounted = index === 1 && selectedAddOns.length >= 2;
+                  const price = discounted ? getAddOnPrice(addOn) * 0.75 : getAddOnPrice(addOn);
+                  return (
+                    <li key={addOnName} className="flex justify-between text-sm">
+                      <span>
+                        {addOn.name}
+                        {discounted && <span className="text-primary"> (25% off)</span>}
+                      </span>
+                      <span className="font-medium">${price.toFixed(2)}/mo</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-4 pt-4 border-t flex justify-between font-semibold">
+                <span>Monthly subtotal</span>
+                <span className="text-primary">${(getBasePrice() + calculateAddOnsTotal()).toFixed(2)}/mo</span>
+              </div>
+              {getContractLengthDiscount() > 0 && (
+                <div className="mt-1 flex justify-between text-sm text-primary">
+                  <span>Contract discount ({getContractLengthDiscount() * 100}% off)</span>
+                  <span>-${((getBasePrice() + calculateAddOnsTotal()) * getContractLengthDiscount()).toFixed(2)}/mo</span>
+                </div>
+              )}
+              <div className="mt-2 flex justify-between font-bold text-lg">
+                <span>Total due today ({contractLength} {parseInt(contractLength) === 1 ? "month" : "months"})</span>
+                <span className="text-primary">${calculateTotal().toFixed(2)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {hasPlanSelection && (
           <Card>
             <CardHeader>
               <CardTitle as="h2">Contract Length</CardTitle>
