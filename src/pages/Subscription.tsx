@@ -183,11 +183,11 @@ export default function Subscription() {
     }
 
     // Validate selections
-    if (selectedTab === "single-family" && !selectedTier) {
+    if (selectedTab === "single-family" && selectedTiers.length === 0) {
       toast({
         variant: "destructive",
         title: "Selection Required",
-        description: "Please select a service tier to continue.",
+        description: "Please select at least one service plan to continue.",
       });
       return;
     }
@@ -204,7 +204,8 @@ export default function Subscription() {
     // Prepare checkout data
     const checkoutData = {
       subscriptionType: selectedTab,
-      selectedTier,
+      selectedTiers,
+      selectedTierNames: getSelectedTiers().map(t => t.name),
       selectedServiceTypes,
       selectedCommunityTierId,
       selectedServiceId,
@@ -212,9 +213,9 @@ export default function Subscription() {
       total: calculateTotal(),
       contractLength,
       monthlyPrice: getBasePrice() + calculateAddOnsTotal(),
-      services: services.filter(service => 
-        selectedTab === "single-family" 
-          ? service.category === 'single_family' && service.id === selectedTier
+      services: services.filter(service =>
+        selectedTab === "single-family"
+          ? service.category === 'single_family' && selectedTiers.includes(service.id)
           : service.category === 'multi_family'
       )
     };
@@ -250,8 +251,8 @@ export default function Subscription() {
           <TabsContent value="single-family" className="space-y-6">
             <SingleFamilyPlans
               tiers={singleFamilyTiers}
-              selectedTier={selectedTier || ''}
-              onTierSelect={setSelectedTier}
+              selectedTiers={selectedTiers}
+              onTierToggle={handleTierToggle}
             />
             
             {/* Single Family Discounts */}
