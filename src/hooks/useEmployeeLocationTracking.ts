@@ -125,7 +125,7 @@ export function useEmployeeLocationTracking(userId: string | undefined) {
     fetchActiveSession();
 
     const channel = supabase
-      .channel(`work-sessions-${userId}`)
+      .channel(`work-sessions-${userId}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {
