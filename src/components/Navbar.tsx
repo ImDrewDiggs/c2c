@@ -36,7 +36,17 @@ const portalLinks = [
   { labelKey: "nav.admin", fallback: "Admin", path: "/admin/login" },
 ];
 
-const navigation: NavItem[] = [...primaryNavigation, ...secondaryNavigation];
+/** Desktop bar keeps its original left-to-right order. */
+const navigation: NavItem[] = [
+  { nameKey: "nav.home", path: "/" },
+  { nameKey: "nav.about", path: "/about" },
+  { nameKey: "nav.testimonials", path: "/testimonials" },
+  { nameKey: "nav.servicesAndPricing", path: "/services-and-prices", requiresTerms: true },
+  { nameKey: "nav.subscription", path: "/subscription", requiresTerms: true },
+  { nameKey: "nav.documentation", path: "/documentation" },
+  { nameKey: "nav.faq", path: "/faq" },
+  { nameKey: "nav.contact", path: "/contact" },
+];
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
