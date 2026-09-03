@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -13,6 +13,7 @@ import { sessionManager } from "@/utils/sessionManager";
 import { RequireTermsAcceptance } from "@/components/auth/RequireTermsAcceptance";
 import { DiagnosticsPanel } from "@/components/diagnostics/DiagnosticsPanel";
 import Maintenance from './pages/Maintenance';
+import { lazyWithRetry as lazy } from '@/utils/lazyWithRetry';
 
 // Critical route - load immediately for homepage
 const Index = lazy(() => import('./pages/Index'));
