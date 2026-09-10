@@ -1,11 +1,19 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  computeSubscriptionQuote,
+  contractLabel,
+  normalizeContractMonths,
+  type SubscriptionType,
+} from "../_shared/subscriptionPricing.ts";
 
 // Restrict CORS to known domains
 const allowedOrigins = [
   'https://100289ea-3c34-415f-a645-b7b29b76a548.lovableproject.com',
   'https://id-preview--100289ea-3c34-415f-a645-b7b29b76a548.lovable.app',
+  'https://c2c.lovable.app',
+  'https://c2c-site.site',
   'http://localhost:8080',
   'http://localhost:5173',
 ];
@@ -18,263 +26,183 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
+interface CheckoutRequestBody {
+  subscriptionType?: string;
+  planIds?: unknown;
+  addOnNames?: unknown;
+  unitCount?: unknown;
+  contractMonths?: unknown;
+  total?: unknown;
+}
+
+const asStringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
+  const json = (body: unknown, status: number) =>
+    new Response(JSON.stringify(body), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status,
+    });
 
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { 
-      subscriptionType, 
-      selectedTier, 
-      selectedServiceTypes = [], 
-      unitCount = 1,
-      total,
-      isSubscription = true,
-      contractLength,
-      selectedServices = []
-    } = await req.json();
+    const body = (await req.json()) as CheckoutRequestBody;
 
-    // Input validation
-    if (!subscriptionType || !selectedTier) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid service selection' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
+    const subscriptionType = body.subscriptionType as SubscriptionType;
+    if (subscriptionType !== "single-family" && subscriptionType !== "multi-family") {
+      return json({ error: 'Invalid service selection' }, 400);
     }
 
-    if (unitCount < 1 || unitCount > 1000) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid unit count' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
+    const planIds = asStringArray(body.planIds);
+    const addOnNames = asStringArray(body.addOnNames);
+    const unitCount = Math.floor(Number(body.unitCount) || 1);
+    const contractMonths = normalizeContractMonths(body.contractMonths);
+    const clientTotal = Number(body.total);
+
+    if (!Number.isFinite(clientTotal) || clientTotal < 0) {
+      return json({ error: 'Invalid amount' }, 400);
     }
 
-    if (total < 0) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid amount' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
+    // SERVER-AUTHORITATIVE PRICING — the client total is only cross-checked.
+    const quote = computeSubscriptionQuote({
+      subscriptionType,
+      planIds,
+      addOnNames,
+      unitCount,
+      contractMonths,
     });
 
-    // Create Supabase service client for price validation
+    if (!quote.valid) {
+      return json({ error: quote.reason ?? 'Invalid service selection' }, 400);
+    }
+
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    // SERVER-SIDE PRICE VALIDATION - Critical security fix
-    // Verify the price against database to prevent manipulation
-    const { data: service, error: serviceError } = await supabaseService
-      .from('services')
-      .select('price, category, name')
-      .eq('category', subscriptionType)
-      .eq('name', selectedTier)
-      .single();
-
-    if (serviceError || !service) {
-      console.error('Service validation error:', serviceError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid service selected' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    // Calculate expected total server-side
-    const basePrice = Number(service.price);
-    const contractMultiplier = contractLength === '6-month' ? 6 : 
-                              contractLength === '12-month' ? 12 : 1;
-    const expectedTotal = basePrice * unitCount * contractMultiplier;
-
-    // Verify client-provided total matches (allow 1 cent variance for rounding)
-    if (Math.abs(expectedTotal - total) > 0.01) {
-      console.error('Price manipulation attempt detected', {
-        expectedTotal,
-        clientTotal: total,
-        difference: expectedTotal - total,
-        service: selectedTier,
-        unitCount,
-        contractLength
-      });
-
-      // Log security event
+    if (Math.abs(quote.total - clientTotal) > 0.01) {
+      console.error('Price mismatch detected', { expected: quote.total, clientTotal });
       await supabaseService.from('enhanced_security_logs').insert({
         action_type: 'price_manipulation_attempt',
         resource_type: 'checkout_session',
         risk_level: 'critical',
         metadata: {
-          expectedTotal,
-          clientTotal: total,
-          difference: expectedTotal - total,
-          service: selectedTier,
+          expectedTotal: quote.total,
+          clientTotal,
+          subscriptionType,
+          planIds,
+          addOnNames,
           unitCount,
-          contractLength
-        }
+          contractMonths,
+        },
       });
-
-      return new Response(
-        JSON.stringify({ error: 'Price validation failed' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
+      return json({ error: 'Price validation failed' }, 400);
     }
 
-    // Create Supabase client for user auth
+    // Authenticated users only — checkout is gated behind sign-in.
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    let user = null;
-    let customerId = undefined;
-
-    // Try to get authenticated user
-    try {
-      const authHeader = req.headers.get("Authorization");
-      if (authHeader) {
-        const token = authHeader.replace("Bearer ", "");
-        const { data } = await supabaseClient.auth.getUser(token);
-        user = data.user;
-        
-        if (user?.email) {
-          // Check if Stripe customer exists
-          const customers = await stripe.customers.list({ 
-            email: user.email, 
-            limit: 1 
-          });
-          if (customers.data.length > 0) {
-            customerId = customers.data[0].id;
-          }
-        }
-      }
-    } catch (error) {
-      console.log("No authenticated user, proceeding as guest");
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return json({ error: 'Authentication required' }, 401);
     }
 
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(
+      authHeader.replace("Bearer ", "")
+    );
+    const user = userData?.user;
+    if (userError || !user?.email) {
+      return json({ error: 'Authentication required' }, 401);
+    }
+
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2023-10-16",
+    });
+
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+
     const requestOrigin = req.headers.get("origin") || "http://localhost:8080";
+    const label = contractLabel(quote.months);
+    const planSummary = quote.planNames.join(" + ");
+    const descriptionParts = [
+      subscriptionType === "multi-family" ? `${quote.unitCount} units` : "Single family",
+      `${label} plan`,
+    ];
+    if (addOnNames.length > 0) descriptionParts.push(`Add-ons: ${addOnNames.join(", ")}`);
 
-    // Prepare line items based on subscription type (use server-validated total)
-    let lineItems = [];
-    let mode: "payment" | "subscription" = isSubscription ? "subscription" : "payment";
+    const isMonthly = quote.months === 1;
+    const mode: "payment" | "subscription" = isMonthly ? "subscription" : "payment";
 
-    if (isSubscription) {
-      // Create subscription line items
-      if (subscriptionType === "single-family" && selectedTier) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `${selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)} Plan - Single Family`,
-              description: `Monthly ${selectedTier} plan subscription`
-            },
-            unit_amount: Math.round(expectedTotal * 100), // Use server-validated price
-            recurring: {
-              interval: "month"
-            }
-          },
-          quantity: 1,
-        });
-      } else if (subscriptionType === "multi-family") {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Multi-Family Service",
-              description: `Service for ${unitCount} units`
-            },
-            unit_amount: Math.round((expectedTotal / unitCount) * 100), // Use server-validated price
-            recurring: {
-              interval: "month"
-            }
-          },
-          quantity: unitCount,
-        });
-      } else if (subscriptionType === "business") {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Business ${selectedTier} Plan`,
-              description: `Monthly business plan subscription`
-            },
-            unit_amount: Math.round(expectedTotal * 100), // Use server-validated price
-            recurring: {
-              interval: "month"
-            }
-          },
-          quantity: 1,
-        });
-      }
-    } else {
-      // One-time payment
-      lineItems.push({
+    // Charge tax-inclusive amounts: monthly recurring, or the full prepaid contract.
+    const unitAmount = Math.round(quote.total * 100);
+
+    const lineItems = [
+      {
         price_data: {
           currency: "usd",
           product_data: {
-            name: "One-Time Service",
-            description: selectedServices.join(", ")
+            name: `${planSummary} — Can2Curb`,
+            description: descriptionParts.join(" · "),
           },
-          unit_amount: Math.round(expectedTotal * 100), // Use server-validated price
+          unit_amount: unitAmount,
+          ...(isMonthly ? { recurring: { interval: "month" as const } } : {}),
         },
         quantity: 1,
-      });
-    }
+      },
+    ];
 
-    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : (user?.email || "guest@example.com"),
+      customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode,
       success_url: `${requestOrigin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${requestOrigin}/checkout/cancel`,
       metadata: {
-        subscriptionType: subscriptionType || "",
-        selectedTier: selectedTier || "",
-        unitCount: unitCount.toString(),
-        contractLength: contractLength || "",
-        userId: user?.id || "",
-      }
+        subscriptionType,
+        planIds: planIds.join(","),
+        addOnNames: addOnNames.join(","),
+        unitCount: String(quote.unitCount),
+        contractMonths: String(quote.months),
+        userId: user.id,
+      },
     });
 
-    // Optionally store order in database
-    if (user) {
-      await supabaseService.from("orders").insert({
-        user_id: user.id,
-        stripe_session_id: session.id,
-        amount: Math.round(expectedTotal * 100), // Use server-validated price
-        currency: "usd",
-        status: "pending",
-        subscription_type: subscriptionType,
-        selected_tier: selectedTier,
-        unit_count: unitCount,
-        contract_length: contractLength,
-        is_subscription: isSubscription
-      });
-    }
-
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
+    await supabaseService.from("orders").insert({
+      user_id: user.id,
+      type: isMonthly ? "subscription" : "prepaid_contract",
+      subtotal: Math.round(quote.subtotal * 100),
+      tax: Math.round(quote.tax * 100),
+      total: Math.round(quote.total * 100),
+      currency: "usd",
+      status: "pending",
+      stripe_session_id: session.id,
+      customer_email: user.email,
+      metadata: {
+        subscriptionType,
+        planIds,
+        addOnNames,
+        unitCount: quote.unitCount,
+        contractMonths: quote.months,
+        monthlySubtotal: quote.monthlySubtotal,
+      },
     });
 
+    return json({ url: session.url }, 200);
   } catch (error) {
     console.error("Error creating checkout session:", error);
-    // Generic error to client, log details server-side only
-    return new Response(
-      JSON.stringify({ error: 'Payment processing failed. Please try again.' }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
-    );
+    return json({ error: 'Payment processing failed. Please try again.' }, 500);
   }
 });

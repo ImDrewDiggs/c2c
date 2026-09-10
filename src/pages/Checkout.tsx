@@ -17,19 +17,8 @@ import { validateAndSanitizeCustomerInfo } from "@/utils/inputValidation";
 import { useSecureErrorHandler } from "@/utils/secureErrorHandler";
 import { supabase } from "@/integrations/supabase/client";
 import Seo from "@/components/seo/Seo";
-
-interface CheckoutData {
-  subscriptionType: string;
-  selectedTier?: string;
-  selectedServiceTypes: string[];
-  selectedCommunityTierId?: string;
-  selectedServiceId?: string;
-  unitCount: number;
-  total: number;
-  services: any[];
-  contractLength?: string;
-  monthlyPrice?: number;
-}
+import { computeSubscriptionQuote } from "@/lib/subscriptionPricing";
+import { isCheckoutData, type CheckoutData, type CreateCheckoutSessionPayload } from "@/types/checkout";
 
 interface CustomerInfo {
   firstName: string;

@@ -16,39 +16,28 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Seo from "@/components/seo/Seo";
+import {
+  ADD_ONS,
+  MULTI_FAMILY_LEVELS,
+  computeSubscriptionQuote,
+  type SubscriptionType,
+} from "@/lib/subscriptionPricing";
+import type { CheckoutData } from "@/types/checkout";
 
-const serviceTypes: ServiceType[] = [
-  {
-    id: "trash-management",
-    name: "Trash Management"
-  },
-  {
-    id: "recycling-service",
-    name: "Recycling Service"
-  },
-  {
-    id: "bulk-pickup",
-    name: "Bulk Item Pickup"
-  },
-  {
-    id: "organic-waste",
-    name: "Organic Waste Collection"
-  },
-  {
-    id: "hazardous-disposal",
-    name: "Hazardous Waste Disposal"
-  }
-];
+// Multi-family service levels, priced per unit per month.
+const serviceTypes: ServiceType[] = MULTI_FAMILY_LEVELS.map((level) => ({
+  id: level.id,
+  name: `${level.name} — $${level.price.toFixed(2)} / unit / month`,
+}));
 
 export default function Subscription() {
-  const [selectedTab, setSelectedTab] = useState("single-family");
+  const [selectedTab, setSelectedTab] = useState<SubscriptionType | "business" | "add-ons">("single-family");
   const [selectedTiers, setSelectedTiers] = useState<string[]>([]);
   const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
   const [unitCount, setUnitCount] = useState(1);
-  const [selectedCommunityTierId, setSelectedCommunityTierId] = useState("basic-community");
+  const [selectedCommunityTierId, setSelectedCommunityTierId] = useState(multiFamilyTiers[0]?.id ?? "");
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [services, setServices] = useState<any[]>([]);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [contractLength, setContractLength] = useState<"1" | "6" | "12">("1");
   
@@ -80,98 +69,33 @@ export default function Subscription() {
     );
   };
 
-  const getContractLengthDiscount = (): number => {
-    if (contractLength === "6") return 0.05; // 5% off
-    if (contractLength === "12") return 0.10; // 10% off
-    return 0;
-  };
+  const isSubscriptionTab = selectedTab === "single-family" || selectedTab === "multi-family";
+  const subscriptionType: SubscriptionType =
+    selectedTab === "multi-family" ? "multi-family" : "single-family";
 
-  const getAddOnPrice = (addOn: any): number => {
-    const priceStr = addOn.price.toString();
-    // Handle different price formats: "+$9.99", "$45 – $99", "$35/month", etc.
-    const match = priceStr.match(/\$?(\d+(?:\.\d{2})?)/);
-    return match ? parseFloat(match[1]) : 0;
-  };
+  const planIds =
+    subscriptionType === "single-family" ? selectedTiers : selectedServiceId ? [selectedServiceId] : [];
 
-  const calculateAddOnsTotal = (): number => {
-    let total = 0;
-    selectedAddOns.forEach((addOnName, index) => {
-      const addOn = addOnServices[0].services.find(s => s.name === addOnName);
-      if (addOn) {
-        let price = getAddOnPrice(addOn);
-        // Apply 25% off to the second add-on
-        if (index === 1 && selectedAddOns.length >= 2) {
-          price = price * 0.75;
-        }
-        total += price;
-      }
-    });
-    return total;
-  };
+  const contractMonths = parseInt(contractLength, 10);
 
-  const getSelectedTiers = (): ServiceTier[] => {
-    if (selectedTab === "single-family") {
-      return singleFamilyTiers.filter(tier => selectedTiers.includes(tier.id));
-    }
-    if (selectedTab === "multi-family") {
-      return multiFamilyTiers.filter(tier => selectedTiers.includes(tier.id)) as unknown as ServiceTier[];
-    }
-    return [];
-  };
+  const quote = computeSubscriptionQuote({
+    subscriptionType,
+    planIds,
+    addOnNames: selectedAddOns,
+    unitCount,
+    contractMonths,
+  });
 
-  const getBasePrice = (): number => {
-    if (selectedTab === "single-family") {
-      return getSelectedTiers().reduce((sum, tier) => sum + (tier.price || 0), 0);
-    } else if (selectedTab === "multi-family") {
-      return selectedServiceTypes.length * 25; // Simplified calculation
-    }
-    return 0;
-  };
+  const getSelectedTiers = (): ServiceTier[] =>
+    singleFamilyTiers.filter((tier) => selectedTiers.includes(tier.id));
 
-  const hasPlanSelection =
-    (selectedTab === "single-family" && selectedTiers.length > 0) ||
-    (selectedTab === "multi-family" && !!selectedCommunityTierId && !!selectedServiceId);
+  const planMonthlyTotal = quote.lines
+    .slice(0, subscriptionType === "single-family" ? selectedTiers.length : 1)
+    .reduce((sum, line) => sum + line.amount, 0);
 
-  const calculateTotal = (): number => {
-    const basePrice = getBasePrice();
-    const addOnsTotal = calculateAddOnsTotal();
-    const monthlySubtotal = basePrice + addOnsTotal;
-    
-    // Apply contract length discount
-    const discount = getContractLengthDiscount();
-    const discountedMonthlyPrice = monthlySubtotal * (1 - discount);
-    
-    // Multiply by number of months for full contract price
-    const months = parseInt(contractLength);
-    const finalPrice = discountedMonthlyPrice * months;
-    
-    return finalPrice;
-  };
+  const addOnsMonthlyTotal = Number((quote.monthlySubtotal - planMonthlyTotal).toFixed(2));
 
-  // Load services from database
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('services')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
-        
-        if (error) throw error;
-        setServices(data || []);
-      } catch (error) {
-        console.error('Error loading services:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load services. Please refresh the page.",
-        });
-      }
-    };
-    
-    loadServices();
-  }, [toast]);
+  const hasPlanSelection = isSubscriptionTab && quote.valid;
 
   const handleContinueToCheckout = () => {
     if (!user) {
@@ -184,46 +108,24 @@ export default function Subscription() {
       return;
     }
 
-    // Validate selections
-    if (selectedTab === "single-family" && selectedTiers.length === 0) {
+    if (!quote.valid) {
       toast({
         variant: "destructive",
         title: "Selection Required",
-        description: "Please select at least one service plan to continue.",
+        description: quote.reason ?? "Please complete your selection to continue.",
       });
       return;
     }
 
-    if (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) {
-      toast({
-        variant: "destructive",
-        title: "Selection Required",
-        description: "Please select both a community tier and service to continue.",
-      });
-      return;
-    }
-
-    // Prepare checkout data
-    const checkoutData = {
-      subscriptionType: selectedTab,
-      selectedTiers,
-      selectedTierNames: getSelectedTiers().map(t => t.name),
-      selectedServiceTypes,
-      selectedCommunityTierId,
-      selectedServiceId,
+    const checkoutData: CheckoutData = {
+      subscriptionType,
+      planIds,
+      addOnNames: selectedAddOns,
       unitCount,
-      total: calculateTotal(),
-      contractLength,
-      monthlyPrice: getBasePrice() + calculateAddOnsTotal(),
-      services: services.filter(service =>
-        selectedTab === "single-family"
-          ? service.category === 'single_family' && selectedTiers.includes(service.id)
-          : service.category === 'multi_family'
-      )
+      contractMonths,
     };
 
-    // Navigate to checkout with data
-    navigate('/checkout', { state: checkoutData });
+    navigate("/checkout", { state: checkoutData });
   };
 
   return (
@@ -486,48 +388,39 @@ export default function Subscription() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {selectedTab === "single-family" &&
-                  getSelectedTiers().map((tier) => (
-                    <li key={tier.id} className="flex justify-between text-sm">
-                      <span>{tier.name} Plan</span>
-                      <span className="font-medium">${tier.price.toFixed(2)}/mo</span>
-                    </li>
-                  ))}
-                {selectedTab === "multi-family" && (
-                  <li className="flex justify-between text-sm">
-                    <span>Multi-Family Service ({unitCount} units)</span>
-                    <span className="font-medium">${getBasePrice().toFixed(2)}/mo</span>
+                {quote.lines.map((line) => (
+                  <li key={line.label} className="flex justify-between text-sm">
+                    <span>
+                      {line.label}
+                      {line.note && <span className="text-primary"> ({line.note})</span>}
+                    </span>
+                    <span className="font-medium">${line.amount.toFixed(2)}/mo</span>
                   </li>
-                )}
-                {selectedAddOns.map((addOnName, index) => {
-                  const addOn = addOnServices[0].services.find(s => s.name === addOnName);
-                  if (!addOn) return null;
-                  const discounted = index === 1 && selectedAddOns.length >= 2;
-                  const price = discounted ? getAddOnPrice(addOn) * 0.75 : getAddOnPrice(addOn);
-                  return (
-                    <li key={addOnName} className="flex justify-between text-sm">
-                      <span>
-                        {addOn.name}
-                        {discounted && <span className="text-primary"> (25% off)</span>}
-                      </span>
-                      <span className="font-medium">${price.toFixed(2)}/mo</span>
-                    </li>
-                  );
-                })}
+                ))}
               </ul>
               <div className="mt-4 pt-4 border-t flex justify-between font-semibold">
                 <span>Monthly subtotal</span>
-                <span className="text-primary">${(getBasePrice() + calculateAddOnsTotal()).toFixed(2)}/mo</span>
+                <span className="text-primary">${quote.monthlySubtotal.toFixed(2)}/mo</span>
               </div>
-              {getContractLengthDiscount() > 0 && (
+              {quote.discountRate > 0 && (
                 <div className="mt-1 flex justify-between text-sm text-primary">
-                  <span>Contract discount ({getContractLengthDiscount() * 100}% off)</span>
-                  <span>-${((getBasePrice() + calculateAddOnsTotal()) * getContractLengthDiscount()).toFixed(2)}/mo</span>
+                  <span>Contract discount ({Math.round(quote.discountRate * 100)}% off)</span>
+                  <span>-${(quote.monthlySubtotal - quote.discountedMonthly).toFixed(2)}/mo</span>
                 </div>
               )}
+              <div className="mt-1 flex justify-between text-sm text-muted-foreground">
+                <span>
+                  Subtotal ({quote.months} {quote.months === 1 ? "month" : "months"})
+                </span>
+                <span>${quote.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="mt-1 flex justify-between text-sm text-muted-foreground">
+                <span>Estimated tax (8%)</span>
+                <span>${quote.tax.toFixed(2)}</span>
+              </div>
               <div className="mt-2 flex justify-between font-bold text-lg">
-                <span>Total due today ({contractLength} {parseInt(contractLength) === 1 ? "month" : "months"})</span>
-                <span className="text-primary">${calculateTotal().toFixed(2)}</span>
+                <span>Total due today</span>
+                <span className="text-primary">${quote.total.toFixed(2)}</span>
               </div>
             </CardContent>
           </Card>
@@ -567,24 +460,27 @@ export default function Subscription() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {addOnServices[0].services.map((addOn) => (
-                  <div key={addOn.name} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={addOn.name}
-                      checked={selectedAddOns.includes(addOn.name)}
-                      onCheckedChange={() => handleAddOnToggle(addOn.name)}
-                    />
-                    <Label htmlFor={addOn.name} className="flex-1 cursor-pointer">
-                      <div className="flex justify-between">
-                        <span>{addOn.name}</span>
-                        <span className="text-muted-foreground">{addOn.price}</span>
-                      </div>
-                      {addOn.description && (
-                        <p className="text-xs text-muted-foreground">{addOn.description}</p>
-                      )}
-                    </Label>
-                  </div>
-                ))}
+                {ADD_ONS.map((addOn) => {
+                  const details = addOnServices[0].services.find((s) => s.name === addOn.name);
+                  return (
+                    <div key={addOn.name} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={addOn.name}
+                        checked={selectedAddOns.includes(addOn.name)}
+                        onCheckedChange={() => handleAddOnToggle(addOn.name)}
+                      />
+                      <Label htmlFor={addOn.name} className="flex-1 cursor-pointer">
+                        <div className="flex justify-between">
+                          <span>{addOn.name}</span>
+                          <span className="text-muted-foreground">${addOn.price.toFixed(2)}/mo</span>
+                        </div>
+                        {details?.description && (
+                          <p className="text-xs text-muted-foreground">{details.description}</p>
+                        )}
+                      </Label>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -592,33 +488,25 @@ export default function Subscription() {
 
         {hasPlanSelection && (
           <PricingDisplay
-            total={calculateTotal()}
-            discount={getContractLengthDiscount() * 100}
-            subscriptionType={selectedTab}
-            selectedPlan={
-              selectedTab === "single-family"
-                ? getSelectedTiers().map(t => t.name).join(" + ")
-                : multiFamilyTiers.find(t => t.id === selectedCommunityTierId)?.unitRange
-            }
+            total={quote.total}
+            discount={quote.discountRate * 100}
+            subscriptionType={subscriptionType}
+            selectedPlan={quote.planNames.join(" + ")}
             contractLength={contractLength === "1" ? "Monthly" : contractLength === "6" ? "6 Months" : "12 Months"}
             selectedServices={selectedAddOns}
-            basePrice={getBasePrice()}
-            addOnsTotal={calculateAddOnsTotal()}
+            basePrice={planMonthlyTotal}
+            addOnsTotal={addOnsMonthlyTotal}
             bundleDiscount={selectedAddOns.length >= 2 ? 25 : 0}
-            contractMonths={parseInt(contractLength)}
+            contractMonths={quote.months}
           />
         )}
-        
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && (
+
+        {isSubscriptionTab && (
           <div className="flex justify-center">
-            <Button 
+            <Button
               size="lg"
               onClick={handleContinueToCheckout}
-              disabled={
-                (selectedTab === "single-family" && selectedTiers.length === 0) ||
-                (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
-                isProcessing
-              }
+              disabled={!quote.valid || isProcessing}
               className="w-full max-w-md"
             >
               Subscribe Now
