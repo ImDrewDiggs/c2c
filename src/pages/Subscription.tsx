@@ -460,24 +460,27 @@ export default function Subscription() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {addOnServices[0].services.map((addOn) => (
-                  <div key={addOn.name} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={addOn.name}
-                      checked={selectedAddOns.includes(addOn.name)}
-                      onCheckedChange={() => handleAddOnToggle(addOn.name)}
-                    />
-                    <Label htmlFor={addOn.name} className="flex-1 cursor-pointer">
-                      <div className="flex justify-between">
-                        <span>{addOn.name}</span>
-                        <span className="text-muted-foreground">{addOn.price}</span>
-                      </div>
-                      {addOn.description && (
-                        <p className="text-xs text-muted-foreground">{addOn.description}</p>
-                      )}
-                    </Label>
-                  </div>
-                ))}
+                {ADD_ONS.map((addOn) => {
+                  const details = addOnServices[0].services.find((s) => s.name === addOn.name);
+                  return (
+                    <div key={addOn.name} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={addOn.name}
+                        checked={selectedAddOns.includes(addOn.name)}
+                        onCheckedChange={() => handleAddOnToggle(addOn.name)}
+                      />
+                      <Label htmlFor={addOn.name} className="flex-1 cursor-pointer">
+                        <div className="flex justify-between">
+                          <span>{addOn.name}</span>
+                          <span className="text-muted-foreground">${addOn.price.toFixed(2)}/mo</span>
+                        </div>
+                        {details?.description && (
+                          <p className="text-xs text-muted-foreground">{details.description}</p>
+                        )}
+                      </Label>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -485,33 +488,25 @@ export default function Subscription() {
 
         {hasPlanSelection && (
           <PricingDisplay
-            total={calculateTotal()}
-            discount={getContractLengthDiscount() * 100}
-            subscriptionType={selectedTab}
-            selectedPlan={
-              selectedTab === "single-family"
-                ? getSelectedTiers().map(t => t.name).join(" + ")
-                : multiFamilyTiers.find(t => t.id === selectedCommunityTierId)?.unitRange
-            }
+            total={quote.total}
+            discount={quote.discountRate * 100}
+            subscriptionType={subscriptionType}
+            selectedPlan={quote.planNames.join(" + ")}
             contractLength={contractLength === "1" ? "Monthly" : contractLength === "6" ? "6 Months" : "12 Months"}
             selectedServices={selectedAddOns}
-            basePrice={getBasePrice()}
-            addOnsTotal={calculateAddOnsTotal()}
+            basePrice={planMonthlyTotal}
+            addOnsTotal={addOnsMonthlyTotal}
             bundleDiscount={selectedAddOns.length >= 2 ? 25 : 0}
-            contractMonths={parseInt(contractLength)}
+            contractMonths={quote.months}
           />
         )}
-        
-        {(selectedTab === "single-family" || selectedTab === "multi-family") && (
+
+        {isSubscriptionTab && (
           <div className="flex justify-center">
-            <Button 
+            <Button
               size="lg"
               onClick={handleContinueToCheckout}
-              disabled={
-                (selectedTab === "single-family" && selectedTiers.length === 0) ||
-                (selectedTab === "multi-family" && (!selectedCommunityTierId || !selectedServiceId)) ||
-                isProcessing
-              }
+              disabled={!quote.valid || isProcessing}
               className="w-full max-w-md"
             >
               Subscribe Now
