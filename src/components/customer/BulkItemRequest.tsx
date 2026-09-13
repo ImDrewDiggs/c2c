@@ -213,7 +213,7 @@ const BulkItemRequest = ({ userId }: BulkItemRequestProps) => {
           <ul className="list-disc list-inside space-y-1">
             <li>Standard bulk items: $45 per item</li>
             <li>Large appliances/furniture: $75-$99 per item</li>
-            <li>ELITE members receive priority scheduling</li>
+            <li>Premiere members receive priority scheduling</li>
             <li>We'll provide exact pricing within 24 hours</li>
           </ul>
         </div>

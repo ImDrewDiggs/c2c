@@ -57,25 +57,24 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    if (location.state) {
-      setCheckoutData(location.state as CheckoutData);
+    if (isCheckoutData(location.state)) {
+      setCheckoutData(location.state);
     } else {
-      // Redirect back to subscription page if no data
+      // Redirect back to subscription page if no valid selection was passed
       navigate('/subscription');
     }
   }, [location.state, navigate]);
 
-  const calculateSubtotal = () => {
-    return checkoutData?.total || 0;
-  };
+  const quote = checkoutData
+    ? computeSubscriptionQuote({
+        subscriptionType: checkoutData.subscriptionType,
+        planIds: checkoutData.planIds,
+        addOnNames: checkoutData.addOnNames,
+        unitCount: checkoutData.unitCount,
+        contractMonths: checkoutData.contractMonths,
+      })
+    : null;
 
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.08; // 8% tax
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
-  };
 
   const handleCustomerInfoChange = (field: keyof CustomerInfo, value: string) => {
     setCustomerInfo(prev => ({ ...prev, [field]: value }));
@@ -108,57 +107,50 @@ export default function Checkout() {
 
   const handlePlaceOrder = async () => {
     if (!validateForm()) return;
+    if (!checkoutData || !quote?.valid) {
+      toast({
+        variant: "destructive",
+        title: "Selection Required",
+        description: "Please choose your plan again before paying.",
+      });
+      navigate('/subscription');
+      return;
+    }
+
+    if (selectedPaymentMethod !== "stripe") {
+      toast({
+        variant: "destructive",
+        title: "Payment Method Unavailable",
+        description: "Card payment is the only option available right now. Please choose Card.",
+      });
+      return;
+    }
 
     setIsProcessing(true);
-    
+
     try {
-      // Use Stripe for payment processing
-      if (selectedPaymentMethod === "stripe") {
-        const contractLengthValue = checkoutData?.contractLength || "1";
-        const contractLengthLabel = contractLengthValue === "1" 
-          ? "monthly" 
-          : contractLengthValue === "6" 
-          ? "6-month" 
-          : "12-month";
-        
-        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-          body: {
-            subscriptionType: checkoutData?.subscriptionType,
-            selectedTier: checkoutData?.selectedTier,
-            selectedServiceTypes: checkoutData?.selectedServiceTypes || [],
-            unitCount: checkoutData?.unitCount || 1,
-            total: calculateTotal(),
-            isSubscription: contractLengthValue === "1",
-            contractLength: contractLengthLabel,
-            contractMonths: parseInt(contractLengthValue),
-            selectedServices: [`${checkoutData?.subscriptionType} ${checkoutData?.selectedTier || ''} Plan (${contractLengthLabel})`]
-          }
-        });
+      const payload: CreateCheckoutSessionPayload = {
+        subscriptionType: checkoutData.subscriptionType,
+        planIds: checkoutData.planIds,
+        addOnNames: checkoutData.addOnNames,
+        unitCount: checkoutData.unitCount,
+        contractMonths: checkoutData.contractMonths,
+        total: quote.total,
+      };
 
-        if (error) throw error;
+      const { data, error } = await supabase.functions.invoke<{ url?: string }>(
+        'create-checkout-session',
+        { body: payload }
+      );
 
-        if (data?.url) {
-          // Redirect to Stripe Checkout (same tab so success/cancel routes return here)
-          window.location.href = data.url;
-        } else {
-          throw new Error('No checkout URL received');
-        }
+      if (error) throw error;
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout (same tab so success/cancel routes return here)
+        window.location.href = data.url;
       } else {
-        // For other payment methods, show success (simulated)
-        toast({
-          title: "Order Placed Successfully",
-          description: "Redirecting to confirmation page...",
-        });
-        
-        setTimeout(() => {
-          navigate('/checkout/success', { 
-            state: { 
-              orderData: { checkoutData, customerInfo, paymentMethod: selectedPaymentMethod, total: calculateTotal() }
-            }
-          });
-        }, 2000);
+        throw new Error('No checkout URL received');
       }
-      
     } catch (error) {
       console.error('Error placing order:', error);
       handleError(error, 'order_placement');
@@ -172,9 +164,10 @@ export default function Checkout() {
     }
   };
 
-  if (!checkoutData) {
+  if (!checkoutData || !quote) {
     return <div className="container mx-auto py-10">Loading...</div>;
   }
+
 
   return (
     <RequireAuth allowedRoles={['customer']}>
@@ -202,52 +195,70 @@ export default function Checkout() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                   <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-medium">
-                        {checkoutData.subscriptionType === "single-family" 
-                          ? "Single Family Service" 
-                          : "Multi Family Service"
-                        }
+                        {checkoutData.subscriptionType === "single-family"
+                          ? "Single Family Service"
+                          : "Multi Family Service"}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        {checkoutData.contractLength === "1" 
+                        {quote.months === 1
                           ? "Monthly subscription"
-                          : checkoutData.contractLength === "6"
+                          : quote.months === 6
                           ? "6-month subscription (5% discount applied)"
-                          : "12-month subscription (10% discount applied)"
-                        }
+                          : "12-month subscription (10% discount applied)"}
                       </p>
-                      {checkoutData.monthlyPrice && parseInt(checkoutData.contractLength || "1") > 1 && (
+                      {quote.months > 1 && (
                         <p className="text-sm text-muted-foreground">
-                          ${checkoutData.monthlyPrice.toFixed(2)}/month × {checkoutData.contractLength} months
+                          ${quote.discountedMonthly.toFixed(2)}/month × {quote.months} months
                         </p>
                       )}
                       {checkoutData.subscriptionType === "multi-family" && (
-                        <p className="text-sm text-muted-foreground">
-                          {checkoutData.unitCount} units
-                        </p>
+                        <p className="text-sm text-muted-foreground">{quote.unitCount} units</p>
                       )}
                     </div>
-                    <Badge variant="secondary">${calculateSubtotal().toFixed(2)}</Badge>
+                    <Badge variant="secondary">{quote.planNames.join(" + ")}</Badge>
                   </div>
+
+                  <ul className="space-y-1">
+                    {quote.lines.map((line) => (
+                      <li key={line.label} className="flex justify-between text-sm">
+                        <span>
+                          {line.label}
+                          {line.note && <span className="text-primary"> ({line.note})</span>}
+                        </span>
+                        <span>${line.amount.toFixed(2)}/mo</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
+                    <span>Monthly subtotal</span>
+                    <span>${quote.monthlySubtotal.toFixed(2)}/mo</span>
+                  </div>
+                  {quote.discountRate > 0 && (
+                    <div className="flex justify-between text-primary">
+                      <span>Contract discount ({Math.round(quote.discountRate * 100)}%)</span>
+                      <span>-${(quote.monthlySubtotal - quote.discountedMonthly).toFixed(2)}/mo</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${calculateSubtotal().toFixed(2)}</span>
+                    <span>${quote.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tax</span>
-                    <span>${calculateTax().toFixed(2)}</span>
+                    <span>Tax (8%)</span>
+                    <span>${quote.tax.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span>${quote.total.toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -467,7 +478,7 @@ export default function Checkout() {
                     onClick={handlePlaceOrder}
                     disabled={isProcessing || !selectedPaymentMethod}
                   >
-                    {isProcessing ? "Processing..." : `Place Order - $${calculateTotal().toFixed(2)}`}
+                    {isProcessing ? "Processing..." : `Place Order - $${quote.total.toFixed(2)}`}
                   </Button>
                 </div>
               </CardContent>

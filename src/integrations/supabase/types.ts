@@ -191,6 +191,48 @@ export type Database = {
         }
         Relationships: []
       }
+      appointments: {
+        Row: {
+          cancelled_at: string | null
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          service_address: string | null
+          start_time: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          service_address?: string | null
+          start_time: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          service_address?: string | null
+          start_time?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
           assigned_date: string

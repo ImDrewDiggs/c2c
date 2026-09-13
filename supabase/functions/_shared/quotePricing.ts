@@ -18,7 +18,7 @@ export const QUOTE_PLANS: QuotePlan[] = [
   { id: "standard", name: "Standard", basePrice: 49.99, includedCans: 1, recycleIncluded: true, recycleAddOn: 0, extraCanPrice: 11 },
   { id: "premium", name: "Premium", basePrice: 79.99, includedCans: 2, recycleIncluded: true, recycleAddOn: 0, extraCanPrice: 10 },
   { id: "comprehensive", name: "Comprehensive", basePrice: 119.99, includedCans: 3, recycleIncluded: true, recycleAddOn: 0, extraCanPrice: 9 },
-  { id: "elite", name: "ELITE", basePrice: 169.99, includedCans: 3, recycleIncluded: true, recycleAddOn: 0, extraCanPrice: 8 },
+  { id: "elite", name: "Premiere", basePrice: 169.99, includedCans: 3, recycleIncluded: true, recycleAddOn: 0, extraCanPrice: 8 },
 ];
 
 export const MAX_CANS = 10;

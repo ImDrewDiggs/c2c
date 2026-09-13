@@ -44,7 +44,7 @@ export const singleFamilyServices: ServiceCategory[] = [
         description: "3 trash cans + 1 recycle concierge"
       },
       {
-        name: "ELITE",
+        name: "Premiere",
         pricingModel: "Monthly",
         price: "$169.99", 
         description: "All Comprehensive services + priority account manager"
@@ -83,7 +83,7 @@ export const multiFamilyServices: ServiceCategory[] = [
         description: "3x/week concierge"
       },
       {
-        name: "ELITE",
+        name: "Premiere",
         pricingModel: "Per Unit / Month",
         price: "$32.99",
         description: "Daily concierge"
@@ -185,10 +185,10 @@ export const addOnServices: ServiceCategory[] = [
         description: "Individual bulk item removal"
       },
       {
-        name: "Yard Pickup (ELITE only)",
+        name: "Yard Pickup",
         pricingModel: "Per Service",
         price: "$25 – $75",
-        description: "Yard waste pickup for ELITE customers"
+        description: "Yard waste pickup — Premiere tier only (large yards extra)"
       }
     ]
   }
@@ -288,8 +288,8 @@ export const singleFamilyTiers: ServiceTier[] = [
     ]
   },
   {
-    id: "elite",
-    name: "ELITE",
+    id: "premiere",
+    name: "Premiere",
     description: "Ultimate luxury service with account manager",
     price: 169.99,
     features: [
@@ -362,7 +362,7 @@ export const multiFamilyServiceDetails = [
     ]
   },
   {
-    tier: "ELITE",
+    tier: "Premiere",
     price: "$32.99/unit/month",
     services: [
       "Daily concierge",

@@ -163,7 +163,7 @@ const SchedulePickup = ({ userId }: SchedulePickupProps) => {
           <p className="font-semibold">Important Notes:</p>
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
             <li>Pickups are scheduled during business hours (8 AM - 6 PM)</li>
-            <li>Same-day pickups available for ELITE members only</li>
+            <li>Same-day pickups available for Premiere members only</li>
             <li>Hazardous materials require 48-hour advance notice</li>
             <li>Bulk items may incur additional fees</li>
           </ul>
