@@ -195,52 +195,70 @@ export default function Checkout() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                   <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-medium">
-                        {checkoutData.subscriptionType === "single-family" 
-                          ? "Single Family Service" 
-                          : "Multi Family Service"
-                        }
+                        {checkoutData.subscriptionType === "single-family"
+                          ? "Single Family Service"
+                          : "Multi Family Service"}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        {checkoutData.contractLength === "1" 
+                        {quote.months === 1
                           ? "Monthly subscription"
-                          : checkoutData.contractLength === "6"
+                          : quote.months === 6
                           ? "6-month subscription (5% discount applied)"
-                          : "12-month subscription (10% discount applied)"
-                        }
+                          : "12-month subscription (10% discount applied)"}
                       </p>
-                      {checkoutData.monthlyPrice && parseInt(checkoutData.contractLength || "1") > 1 && (
+                      {quote.months > 1 && (
                         <p className="text-sm text-muted-foreground">
-                          ${checkoutData.monthlyPrice.toFixed(2)}/month × {checkoutData.contractLength} months
+                          ${quote.discountedMonthly.toFixed(2)}/month × {quote.months} months
                         </p>
                       )}
                       {checkoutData.subscriptionType === "multi-family" && (
-                        <p className="text-sm text-muted-foreground">
-                          {checkoutData.unitCount} units
-                        </p>
+                        <p className="text-sm text-muted-foreground">{quote.unitCount} units</p>
                       )}
                     </div>
-                    <Badge variant="secondary">${calculateSubtotal().toFixed(2)}</Badge>
+                    <Badge variant="secondary">{quote.planNames.join(" + ")}</Badge>
                   </div>
+
+                  <ul className="space-y-1">
+                    {quote.lines.map((line) => (
+                      <li key={line.label} className="flex justify-between text-sm">
+                        <span>
+                          {line.label}
+                          {line.note && <span className="text-primary"> ({line.note})</span>}
+                        </span>
+                        <span>${line.amount.toFixed(2)}/mo</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
+                    <span>Monthly subtotal</span>
+                    <span>${quote.monthlySubtotal.toFixed(2)}/mo</span>
+                  </div>
+                  {quote.discountRate > 0 && (
+                    <div className="flex justify-between text-primary">
+                      <span>Contract discount ({Math.round(quote.discountRate * 100)}%)</span>
+                      <span>-${(quote.monthlySubtotal - quote.discountedMonthly).toFixed(2)}/mo</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${calculateSubtotal().toFixed(2)}</span>
+                    <span>${quote.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tax</span>
-                    <span>${calculateTax().toFixed(2)}</span>
+                    <span>Tax (8%)</span>
+                    <span>${quote.tax.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span>${quote.total.toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
