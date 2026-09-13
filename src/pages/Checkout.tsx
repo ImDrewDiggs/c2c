@@ -107,57 +107,50 @@ export default function Checkout() {
 
   const handlePlaceOrder = async () => {
     if (!validateForm()) return;
+    if (!checkoutData || !quote?.valid) {
+      toast({
+        variant: "destructive",
+        title: "Selection Required",
+        description: "Please choose your plan again before paying.",
+      });
+      navigate('/subscription');
+      return;
+    }
+
+    if (selectedPaymentMethod !== "stripe") {
+      toast({
+        variant: "destructive",
+        title: "Payment Method Unavailable",
+        description: "Card payment is the only option available right now. Please choose Card.",
+      });
+      return;
+    }
 
     setIsProcessing(true);
-    
+
     try {
-      // Use Stripe for payment processing
-      if (selectedPaymentMethod === "stripe") {
-        const contractLengthValue = checkoutData?.contractLength || "1";
-        const contractLengthLabel = contractLengthValue === "1" 
-          ? "monthly" 
-          : contractLengthValue === "6" 
-          ? "6-month" 
-          : "12-month";
-        
-        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-          body: {
-            subscriptionType: checkoutData?.subscriptionType,
-            selectedTier: checkoutData?.selectedTier,
-            selectedServiceTypes: checkoutData?.selectedServiceTypes || [],
-            unitCount: checkoutData?.unitCount || 1,
-            total: calculateTotal(),
-            isSubscription: contractLengthValue === "1",
-            contractLength: contractLengthLabel,
-            contractMonths: parseInt(contractLengthValue),
-            selectedServices: [`${checkoutData?.subscriptionType} ${checkoutData?.selectedTier || ''} Plan (${contractLengthLabel})`]
-          }
-        });
+      const payload: CreateCheckoutSessionPayload = {
+        subscriptionType: checkoutData.subscriptionType,
+        planIds: checkoutData.planIds,
+        addOnNames: checkoutData.addOnNames,
+        unitCount: checkoutData.unitCount,
+        contractMonths: checkoutData.contractMonths,
+        total: quote.total,
+      };
 
-        if (error) throw error;
+      const { data, error } = await supabase.functions.invoke<{ url?: string }>(
+        'create-checkout-session',
+        { body: payload }
+      );
 
-        if (data?.url) {
-          // Redirect to Stripe Checkout (same tab so success/cancel routes return here)
-          window.location.href = data.url;
-        } else {
-          throw new Error('No checkout URL received');
-        }
+      if (error) throw error;
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout (same tab so success/cancel routes return here)
+        window.location.href = data.url;
       } else {
-        // For other payment methods, show success (simulated)
-        toast({
-          title: "Order Placed Successfully",
-          description: "Redirecting to confirmation page...",
-        });
-        
-        setTimeout(() => {
-          navigate('/checkout/success', { 
-            state: { 
-              orderData: { checkoutData, customerInfo, paymentMethod: selectedPaymentMethod, total: calculateTotal() }
-            }
-          });
-        }, 2000);
+        throw new Error('No checkout URL received');
       }
-      
     } catch (error) {
       console.error('Error placing order:', error);
       handleError(error, 'order_placement');
@@ -171,9 +164,10 @@ export default function Checkout() {
     }
   };
 
-  if (!checkoutData) {
+  if (!checkoutData || !quote) {
     return <div className="container mx-auto py-10">Loading...</div>;
   }
+
 
   return (
     <RequireAuth allowedRoles={['customer']}>
