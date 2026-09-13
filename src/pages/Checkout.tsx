@@ -478,7 +478,7 @@ export default function Checkout() {
                     onClick={handlePlaceOrder}
                     disabled={isProcessing || !selectedPaymentMethod}
                   >
-                    {isProcessing ? "Processing..." : `Place Order - $${calculateTotal().toFixed(2)}`}
+                    {isProcessing ? "Processing..." : `Place Order - $${quote.total.toFixed(2)}`}
                   </Button>
                 </div>
               </CardContent>
