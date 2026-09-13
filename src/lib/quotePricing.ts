@@ -70,7 +70,7 @@ export const QUOTE_PLANS: readonly QuotePlan[] = [
   },
   {
     id: "elite",
-    name: "ELITE",
+    name: "Premiere",
     basePrice: 169.99,
     includedCans: 3,
     recycleIncluded: true,
