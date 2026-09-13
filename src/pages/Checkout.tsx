@@ -57,25 +57,24 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    if (location.state) {
-      setCheckoutData(location.state as CheckoutData);
+    if (isCheckoutData(location.state)) {
+      setCheckoutData(location.state);
     } else {
-      // Redirect back to subscription page if no data
+      // Redirect back to subscription page if no valid selection was passed
       navigate('/subscription');
     }
   }, [location.state, navigate]);
 
-  const calculateSubtotal = () => {
-    return checkoutData?.total || 0;
-  };
+  const quote = checkoutData
+    ? computeSubscriptionQuote({
+        subscriptionType: checkoutData.subscriptionType,
+        planIds: checkoutData.planIds,
+        addOnNames: checkoutData.addOnNames,
+        unitCount: checkoutData.unitCount,
+        contractMonths: checkoutData.contractMonths,
+      })
+    : null;
 
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.08; // 8% tax
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
-  };
 
   const handleCustomerInfoChange = (field: keyof CustomerInfo, value: string) => {
     setCustomerInfo(prev => ({ ...prev, [field]: value }));
