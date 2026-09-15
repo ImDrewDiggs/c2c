@@ -6,3 +6,6 @@
 - [ ] Add-ons: Extra Can Concierge 9.99, Extra Can Cleaning 14.99, Priority Same-Day 49.99, Bulk Item Removal 45, Yard Pickup 25 (Premiere only)
 - [ ] Business flat-rate services list (grease hood, cardboard, pressure washing, exterior wash)
 - [ ] Sync tier feature bullets in src/data/services.ts with the guide
+
+## Open
+- [ ] Fix employee clock in/out (TimeTracker) not working
