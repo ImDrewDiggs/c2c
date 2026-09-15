@@ -217,6 +217,15 @@ export function useEmployeeLocationTracking(userId: string | undefined) {
         return;
       }
 
+      // Hard safety timeout: never let a pending permission prompt block clock in/out.
+      let settled = false;
+      const settle = (value: LocationCoordinates | null) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+      };
+      const safetyTimer = setTimeout(() => settle(null), 8_000);
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const location: LocationCoordinates = {
@@ -224,17 +233,19 @@ export function useEmployeeLocationTracking(userId: string | undefined) {
             longitude: position.coords.longitude,
             accuracy: position.coords.accuracy,
           };
-          uploadLocation(location, true);
-          resolve(location);
+          clearTimeout(safetyTimer);
+          void uploadLocation(location, true);
+          settle(location);
         },
         (error) => {
           console.error("Snapshot geolocation error:", error);
-          setLastError("Could not capture location snapshot.");
-          resolve(null);
+          clearTimeout(safetyTimer);
+          setLastError("Could not capture your location. Time tracking still works without it.");
+          settle(null);
         },
         {
           enableHighAccuracy: true,
-          timeout: 15_000,
+          timeout: 7_000,
           maximumAge: 0,
         },
       );

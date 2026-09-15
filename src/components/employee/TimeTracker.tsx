@@ -10,6 +10,8 @@ import { format } from "date-fns";
 
 interface TimeTrackerProps {
   userId: string;
+  /** Shared high-accuracy location capture from the dashboard's tracking hook. */
+  captureSnapshot?: () => Promise<{ latitude: number; longitude: number } | null>;
 }
 
 interface WorkSession {
@@ -20,14 +22,16 @@ interface WorkSession {
   status: string;
 }
 
-export function TimeTracker({ userId }: TimeTrackerProps) {
+export function TimeTracker({ userId, captureSnapshot: captureSnapshotProp }: TimeTrackerProps) {
   const { toast } = useToast();
   const [isWorking, setIsWorking] = useState(false);
   const [currentSession, setCurrentSession] = useState<WorkSession | null>(null);
   const [sessions, setSessions] = useState<WorkSession[]>([]);
   const [totalHours, setTotalHours] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { captureSnapshot, isTracking, permissionState, lastError } = useEmployeeLocationTracking(userId);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const ownTracking = useEmployeeLocationTracking(captureSnapshotProp ? undefined : userId);
+  const captureSnapshot = captureSnapshotProp ?? ownTracking.captureSnapshot;
 
   useEffect(() => {
     fetchWorkSessions();
@@ -87,6 +91,16 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   };
 
   const handleClockIn = async () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Not signed in",
+        description: "Please sign in again before clocking in.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       // Check for existing active session first
       const { data: existingSession } = await supabase
@@ -107,8 +121,8 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
         return;
       }
 
-      // Capture high-accuracy location snapshot before clocking in
-      const location = await captureSnapshot();
+      // Location is best-effort: it must never prevent clocking in.
+      const location = await captureSnapshot().catch(() => null);
 
       const insertPayload: {
         employee_id: string;
@@ -141,13 +155,16 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
           ? "Your work session has started and your location was recorded."
           : "Your work session has started successfully.",
       });
+      await fetchWorkSessions();
     } catch (error) {
       console.error('Error clocking in:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to clock in. Please try again.",
+        title: "Could not clock in",
+        description: "We couldn't start your session. Please try again.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -155,9 +172,10 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
   const handleClockOut = async () => {
     if (!currentSession) return;
 
+    setIsSubmitting(true);
     try {
-      // Capture high-accuracy location snapshot before clocking out
-      const location = await captureSnapshot();
+      // Location is best-effort: it must never prevent clocking out.
+      const location = await captureSnapshot().catch(() => null);
 
       const clockOutTime = new Date().toISOString();
       const clockInTime = new Date(currentSession.clock_in_time);
@@ -203,9 +221,11 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
       console.error('Error clocking out:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to clock out. Please try again.",
+        title: "Could not clock out",
+        description: "We couldn't end your session. Please try again.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -234,14 +254,14 @@ export function TimeTracker({ userId }: TimeTrackerProps) {
             </div>
             <div className="flex gap-2">
               {!isWorking ? (
-                <Button onClick={handleClockIn} className="flex items-center gap-2">
+                <Button onClick={handleClockIn} disabled={isSubmitting || loading} className="flex items-center gap-2">
                   <Play className="h-4 w-4" />
-                  Clock In
+                  {isSubmitting ? "Clocking In…" : "Clock In"}
                 </Button>
               ) : (
-                <Button onClick={handleClockOut} variant="destructive" className="flex items-center gap-2">
+                <Button onClick={handleClockOut} disabled={isSubmitting} variant="destructive" className="flex items-center gap-2">
                   <Square className="h-4 w-4" />
-                  Clock Out
+                  {isSubmitting ? "Clocking Out…" : "Clock Out"}
                 </Button>
               )}
             </div>
