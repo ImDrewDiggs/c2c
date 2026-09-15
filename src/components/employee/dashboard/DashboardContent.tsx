@@ -29,7 +29,7 @@ export function DashboardContent({
   userId
 }: DashboardContentProps) {
   const { toast } = useToast();
-  const { isTracking, permissionState, lastError } = useEmployeeLocationTracking(userId);
+  const { isTracking, permissionState, lastError, captureSnapshot } = useEmployeeLocationTracking(userId);
 
   const handleViewRoute = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
@@ -111,10 +111,14 @@ export function DashboardContent({
 
       {/* Time Tracker can be integrated into the groups or shown separately */}
       {activeTab === "time-tracker" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TimeTracker userId={userId || ''} />
-          <TimeCard userId={userId || ''} />
-        </div>
+        userId ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TimeTracker userId={userId} captureSnapshot={captureSnapshot} />
+            <TimeCard userId={userId} />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Loading your account…</p>
+        )
       )}
     </div>
   );
