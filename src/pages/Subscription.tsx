@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Seo from "@/components/seo/Seo";
 import {
   ADD_ONS,
+  MIN_MULTI_FAMILY_UNITS,
   MULTI_FAMILY_LEVELS,
   computeSubscriptionQuote,
   type SubscriptionType,
@@ -34,7 +35,7 @@ export default function Subscription() {
   const [selectedTab, setSelectedTab] = useState<SubscriptionType | "business" | "add-ons">("single-family");
   const [selectedTiers, setSelectedTiers] = useState<string[]>([]);
   const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([]);
-  const [unitCount, setUnitCount] = useState(1);
+  const [unitCount, setUnitCount] = useState(MIN_MULTI_FAMILY_UNITS);
   const [selectedCommunityTierId, setSelectedCommunityTierId] = useState(multiFamilyTiers[0]?.id ?? "");
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -89,11 +90,9 @@ export default function Subscription() {
   const getSelectedTiers = (): ServiceTier[] =>
     singleFamilyTiers.filter((tier) => selectedTiers.includes(tier.id));
 
-  const planMonthlyTotal = quote.lines
-    .slice(0, subscriptionType === "single-family" ? selectedTiers.length : 1)
-    .reduce((sum, line) => sum + line.amount, 0);
-
-  const addOnsMonthlyTotal = Number((quote.monthlySubtotal - planMonthlyTotal).toFixed(2));
+  const planMonthlyTotal = quote.planMonthly;
+  const addOnsMonthlyTotal = quote.addOnsMonthly;
+  const selectedMultiFamilyLevel = MULTI_FAMILY_LEVELS.find((level) => level.id === selectedServiceId);
 
   const hasPlanSelection = isSubscriptionTab && quote.valid;
 
@@ -144,7 +143,11 @@ export default function Subscription() {
       </div>
 
       <div className="grid gap-8">
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+        <Tabs
+          value={selectedTab}
+          onValueChange={(value) => setSelectedTab(value as SubscriptionType | "business" | "add-ons")}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="single-family">Single Family</TabsTrigger>
             <TabsTrigger value="multi-family">Multi Family</TabsTrigger>
@@ -206,9 +209,9 @@ export default function Subscription() {
               selectedServiceId={selectedServiceId}
               onCommunityTierSelect={setSelectedCommunityTierId}
               onServiceSelect={setSelectedServiceId}
-              pricePerUnit={2.5}
-              totalPrice={calculateTotal()}
-              discount={0}
+              pricePerUnit={selectedMultiFamilyLevel?.price ?? 0}
+              totalPrice={quote.valid ? quote.total : 0}
+              discount={quote.discountRate * 100}
             />
             
             {/* Multi-Family Discounts */}
