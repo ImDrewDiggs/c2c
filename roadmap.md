@@ -8,4 +8,4 @@
 - [ ] Sync tier feature bullets in src/data/services.ts with the guide
 
 ## Open
-- [ ] Fix employee clock in/out (TimeTracker) not working
+- [x] Fix employee clock in/out (TimeTracker) — location capture no longer blocks, buttons show state
