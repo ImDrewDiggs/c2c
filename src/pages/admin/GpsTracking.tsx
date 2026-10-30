@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/ui/Loading";
+import { WazeLiveMap } from "@/components/maps/WazeLiveMap";
 
 function GpsTrackingContent() {
   const dashboardContext = useSimpleDashboard();
@@ -121,6 +122,14 @@ export default function AdminGpsTracking() {
               >
                 <GpsTrackingContent />
               </ErrorBoundary>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Live Traffic (Waze)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <WazeLiveMap />
             </CardContent>
           </Card>
         </div>

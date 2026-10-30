@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Calendar, CheckCircle2, Navigation, Trash2, Wrench } from "lucide-react";
 import { Assignment } from "@/types/map";
 import { format } from "date-fns";
+import { WazeNavigateButton } from "@/components/maps/WazeNavigateButton";
 
 interface JobDetailsModalProps {
   assignment: Assignment;
@@ -173,6 +174,15 @@ export function JobDetailsModal({
           <Separator />
 
           {/* Action Buttons */}
+          <WazeNavigateButton
+            size="sm"
+            className="w-full"
+            destination={{
+              latitude: assignment.house?.latitude,
+              longitude: assignment.house?.longitude,
+              address: assignment.house?.address,
+            }}
+          />
           <div className="flex space-x-2">
             <Button 
               variant="outline" 
@@ -184,7 +194,7 @@ export function JobDetailsModal({
               }}
             >
               <Navigation className="mr-1 h-3 w-3" />
-              Navigate
+              View Route
             </Button>
             
             {assignment.status !== 'completed' && (
