@@ -8,6 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { QuoteNdaGate } from "./QuoteNdaGate";
 import {
   QUOTE_PLANS,
   MAX_CANS,
@@ -75,6 +78,8 @@ function PriceBreakdownCard({ breakdown }: { breakdown: QuotePriceBreakdown }) {
 
 export default function InstantQuoteFlow() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { hasAccepted } = useTermsAcceptance();
   const [step, setStep] = useState<Step>(0);
   const [submitting, setSubmitting] = useState(false);
 
@@ -192,6 +197,9 @@ export default function InstantQuoteFlow() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }, [step, address, city, zip, trashDay, detectedDay, planId, cans, email]);
 
+  // Plans and prices (step 2+) require sign-in and NDA acceptance
+  const pricingLocked = step >= 2 && (!user || !hasAccepted);
+
   const next = () => {
     if (!stepValid) return;
     if (step === 1 && !trashDay) setTrashDay(detectedDay);
@@ -200,7 +208,7 @@ export default function InstantQuoteFlow() {
   const back = () => setStep((s) => (Math.max(0, s - 1) as Step));
 
   const submit = async () => {
-    if (submitting || !stepValid) return;
+    if (submitting || !stepValid || pricingLocked) return;
     setSubmitting(true);
     try {
       // Pull a referral code from ?ref= or a previously persisted value
@@ -267,6 +275,8 @@ export default function InstantQuoteFlow() {
             transition={{ duration: 0.18 }}
             className="space-y-4"
           >
+            {pricingLocked && <QuoteNdaGate signedIn={!!user} />}
+
             {step === 0 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
@@ -330,7 +340,7 @@ export default function InstantQuoteFlow() {
               </>
             )}
 
-            {step === 2 && (
+            {!pricingLocked && step === 2 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
                   <Sparkles className="w-5 h-5" />
@@ -377,7 +387,7 @@ export default function InstantQuoteFlow() {
               </>
             )}
 
-            {step === 3 && (
+            {!pricingLocked && step === 3 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
                   <Trash2 className="w-5 h-5" />
@@ -422,7 +432,7 @@ export default function InstantQuoteFlow() {
               </>
             )}
 
-            {step === 4 && (
+            {!pricingLocked && step === 4 && (
               <>
                 <div className="flex items-center gap-2 text-primary">
                   <CheckCircle2 className="w-5 h-5" />
@@ -450,7 +460,7 @@ export default function InstantQuoteFlow() {
           <Button type="button" variant="ghost" onClick={back} disabled={step === 0 || submitting}>
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </Button>
-          {step < LAST_STEP ? (
+          {pricingLocked ? null : step < LAST_STEP ? (
             <Button type="button" onClick={next} disabled={!stepValid}>
               Continue <ArrowRight className="w-4 h-4 ml-1" />
             </Button>

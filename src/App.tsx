@@ -121,7 +121,7 @@ const App = () => {
                   <Route path="/schedule" element={<Schedule />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contact" element={<ContactUs />} />
-                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/checkout" element={<RequireTermsAcceptance><Checkout /></RequireTermsAcceptance>} />
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />
                   <Route path="/checkout/error" element={<CheckoutError />} />
                   <Route path="/checkout/cancel" element={<CheckoutError />} />
