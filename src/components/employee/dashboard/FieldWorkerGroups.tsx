@@ -18,6 +18,7 @@ import { UploadPhotoModal } from "./UploadPhotoModal";
 import { ReportIssueModal } from "./ReportIssueModal";
 import { MessageAdminModal } from "./MessageAdminModal";
 import { PTORequestModal } from "./PTORequestModal";
+import { WazeNavigateButton } from "@/components/maps/WazeNavigateButton";
 
 interface FieldWorkerGroupsProps {
   assignments: Assignment[];
