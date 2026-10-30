@@ -383,9 +383,21 @@ export function FieldWorkerGroups({
                       </div>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {assignment.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {assignment.status}
+                    </Badge>
+                    <WazeNavigateButton
+                      size="sm"
+                      variant="outline"
+                      label="Waze"
+                      destination={{
+                        latitude: assignment.house?.latitude,
+                        longitude: assignment.house?.longitude,
+                        address: assignment.house?.address,
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
               {pendingStops.length > 3 && (
