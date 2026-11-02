@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { trustedReturnOrigin } from "../_shared/securityPolicy.ts";
 import {
   computeSubscriptionQuote,
   contractLabel,
@@ -50,6 +51,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
     const body = (await req.json()) as CheckoutRequestBody;
@@ -122,9 +124,11 @@ serve(async (req) => {
       authHeader.replace("Bearer ", "")
     );
     const user = userData?.user;
-    if (userError || !user?.email) {
+    if (userError || !user?.email || user.is_anonymous) {
       return json({ error: 'Authentication required' }, 401);
     }
+    const { data: acceptance, error: termsError } = await supabaseService.from("terms_acceptance").select("id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (termsError || !acceptance) return json({ error: "Agreement required" }, 403);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -133,7 +137,7 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
-    const requestOrigin = req.headers.get("origin") || "http://localhost:8080";
+    const requestOrigin = trustedReturnOrigin(origin);
     const label = contractLabel(quote.months);
     const planSummary = quote.planNames.join(" + ");
     const descriptionParts = [
@@ -180,7 +184,7 @@ serve(async (req) => {
       },
     });
 
-    await supabaseService.from("orders").insert({
+    const { error: orderError } = await supabaseService.from("orders").insert({
       user_id: user.id,
       type: isMonthly ? "subscription" : "prepaid_contract",
       subtotal: Math.round(quote.subtotal * 100),
@@ -199,6 +203,10 @@ serve(async (req) => {
         monthlySubtotal: quote.monthlySubtotal,
       },
     });
+    if (orderError) {
+      await stripe.checkout.sessions.expire(session.id);
+      throw new Error("Order could not be saved");
+    }
 
     return json({ url: session.url }, 200);
   } catch (error) {

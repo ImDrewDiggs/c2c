@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validSensorKey } from "../_shared/securityPolicy.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,6 +50,7 @@ serve(async (req) => {
 
     // Authenticate via x-sensor-api-key header or apikey in body
     const sensorApiKey = req.headers.get('x-sensor-api-key');
+    if (!sensorApiKey) return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const body: SensorReading = await req.json();
 
     if (!body.device_id) {
@@ -81,7 +83,7 @@ serve(async (req) => {
     }
 
     // Verify API key
-    if (sensorApiKey && sensorApiKey !== sensor.api_key) {
+    if (!validSensorKey(sensorApiKey, sensor.api_key)) {
       return new Response(JSON.stringify({ error: 'Invalid sensor API key' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -108,6 +110,10 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+    if (body.readings.some(r => !r || typeof r.type !== 'string' || !r.type || typeof r.value !== 'number' || !Number.isFinite(r.value)) ||
+      (body.location && (!Number.isFinite(body.location.lat) || !Number.isFinite(body.location.lng) || Math.abs(body.location.lat) > 90 || Math.abs(body.location.lng) > 180))) {
+      return new Response(JSON.stringify({ error: 'Invalid sensor data' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const recordedAt = body.timestamp ? new Date(body.timestamp).toISOString() : new Date().toISOString();

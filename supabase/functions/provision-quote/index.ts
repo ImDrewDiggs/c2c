@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { ownsCheckout } from "../_shared/securityPolicy.ts";
 
 const allowedOrigins = [
   'https://100289ea-3c34-415f-a645-b7b29b76a548.lovableproject.com',
@@ -24,6 +25,7 @@ serve(async (req) => {
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return new Response(null, { status: 405, headers: corsHeaders });
 
   try {
     const { sessionId } = await req.json();
@@ -42,7 +44,16 @@ serve(async (req) => {
       { auth: { persistSession: false } },
     );
 
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+    if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: authData, error: authError } = await admin.auth.getUser(token);
+    const user = authData.user;
+    if (authError || !user?.email) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // Check the locally recorded owner BEFORE retrieving any Stripe data.
+    const { data: order } = await admin.from("orders").select("id").eq("stripe_session_id", sessionId).eq("user_id", user.id).maybeSingle();
+    if (!order) return new Response(JSON.stringify({ error: "Payment unavailable" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (!ownsCheckout(user.id, session.metadata)) return new Response(JSON.stringify({ error: "Payment unavailable" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     if (session.payment_status !== "paid") {
       return new Response(JSON.stringify({ status: session.payment_status, provisioned: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
@@ -56,38 +67,15 @@ serve(async (req) => {
       });
     }
 
-    const email = (m.email || session.customer_details?.email || "").toLowerCase();
+    const email = user.email.toLowerCase();
     if (!email) {
       return new Response(JSON.stringify({ error: "No email on session" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Find or create the auth user
-    let userId: string | null = null;
-    const { data: existing } = await admin.auth.admin.listUsers();
-    const match = existing?.users?.find((u) => (u.email || "").toLowerCase() === email);
-    if (match) {
-      userId = match.id;
-    } else {
-      const { data: created, error: createErr } = await admin.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        user_metadata: { full_name: session.customer_details?.name || email.split("@")[0], role: "customer" },
-      });
-      if (createErr) {
-        console.error("createUser error:", createErr.message);
-        return new Response(JSON.stringify({ error: "Account provisioning failed" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      userId = created.user?.id ?? null;
-    }
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "User unavailable" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Provision only the authenticated order owner; never create or sign in another account.
+    const userId = user.id;
 
     const serviceAddress = `${m.address || ""}, ${m.city || ""}, ${m.state || ""} ${m.zip || ""}`.trim();
     const cans = parseInt(m.cans || "1", 10);
@@ -100,7 +88,7 @@ serve(async (req) => {
       user_id: userId,
       status: "paid",
       updated_at: new Date().toISOString(),
-    }).eq("stripe_session_id", sessionId);
+    }).eq("stripe_session_id", sessionId).eq("user_id", userId);
 
     // Upsert house record (idempotent via address match)
     let houseId: string | null = null;
@@ -186,20 +174,10 @@ serve(async (req) => {
         .eq("resume_token", String(m.resume_token));
     }
 
-    // Send magic link so they can sign in to dashboard without a password
-    let magicLink: string | null = null;
-    const { data: linkData } = await admin.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-      options: { redirectTo: `${origin || allowedOrigins[0]}/customer/dashboard` },
-    });
-    magicLink = linkData?.properties?.action_link ?? null;
-
     return new Response(JSON.stringify({
       status: "paid",
       provisioned: true,
       email,
-      magic_link: magicLink,
       service_address: serviceAddress,
       tier, cans, recycle, monthly_price: monthlyPrice,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });

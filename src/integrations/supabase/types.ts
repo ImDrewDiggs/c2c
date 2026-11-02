@@ -22,6 +22,7 @@ export type Database = {
           converted_at: string | null
           created_at: string
           email: string | null
+          email_verified: boolean
           id: string
           plan_id: string | null
           price_cents: number | null
@@ -44,6 +45,7 @@ export type Database = {
           converted_at?: string | null
           created_at?: string
           email?: string | null
+          email_verified?: boolean
           id?: string
           plan_id?: string | null
           price_cents?: number | null
@@ -66,6 +68,7 @@ export type Database = {
           converted_at?: string | null
           created_at?: string
           email?: string | null
+          email_verified?: boolean
           id?: string
           plan_id?: string | null
           price_cents?: number | null
@@ -2051,6 +2054,10 @@ export type Database = {
         Returns: boolean
       }
       qualify_referral: { Args: { _referee_user_id: string }; Returns: Json }
+      record_client_security_event: {
+        Args: { p_action: string }
+        Returns: undefined
+      }
       record_referral: { Args: { _code: string }; Returns: Json }
       record_terms_acceptance: {
         Args: {

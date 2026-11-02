@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { calculateQuotePrice, getQuotePlan, MAX_CANS } from "../_shared/quotePricing.ts";
+import { trustedReturnOrigin } from "../_shared/securityPolicy.ts";
 
 const allowedOrigins = [
   'https://100289ea-3c34-415f-a645-b7b29b76a548.lovableproject.com',
@@ -57,12 +58,23 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } },
+    );
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+    const { data: authData, error: authError } = token ? await supabaseService.auth.getUser(token) : { data: { user: null }, error: true };
+    const user = authData.user;
+    if (authError || !user?.email || user.is_anonymous) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: acceptance, error: termsError } = await supabaseService.from("terms_acceptance").select("id").eq("user_id", user.id).limit(1).maybeSingle();
+    if (termsError || !acceptance) return new Response(JSON.stringify({ error: "Agreement required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const body = await req.json();
     const address = sanitize(body.address, 250);
     const city = sanitize(body.city, 100);
     const state = sanitize(body.state, 2).toUpperCase();
     const zip = sanitize(body.zip, 10);
-    const email = sanitize(body.email, 254).toLowerCase();
+    const email = user.email.toLowerCase();
     const trashDay = sanitize(body.trashDay, 20).toLowerCase();
     const cans = Number(body.cans);
     const planId = getQuotePlan(body.planId).id;
@@ -90,17 +102,11 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
 
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } },
-    );
-
     // Try to attach to existing Stripe customer if any
     const customers = await stripe.customers.list({ email, limit: 1 });
     const customerId = customers.data[0]?.id;
 
-    const requestOrigin = origin || allowedOrigins[0];
+    const requestOrigin = trustedReturnOrigin(origin);
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -121,6 +127,7 @@ serve(async (req) => {
       success_url: `${requestOrigin}/quote/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${requestOrigin}/?quote=cancelled`,
       metadata: {
+        userId: user.id,
         flow: "instant_quote",
         address, city, state, zip,
         trash_day: trashDay,
@@ -136,8 +143,8 @@ serve(async (req) => {
     });
 
     // Pre-record pending order (no user_id yet; provisioning attaches it)
-    await supabaseService.from("orders").insert({
-      user_id: null,
+    const { error: orderError } = await supabaseService.from("orders").insert({
+      user_id: user.id,
       type: "subscription",
       subtotal: Math.round(price * 100),
       tax: 0,
@@ -148,9 +155,11 @@ serve(async (req) => {
       customer_email: email,
       service_address: `${address}, ${city}, ${state} ${zip}`,
       metadata: { flow: "instant_quote", tier, plan_id: planId, cans: billedCans, recycle, trash_day: trashDay },
-    }).then(({ error }) => {
-      if (error) console.error("orders insert failed (non-fatal):", error.message);
     });
+    if (orderError) {
+      await stripe.checkout.sessions.expire(session.id);
+      throw new Error("Order could not be saved");
+    }
 
     // Suppress abandoned-quote reminder while the user is on the Stripe page.
     // Final conversion is marked by verify-payment / provision-quote.

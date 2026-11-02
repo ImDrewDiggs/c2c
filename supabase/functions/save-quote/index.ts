@@ -32,6 +32,10 @@ serve(async (req) => {
     );
 
     const cans = clampInt(body.cans, 1, MAX_CANS);
+    // Guest quote input cannot enroll arbitrary recipients in reminder emails.
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+    const { data: authData } = token ? await admin.auth.getUser(token) : { data: { user: null } };
+    const verifiedEmail = authData.user?.email_confirmed_at ? authData.user.email?.toLowerCase() : null;
     const recycle = !!body.recycle;
     const planId = getQuotePlan(body.planId).id;
     let tier: string | null = null;
@@ -43,7 +47,7 @@ serve(async (req) => {
     }
 
     const payload = {
-      email: clampStr(body.email, 320)?.toLowerCase() || null,
+      email: verifiedEmail || null,
       address: clampStr(body.address, 300),
       city: clampStr(body.city, 100),
       state: clampStr(body.state, 4)?.toUpperCase() || null,
