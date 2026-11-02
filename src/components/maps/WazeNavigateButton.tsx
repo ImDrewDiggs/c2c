@@ -1,20 +1,24 @@
 import { Navigation } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
-import { buildWazeNavigationUrl, type WazeDestination } from "@/lib/waze";
+import { buildWazeNavigationUrl, openWazeNavigation, type WazeDestination } from "@/lib/waze";
 
 interface WazeNavigateButtonProps extends Omit<ButtonProps, "onClick" | "asChild"> {
   destination: WazeDestination;
   label?: string;
 }
 
+/**
+ * Navigation button that opens the Waze app on phones (falling back to the
+ * Waze website when the app is missing) and the Waze website on desktop.
+ */
 export function WazeNavigateButton({
   destination,
   label = "Navigate with Waze",
   ...buttonProps
 }: WazeNavigateButtonProps) {
-  const url = buildWazeNavigationUrl(destination);
+  const hasDestination = buildWazeNavigationUrl(destination) !== null;
 
-  if (!url) {
+  if (!hasDestination) {
     return (
       <Button {...buttonProps} disabled aria-label="No address available for navigation">
         <Navigation className="mr-1 h-3 w-3" />
@@ -24,17 +28,16 @@ export function WazeNavigateButton({
   }
 
   return (
-    <Button {...buttonProps} asChild>
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        aria-label={`${label}: ${destination.address ?? "destination"}`}
-      >
-        <Navigation className="mr-1 h-3 w-3" />
-        {label}
-      </a>
+    <Button
+      {...buttonProps}
+      onClick={(e) => {
+        e.stopPropagation();
+        openWazeNavigation(destination);
+      }}
+      aria-label={`${label}: ${destination.address ?? "destination"}`}
+    >
+      <Navigation className="mr-1 h-3 w-3" />
+      {label}
     </Button>
   );
 }
