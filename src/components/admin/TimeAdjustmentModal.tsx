@@ -111,8 +111,10 @@ export function TimeAdjustmentModal({ isOpen, onClose, session, onSessionUpdated
 
       if (error) throw error;
 
-      // Log the adjustment for audit purposes
+      // Log the adjustment for audit purposes (RLS requires user_id = caller)
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
       await supabase.from('enhanced_security_logs').insert({
+        user_id: adminUser?.id,
         action_type: 'work_session_adjustment',
         resource_type: 'work_sessions',
         resource_id: session.id,
