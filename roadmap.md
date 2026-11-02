@@ -9,3 +9,17 @@
 
 ## Open
 - [x] Fix employee clock in/out (TimeTracker) — location capture no longer blocks, buttons show state
+
+## Audit fixes (Nov 2026)
+- [x] Security log inserts limited to caller's own user id
+- [x] Services list limited to active services for signed-in users
+- [x] Chat helper no longer reveals prices (NDA) or fake phone numbers
+- [x] Admin Customers shows real customers; search input sanitized
+- [x] Testimonials: removed broken video placeholders
+- [x] Schedule page saves, lists and cancels real appointments
+- [x] Removed unused duplicate fleet page
+- [x] Hardcoded colors replaced with theme tokens (added warning/info tokens)
+- [ ] Leaked-password protection + 10-min OTP expiry — needs Supabase dashboard (user)
+- [ ] Postgres upgrade — needs Supabase dashboard (user)
+- [ ] Google Search Console verification — needs publish + verify (user)
+- [ ] Loose types cleanup, bundle size reduction
