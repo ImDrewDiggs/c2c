@@ -289,12 +289,12 @@ export default function AdminSettings() {
                     <Input 
                       id="primary-color" 
                       type="color" 
-                      value={settings.primary_color || '#6E59A5'} 
+                      value={settings.primary_color || '#73e600'} 
                       onChange={(e) => handleInputChange('primary_color', e.target.value)}
                       className="w-16 h-10" 
                     />
                     <Input 
-                      value={settings.primary_color || '#6E59A5'} 
+                      value={settings.primary_color || '#73e600'} 
                       onChange={(e) => handleInputChange('primary_color', e.target.value)}
                       className="flex-1" 
                     />
@@ -306,12 +306,12 @@ export default function AdminSettings() {
                     <Input 
                       id="secondary-color" 
                       type="color" 
-                      value={settings.secondary_color || '#73e600'} 
+                      value={settings.secondary_color || '#333333'} 
                       onChange={(e) => handleInputChange('secondary_color', e.target.value)}
                       className="w-16 h-10" 
                     />
                     <Input 
-                      value={settings.secondary_color || '#73e600'} 
+                      value={settings.secondary_color || '#333333'} 
                       onChange={(e) => handleInputChange('secondary_color', e.target.value)}
                       className="flex-1" 
                     />
