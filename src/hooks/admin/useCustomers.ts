@@ -36,9 +36,11 @@ export function useCustomers(searchTerm = "") {
         .in("id", customerIds)
         .order("created_at", { ascending: false });
 
-      if (searchTerm) {
+      // Strip characters that have meaning in PostgREST filter syntax
+      const safeTerm = searchTerm.replace(/[^\p{L}\p{N}\s@.\-']/gu, "").trim().slice(0, 100);
+      if (safeTerm) {
         profilesQuery = profilesQuery.or(
-          `full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`
+          `full_name.ilike.%${safeTerm}%,email.ilike.%${safeTerm}%,address.ilike.%${safeTerm}%`
         );
       }
 
@@ -48,7 +50,8 @@ export function useCustomers(searchTerm = "") {
       // Get subscriber data
       const { data: subscribers, error: subscribersError } = await supabase
         .from("subscribers")
-        .select("user_id,subscribed,subscription_tier,subscription_end");
+        .select("user_id,subscribed,subscription_tier,subscription_end")
+        .in("user_id", customerIds);
       if (subscribersError) throw subscribersError;
 
       // Combine data
@@ -56,7 +59,7 @@ export function useCustomers(searchTerm = "") {
         const subscriber = subscribers?.find(s => s.user_id === profile.id);
         return {
           ...profile,
-          subscription_status: subscriber?.subscribed ? 'active' : 'inactive',
+          subscription_status: (subscriber?.subscribed ? 'active' : 'inactive') as CustomerData['subscription_status'],
           subscription_tier: subscriber?.subscription_tier || null,
           subscription_end: subscriber?.subscription_end || null,
         };
