@@ -94,10 +94,10 @@ export default function AdminFleet() {
                           <TableCell>
                             <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               vehicle.status === 'active' 
-                                ? 'bg-green-100 text-green-800' 
+                                ? 'bg-primary/10 text-primary' 
                                 : vehicle.status === 'maintenance'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-destructive/10 text-destructive'
                             }`}>
                               {vehicle.status}
                             </div>
@@ -171,10 +171,10 @@ export default function AdminFleet() {
                           <TableCell>
                             <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               maintenance.status === 'scheduled' 
-                                ? 'bg-blue-100 text-blue-800' 
+                                ? 'bg-info/10 text-info' 
                                 : maintenance.status === 'in_progress'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-green-100 text-green-800'
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-primary/10 text-primary'
                             }`}>
                               {maintenance.status}
                             </div>
@@ -221,7 +221,7 @@ export default function AdminFleet() {
                   
                   <Card className="p-4">
                     <div className="flex flex-col items-center">
-                      <AlertTriangle className="h-8 w-8 text-yellow-500 mb-2" />
+                      <AlertTriangle className="h-8 w-8 text-warning mb-2" />
                       <h3 className="text-xl font-medium">Breakdown Rate</h3>
                       <p className="text-3xl font-bold mt-2">2.4%</p>
                       <p className="text-sm text-muted-foreground">Last 30 days</p>

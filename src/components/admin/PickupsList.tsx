@@ -53,7 +53,7 @@ export function PickupsList({ pickups }: PickupsListProps) {
                 {/* Color-coded status badge */}
                 <Badge
                   variant={pickup.status === "Completed" ? "success" : "secondary"}
-                  className={pickup.status === "Completed" ? "bg-green-600" : "bg-yellow-600"}
+                  className={pickup.status === "Completed" ? "bg-primary" : "bg-warning"}
                 >
                   {pickup.status}
                 </Badge>

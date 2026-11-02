@@ -298,7 +298,7 @@ export function EmployeeTimeCard() {
               <div className="text-muted-foreground">Total Hours</div>
             </div>
             <div className="text-center">
-              <div className="font-medium text-green-600">${getTotalPayroll().toFixed(2)}</div>
+              <div className="font-medium text-primary">${getTotalPayroll().toFixed(2)}</div>
               <div className="text-muted-foreground">Total Payroll</div>
             </div>
           </div>
@@ -338,7 +338,7 @@ export function EmployeeTimeCard() {
                       <div className="font-medium text-lg">
                         {formatDuration(empData.totalHours)}
                       </div>
-                      <div className="text-sm text-green-600 font-medium">
+                      <div className="text-sm text-primary font-medium">
                         ${empData.grossPay.toFixed(2)}
                       </div>
                     </div>
@@ -350,7 +350,7 @@ export function EmployeeTimeCard() {
                       {empData.sessions.map((session) => (
                         <div key={session.id} className="flex items-center justify-between bg-muted/50 p-3 rounded-md">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                            <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-primary' : 'bg-warning'}`} />
                             <div>
                               <div className="text-sm font-medium">
                                 {format(parseISO(session.clock_in_time), 'MMM dd')} • {formatTime(session.clock_in_time)} - {session.clock_out_time ? formatTime(session.clock_out_time) : 'Active'}
@@ -373,7 +373,7 @@ export function EmployeeTimeCard() {
                             <div className="font-medium">
                               {formatDuration(session.total_hours || calculateHours(session.clock_in_time, session.clock_out_time))}
                             </div>
-                            <div className="text-sm text-green-600">
+                            <div className="text-sm text-primary">
                               ${(Math.round((session.total_hours || calculateHours(session.clock_in_time, session.clock_out_time)) * (empData.employee.pay_rate || 15.00) * 100) / 100).toFixed(2)}
                             </div>
                           </div>

@@ -58,7 +58,7 @@ export default function Documentation() {
             <Card>
               <CardHeader>
                 <CardTitle as="h2" className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <CheckCircle className="h-5 w-5 text-primary" />
                   Getting Started Guide
                 </CardTitle>
                 <CardDescription>
@@ -133,8 +133,8 @@ export default function Documentation() {
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Account Types & Access Levels</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="p-4 border-blue-200 bg-blue-50/50">
-                      <Users className="h-8 w-8 text-blue-500 mb-2" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <Users className="h-8 w-8 text-info mb-2" />
                       <h4 className="font-medium mb-2">Customer Account</h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         <li>• Schedule pickups</li>
@@ -143,8 +143,8 @@ export default function Documentation() {
                         <li>• Track routes</li>
                       </ul>
                     </Card>
-                    <Card className="p-4 border-green-200 bg-green-50/50">
-                      <Settings className="h-8 w-8 text-green-500 mb-2" />
+                    <Card className="p-4 border-primary/30 bg-primary/10">
+                      <Settings className="h-8 w-8 text-primary mb-2" />
                       <h4 className="font-medium mb-2">Employee Account</h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         <li>• Time tracking</li>
@@ -153,8 +153,8 @@ export default function Documentation() {
                         <li>• GPS reporting</li>
                       </ul>
                     </Card>
-                    <Card className="p-4 border-purple-200 bg-purple-50/50">
-                      <Code className="h-8 w-8 text-purple-500 mb-2" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <Code className="h-8 w-8 text-info mb-2" />
                       <h4 className="font-medium mb-2">Admin Account</h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         <li>• Full system access</li>
@@ -182,7 +182,7 @@ export default function Documentation() {
                 {/* Customer Features */}
                 <div>
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-500" />
+                    <Users className="h-5 w-5 text-info" />
                     Customer Portal
                   </h3>
                   
@@ -234,7 +234,7 @@ export default function Documentation() {
                 {/* Employee Features */}
                 <div>
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Settings className="h-5 w-5 text-green-500" />
+                    <Settings className="h-5 w-5 text-primary" />
                     Employee Dashboard
                   </h3>
                   
@@ -299,7 +299,7 @@ export default function Documentation() {
                 {/* Admin Features */}
                 <div>
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Code className="h-5 w-5 text-purple-500" />
+                    <Code className="h-5 w-5 text-info" />
                     Admin Control Panel
                   </h3>
                   
@@ -531,9 +531,9 @@ GET /api/v1/employees/tracking?active=true
 
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-3 text-red-600">Login & Authentication Issues</h3>
+                    <h3 className="text-lg font-semibold mb-3 text-destructive">Login & Authentication Issues</h3>
                     <div className="space-y-4">
-                      <Card className="p-4 border-red-200">
+                      <Card className="p-4 border-destructive/30">
                         <h4 className="font-medium mb-2">Problem: Cannot log in / "Invalid credentials" error</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -547,7 +547,7 @@ GET /api/v1/employees/tracking?active=true
                         </div>
                       </Card>
 
-                      <Card className="p-4 border-red-200">
+                      <Card className="p-4 border-destructive/30">
                         <h4 className="font-medium mb-2">Problem: Account locked / Too many failed attempts</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -562,9 +562,9 @@ GET /api/v1/employees/tracking?active=true
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-3 text-orange-600">GPS & Location Issues</h3>
+                    <h3 className="text-lg font-semibold mb-3 text-warning">GPS & Location Issues</h3>
                     <div className="space-y-4">
-                      <Card className="p-4 border-orange-200">
+                      <Card className="p-4 border-warning/30">
                         <h4 className="font-medium mb-2">Problem: GPS location not updating</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -578,7 +578,7 @@ GET /api/v1/employees/tracking?active=true
                         </div>
                       </Card>
 
-                      <Card className="p-4 border-orange-200">
+                      <Card className="p-4 border-warning/30">
                         <h4 className="font-medium mb-2">Problem: Inaccurate location data</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -594,9 +594,9 @@ GET /api/v1/employees/tracking?active=true
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-3 text-blue-600">Billing & Payment Issues</h3>
+                    <h3 className="text-lg font-semibold mb-3 text-info">Billing & Payment Issues</h3>
                     <div className="space-y-4">
-                      <Card className="p-4 border-blue-200">
+                      <Card className="p-4 border-info/30">
                         <h4 className="font-medium mb-2">Problem: Payment failed / Card declined</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -610,7 +610,7 @@ GET /api/v1/employees/tracking?active=true
                         </div>
                       </Card>
 
-                      <Card className="p-4 border-blue-200">
+                      <Card className="p-4 border-info/30">
                         <h4 className="font-medium mb-2">Problem: Subscription not updating</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -626,9 +626,9 @@ GET /api/v1/employees/tracking?active=true
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-3 text-green-600">Performance Issues</h3>
+                    <h3 className="text-lg font-semibold mb-3 text-primary">Performance Issues</h3>
                     <div className="space-y-4">
-                      <Card className="p-4 border-green-200">
+                      <Card className="p-4 border-primary/30">
                         <h4 className="font-medium mb-2">Problem: Slow loading / Page timeouts</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>Solution:</strong></p>
@@ -779,13 +779,13 @@ GET /api/v1/employees/tracking?active=true
               <CardContent className="space-y-8">
                 <div>
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-500" />
+                    <Users className="h-5 w-5 text-info" />
                     Customer Best Practices
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="p-4 border-blue-200 bg-blue-50/50">
-                      <CheckCircle className="h-8 w-8 text-blue-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Scheduling Optimization</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Schedule recurring pickups for consistency</li>
@@ -795,8 +795,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-blue-200 bg-blue-50/50">
-                      <CheckCircle className="h-8 w-8 text-blue-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Service Preparation</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Place bins at curbside by 6 AM</li>
@@ -806,8 +806,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-blue-200 bg-blue-50/50">
-                      <CheckCircle className="h-8 w-8 text-blue-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Communication Tips</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Use specific instructions in booking</li>
@@ -817,8 +817,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-blue-200 bg-blue-50/50">
-                      <CheckCircle className="h-8 w-8 text-blue-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Cost Management</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Choose the right plan for your needs</li>
@@ -834,13 +834,13 @@ GET /api/v1/employees/tracking?active=true
 
                 <div>
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Settings className="h-5 w-5 text-green-500" />
+                    <Settings className="h-5 w-5 text-primary" />
                     Employee Best Practices
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="p-4 border-green-200 bg-green-50/50">
-                      <CheckCircle className="h-8 w-8 text-green-500 mb-3" />
+                    <Card className="p-4 border-primary/30 bg-primary/10">
+                      <CheckCircle className="h-8 w-8 text-primary mb-3" />
                       <h4 className="font-medium mb-2">Time Management</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Clock in/out at exact work times</li>
@@ -850,8 +850,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-green-200 bg-green-50/50">
-                      <CheckCircle className="h-8 w-8 text-green-500 mb-3" />
+                    <Card className="p-4 border-primary/30 bg-primary/10">
+                      <CheckCircle className="h-8 w-8 text-primary mb-3" />
                       <h4 className="font-medium mb-2">Route Efficiency</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Follow optimized route suggestions</li>
@@ -861,8 +861,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-green-200 bg-green-50/50">
-                      <CheckCircle className="h-8 w-8 text-green-500 mb-3" />
+                    <Card className="p-4 border-primary/30 bg-primary/10">
+                      <CheckCircle className="h-8 w-8 text-primary mb-3" />
                       <h4 className="font-medium mb-2">Customer Service</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Take completion photos</li>
@@ -872,8 +872,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-green-200 bg-green-50/50">
-                      <CheckCircle className="h-8 w-8 text-green-500 mb-3" />
+                    <Card className="p-4 border-primary/30 bg-primary/10">
+                      <CheckCircle className="h-8 w-8 text-primary mb-3" />
                       <h4 className="font-medium mb-2">Safety Protocols</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Wear required safety equipment</li>
@@ -889,13 +889,13 @@ GET /api/v1/employees/tracking?active=true
 
                 <div>
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Code className="h-5 w-5 text-purple-500" />
+                    <Code className="h-5 w-5 text-info" />
                     Admin Best Practices
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="p-4 border-purple-200 bg-purple-50/50">
-                      <CheckCircle className="h-8 w-8 text-purple-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Operations Management</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Monitor daily performance metrics</li>
@@ -905,8 +905,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-purple-200 bg-purple-50/50">
-                      <CheckCircle className="h-8 w-8 text-purple-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Data Analytics</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Generate regular performance reports</li>
@@ -916,8 +916,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-purple-200 bg-purple-50/50">
-                      <CheckCircle className="h-8 w-8 text-purple-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Employee Development</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Conduct regular performance reviews</li>
@@ -927,8 +927,8 @@ GET /api/v1/employees/tracking?active=true
                       </ul>
                     </Card>
 
-                    <Card className="p-4 border-purple-200 bg-purple-50/50">
-                      <CheckCircle className="h-8 w-8 text-purple-500 mb-3" />
+                    <Card className="p-4 border-info/30 bg-info/10">
+                      <CheckCircle className="h-8 w-8 text-info mb-3" />
                       <h4 className="font-medium mb-2">Security & Compliance</h4>
                       <ul className="text-sm space-y-1">
                         <li>• Review security logs regularly</li>

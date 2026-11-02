@@ -11,7 +11,7 @@ import { Location, EmployeeLocation } from '@/types/map';
  */
 function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
-    <Card className="p-6 bg-red-50 text-red-900">
+    <Card className="p-6 bg-destructive/10 text-destructive">
       <h3 className="font-bold mb-2">Map Error</h3>
       <p className="mb-4">There was an error loading the map component:</p>
       <pre className="bg-white p-4 rounded text-xs overflow-auto mb-4">
@@ -19,7 +19,7 @@ function MapErrorFallback({ error, resetErrorBoundary }: { error: Error; resetEr
       </pre>
       <button 
         onClick={resetErrorBoundary}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        className="px-4 py-2 bg-destructive text-white rounded hover:bg-destructive"
       >
         Reload Map
       </button>

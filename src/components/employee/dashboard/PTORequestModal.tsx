@@ -213,10 +213,10 @@ export function PTORequestModal({ open, onOpenChange, userId }: PTORequestModalP
           </div>
 
           {startDate && endDate && (
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
+            <div className="bg-info/10 border border-info/30 p-3 rounded-md">
               <div className="text-sm">
-                <p className="font-medium text-blue-800">Request Summary</p>
-                <p className="text-blue-700">
+                <p className="font-medium text-info">Request Summary</p>
+                <p className="text-info">
                   {Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1} day(s) requested
                 </p>
               </div>

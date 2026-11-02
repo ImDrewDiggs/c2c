@@ -732,7 +732,7 @@ export default function IoTSensorsPage() {
                         className={`h-5 w-5 mt-0.5 shrink-0 ${
                           alert.severity === "critical"
                             ? "text-destructive"
-                            : "text-yellow-500"
+                            : "text-warning"
                         }`}
                       />
                       <div className="flex-1 min-w-0">

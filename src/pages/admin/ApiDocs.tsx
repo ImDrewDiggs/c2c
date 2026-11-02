@@ -142,11 +142,11 @@ const edgeFunctions: EndpointDoc[] = [
 ];
 
 const methodColors: Record<string, string> = {
-  GET: 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30',
-  POST: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
-  PUT: 'bg-amber-500/20 text-amber-600 border-amber-500/30',
-  DELETE: 'bg-red-500/20 text-red-600 border-red-500/30',
-  PATCH: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
+  GET: 'bg-primary/20 text-primary border-primary/30',
+  POST: 'bg-info/20 text-info border-info/30',
+  PUT: 'bg-warning/20 text-warning border-warning/30',
+  DELETE: 'bg-destructive/20 text-destructive border-destructive/30',
+  PATCH: 'bg-info/20 text-info border-info/30',
 };
 
 function EndpointCard({ endpoint }: { endpoint: EndpointDoc }) {
@@ -170,9 +170,9 @@ function EndpointCard({ endpoint }: { endpoint: EndpointDoc }) {
                 </Badge>
                 <code className="text-sm font-mono text-muted-foreground">{endpoint.path}</code>
                 {endpoint.auth ? (
-                  <Lock className="h-4 w-4 text-amber-500" />
+                  <Lock className="h-4 w-4 text-warning" />
                 ) : (
-                  <Unlock className="h-4 w-4 text-emerald-500" />
+                  <Unlock className="h-4 w-4 text-primary" />
                 )}
               </div>
               <CardTitle className="text-sm font-medium">{endpoint.name}</CardTitle>
@@ -268,11 +268,11 @@ export default function ApiDocs() {
 
         <div className="flex gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-amber-500" />
+            <Lock className="h-4 w-4 text-warning" />
             Requires Authentication
           </div>
           <div className="flex items-center gap-2">
-            <Unlock className="h-4 w-4 text-emerald-500" />
+            <Unlock className="h-4 w-4 text-primary" />
             Public Endpoint
           </div>
         </div>

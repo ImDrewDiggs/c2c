@@ -38,10 +38,10 @@ export function JobDetailsModal({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-500';
-      case 'in_progress': return 'bg-blue-500';
-      case 'pending': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'completed': return 'bg-primary';
+      case 'in_progress': return 'bg-info';
+      case 'pending': return 'bg-warning';
+      default: return 'bg-secondary';
     }
   };
 
@@ -143,7 +143,7 @@ export function JobDetailsModal({
               <Separator />
               <div className="space-y-2">
                 <h3 className="font-medium text-sm">Customer Notes</h3>
-                <div className="text-sm bg-blue-50 p-3 rounded-md border-l-4 border-blue-200">
+                <div className="text-sm bg-info/10 p-3 rounded-md border-l-4 border-info/30">
                   {jobDetails.customerNotes}
                 </div>
               </div>
@@ -157,11 +157,11 @@ export function JobDetailsModal({
             <h3 className="font-medium text-sm">Required Actions</h3>
             <div className="space-y-1 text-sm">
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-3 w-3 text-green-500" />
+                <CheckCircle2 className="h-3 w-3 text-primary" />
                 <span>Empty trash cans</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-3 w-3 text-green-500" />
+                <CheckCircle2 className="h-3 w-3 text-primary" />
                 <span>Return cans to designated area</span>
               </div>
               <div className="flex items-center space-x-2">

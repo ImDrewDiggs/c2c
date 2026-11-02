@@ -42,8 +42,8 @@ export function EmployeeTable({ employees, selectedEmployeeId, onSelect }: Emplo
             <TableCell>
               <span className={`px-2 py-1 rounded-full text-xs ${
                 employee.status === 'active'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted text-muted-foreground'
               }`}>
                 {employee.status === 'active' ? 'On Duty' : 'Offline'}
               </span>
@@ -71,7 +71,7 @@ export function EmployeeTable({ employees, selectedEmployeeId, onSelect }: Emplo
         {/* Empty state message when no employees match filters */}
         {employees.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+            <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
               No employees match your filters
             </TableCell>
           </TableRow>

@@ -339,7 +339,7 @@ export function FieldWorkerGroups({
               <div className="text-sm text-muted-foreground">Pending Stops</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{completedStops.length}</div>
+              <div className="text-2xl font-bold text-primary">{completedStops.length}</div>
               <div className="text-sm text-muted-foreground">Completed</div>
             </div>
             <div className="text-center">
@@ -376,7 +376,7 @@ export function FieldWorkerGroups({
                   }}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-warning" />
                     <div>
                       <div className="font-medium text-sm">{assignment.house?.address}</div>
                       <div className="text-xs text-muted-foreground">

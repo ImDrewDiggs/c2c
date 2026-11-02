@@ -12,31 +12,31 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
     {
       title: "Total Users",
       value: stats.totalUsers,
-      icon: <Users className="h-5 w-5 text-blue-500" />,
+      icon: <Users className="h-5 w-5 text-info" />,
       description: "Registered accounts"
     },
     {
       title: "New Signups",
       value: stats.newSignups,
-      icon: <UserPlus className="h-5 w-5 text-green-500" />,
+      icon: <UserPlus className="h-5 w-5 text-primary" />,
       description: "This week"
     },
     {
       title: "Active Employees",
       value: stats.activeEmployees,
-      icon: <Briefcase className="h-5 w-5 text-purple-500" />,
+      icon: <Briefcase className="h-5 w-5 text-info" />,
       description: "Current staff"
     },
     {
       title: "Completed Jobs",
       value: stats.completedJobs,
-      icon: <CheckCircle className="h-5 w-5 text-emerald-500" />,
+      icon: <CheckCircle className="h-5 w-5 text-primary" />,
       description: "Finished tasks"
     },
     {
       title: "Pending Jobs",
       value: stats.pendingJobs,
-      icon: <Clock className="h-5 w-5 text-amber-500" />,
+      icon: <Clock className="h-5 w-5 text-warning" />,
       description: "Awaiting completion"
     }
   ];

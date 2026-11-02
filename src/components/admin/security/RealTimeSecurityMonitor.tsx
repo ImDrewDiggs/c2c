@@ -191,13 +191,13 @@ export function RealTimeSecurityMonitor() {
   const getAlertIcon = (type: SecurityAlert['type']) => {
     switch (type) {
       case 'critical':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
       case 'high':
-        return <Shield className="h-4 w-4 text-orange-500" />;
+        return <Shield className="h-4 w-4 text-warning" />;
       case 'medium':
-        return <Activity className="h-4 w-4 text-yellow-500" />;
+        return <Activity className="h-4 w-4 text-warning" />;
       default:
-        return <Eye className="h-4 w-4 text-blue-500" />;
+        return <Eye className="h-4 w-4 text-info" />;
     }
   };
 
@@ -218,7 +218,7 @@ export function RealTimeSecurityMonitor() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Real-Time Security Monitor</CardTitle>
           <div className="flex items-center space-x-2">
-            <div className={`h-2 w-2 rounded-full ${isMonitoring ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div className={`h-2 w-2 rounded-full ${isMonitoring ? 'bg-primary' : 'bg-destructive'}`} />
             <span className="text-xs text-muted-foreground">
               {isMonitoring ? 'Monitoring' : 'Stopped'}
             </span>
@@ -242,7 +242,7 @@ export function RealTimeSecurityMonitor() {
                 <p className="text-xs text-muted-foreground">Admin Sessions</p>
                 <p className="text-lg font-semibold">{metrics.activeAdminSessions}</p>
               </div>
-              <Shield className="h-4 w-4 text-blue-500" />
+              <Shield className="h-4 w-4 text-info" />
             </div>
           </CardContent>
         </Card>
@@ -252,9 +252,9 @@ export function RealTimeSecurityMonitor() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Suspicious Activity</p>
-                <p className="text-lg font-semibold text-orange-500">{metrics.suspiciousActivity}</p>
+                <p className="text-lg font-semibold text-warning">{metrics.suspiciousActivity}</p>
               </div>
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -264,9 +264,9 @@ export function RealTimeSecurityMonitor() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Failed Logins</p>
-                <p className="text-lg font-semibold text-red-500">{metrics.failedLoginAttempts}</p>
+                <p className="text-lg font-semibold text-destructive">{metrics.failedLoginAttempts}</p>
               </div>
-              <Activity className="h-4 w-4 text-red-500" />
+              <Activity className="h-4 w-4 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -278,7 +278,7 @@ export function RealTimeSecurityMonitor() {
                 <p className="text-xs text-muted-foreground">Blocked IPs</p>
                 <p className="text-lg font-semibold">{metrics.blockedIPs}</p>
               </div>
-              <Ban className="h-4 w-4 text-gray-500" />
+              <Ban className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>

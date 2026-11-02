@@ -61,9 +61,9 @@ export function EmployeeStatusPanel({ employees }: EmployeeStatusPanelProps) {
                 <div key={employee.employee_id} className="flex items-center p-2 rounded-md hover:bg-muted">
                   <div className="mr-2">
                     {employee.is_online ? (
-                      <Circle className="h-3 w-3 fill-green-500 text-green-500" />
+                      <Circle className="h-3 w-3 fill-primary text-primary" />
                     ) : (
-                      <Circle className="h-3 w-3 fill-gray-300 text-gray-300" />
+                      <Circle className="h-3 w-3 fill-border text-foreground" />
                     )}
                   </div>
                   <div className="flex-1 truncate">

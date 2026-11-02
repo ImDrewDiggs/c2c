@@ -95,7 +95,7 @@ const TrashCanCleaningCincinnati = () => {
             </h2>
             <ul className="space-y-3">
               {features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-gray-300">
+                <li key={f} className="flex items-start gap-2 text-foreground">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <span>{f}</span>
                 </li>
@@ -106,7 +106,7 @@ const TrashCanCleaningCincinnati = () => {
             <h2 className="text-2xl font-semibold mb-4 text-primary">
               Neighborhoods we serve
             </h2>
-            <ul className="grid grid-cols-2 gap-2 text-gray-300">
+            <ul className="grid grid-cols-2 gap-2 text-foreground">
               {neighborhoods.map((n) => (
                 <li key={n} className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-primary" />
@@ -114,7 +114,7 @@ const TrashCanCleaningCincinnati = () => {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-sm text-gray-400">
+            <p className="mt-4 text-sm text-muted-foreground">
               Don&apos;t see your neighborhood? Email{" "}
               <a
                 href="mailto:support@can2curb.com"

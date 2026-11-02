@@ -164,10 +164,10 @@ export function MessageAdminModal({ open, onOpenChange, userId }: MessageAdminMo
           </div>
 
           {priority === 'urgent' && (
-            <div className="bg-red-50 border border-red-200 p-3 rounded-md">
+            <div className="bg-destructive/10 border border-destructive/30 p-3 rounded-md">
               <div className="text-sm">
-                <p className="font-medium text-red-800">Urgent Message</p>
-                <p className="text-red-700">
+                <p className="font-medium text-destructive">Urgent Message</p>
+                <p className="text-destructive">
                   This message will be prioritized and sent to all available admins.
                 </p>
               </div>
@@ -175,10 +175,10 @@ export function MessageAdminModal({ open, onOpenChange, userId }: MessageAdminMo
           )}
 
           {messageType === 'emergency' && (
-            <div className="bg-red-100 border border-red-300 p-3 rounded-md">
+            <div className="bg-destructive/10 border border-destructive/30 p-3 rounded-md">
               <div className="text-sm">
-                <p className="font-medium text-red-900">Emergency Message</p>
-                <p className="text-red-800">
+                <p className="font-medium text-destructive">Emergency Message</p>
+                <p className="text-destructive">
                   For immediate emergencies, also call the emergency hotline: <strong>(555) 123-HELP</strong>
                 </p>
               </div>

@@ -109,7 +109,7 @@ export default function CustomerRegister() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="card max-w-md w-full space-y-8">
         <div>
-          <Link to="/" className="inline-flex items-center text-sm text-gray-400 hover:text-white mb-8">
+          <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-white mb-8">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
@@ -128,7 +128,7 @@ export default function CustomerRegister() {
               decoding="async"
             />
             <h2 className="text-3xl font-bold">Customer Registration</h2>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-muted-foreground">
               Create your customer account to get started.
             </p>
           </motion.div>
@@ -147,7 +147,7 @@ export default function CustomerRegister() {
                 Email address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
                   name="email"
@@ -166,7 +166,7 @@ export default function CustomerRegister() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
                   name="password"
@@ -185,7 +185,7 @@ export default function CustomerRegister() {
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -208,7 +208,7 @@ export default function CustomerRegister() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/customer/login" className="text-primary hover:text-primary/80">
                 Sign in

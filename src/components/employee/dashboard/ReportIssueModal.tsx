@@ -105,7 +105,7 @@ export function ReportIssueModal({ open, onOpenChange, userId, assignmentId }: R
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             <span>⚠️ Report Issue</span>
           </DialogTitle>
         </DialogHeader>
@@ -163,12 +163,12 @@ export function ReportIssueModal({ open, onOpenChange, userId, assignmentId }: R
           )}
 
           {priority === 'emergency' && (
-            <div className="bg-red-50 border border-red-200 p-3 rounded-md">
+            <div className="bg-destructive/10 border border-destructive/30 p-3 rounded-md">
               <div className="flex items-start space-x-2">
-                <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5" />
+                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-red-800">Emergency Report</p>
-                  <p className="text-red-700">
+                  <p className="font-medium text-destructive">Emergency Report</p>
+                  <p className="text-destructive">
                     This will be sent immediately to dispatch and management.
                   </p>
                 </div>

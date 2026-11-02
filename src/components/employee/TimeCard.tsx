@@ -224,7 +224,7 @@ export function TimeCard({ userId, payRate = 15.00 }: TimeCardProps) {
               <div className="text-muted-foreground">Total Hours</div>
             </div>
             <div className="text-center">
-              <div className="font-medium text-green-600">${getGrossPay().toFixed(2)}</div>
+              <div className="font-medium text-primary">${getGrossPay().toFixed(2)}</div>
               <div className="text-muted-foreground">Gross Pay</div>
             </div>
           </div>
@@ -251,7 +251,7 @@ export function TimeCard({ userId, payRate = 15.00 }: TimeCardProps) {
                       <Badge variant="outline">
                         {formatDuration(dayData.totalHours)}
                       </Badge>
-                      <span className="text-green-600 font-medium">
+                      <span className="text-primary font-medium">
                         ${dayData.grossPay.toFixed(2)}
                       </span>
                     </div>
@@ -262,7 +262,7 @@ export function TimeCard({ userId, payRate = 15.00 }: TimeCardProps) {
                       {dayData.sessions.map((session) => (
                         <div key={session.id} className="flex items-center justify-between text-sm bg-muted/50 p-2 rounded">
                           <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                            <div className={`w-2 h-2 rounded-full ${session.status === 'completed' ? 'bg-primary' : 'bg-warning'}`} />
                             <span>
                               {formatTime(session.clock_in_time)} - {session.clock_out_time ? formatTime(session.clock_out_time) : 'Active'}
                             </span>
@@ -288,7 +288,7 @@ export function TimeCard({ userId, payRate = 15.00 }: TimeCardProps) {
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${session.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                          <div className={`w-3 h-3 rounded-full ${session.status === 'completed' ? 'bg-primary' : 'bg-warning'}`} />
                           <span className="font-medium">
                             {formatTime(session.clock_in_time)} - {session.clock_out_time ? formatTime(session.clock_out_time) : 'Still Active'}
                           </span>
@@ -307,7 +307,7 @@ export function TimeCard({ userId, payRate = 15.00 }: TimeCardProps) {
                         <div className="font-medium text-lg">
                           {formatDuration(session.total_hours || calculateHours(session.clock_in_time, session.clock_out_time))}
                         </div>
-                        <div className="text-sm text-green-600 font-medium">
+                        <div className="text-sm text-primary font-medium">
                           ${(Math.round((session.total_hours || calculateHours(session.clock_in_time, session.clock_out_time)) * payRate * 100) / 100).toFixed(2)}
                         </div>
                       </div>

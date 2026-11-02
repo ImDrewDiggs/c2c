@@ -36,11 +36,11 @@ export function MaintenanceSchedulePanel({ schedules }: MaintenanceSchedulePanel
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Wrench className="h-4 w-4 text-green-500" />;
+        return <Wrench className="h-4 w-4 text-primary" />;
       case 'overdue':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
       default:
-        return <Calendar className="h-4 w-4 text-blue-500" />;
+        return <Calendar className="h-4 w-4 text-info" />;
     }
   };
 

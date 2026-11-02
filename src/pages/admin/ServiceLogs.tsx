@@ -99,8 +99,8 @@ export default function AdminServiceLogs() {
                       <TableCell>
                         <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           log.status === 'Completed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-primary/10 text-primary' 
+                            : 'bg-destructive/10 text-destructive'
                         }`}>
                           {log.status}
                         </div>

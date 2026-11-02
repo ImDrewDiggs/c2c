@@ -15,9 +15,9 @@ interface AdminPageLayoutProps {
 
 function ErrorFallback({ error }: { error: Error }) {
   return (
-    <div className="p-6 bg-red-50 border border-red-200 rounded-md">
-      <h2 className="text-lg font-semibold text-red-800 mb-2">Something went wrong:</h2>
-      <pre className="text-sm bg-white p-3 rounded border border-red-100 overflow-auto">
+    <div className="p-6 bg-destructive/10 border border-destructive/30 rounded-md">
+      <h2 className="text-lg font-semibold text-destructive mb-2">Something went wrong:</h2>
+      <pre className="text-sm bg-white p-3 rounded border border-destructive/30 overflow-auto">
         {error.message}
       </pre>
       <Button 

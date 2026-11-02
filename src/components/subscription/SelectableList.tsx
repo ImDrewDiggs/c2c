@@ -38,7 +38,7 @@ const SelectableList = ({ items, selectedItemId, onItemSelect, title }: Selectab
               <div className="flex items-baseline justify-between">
                 <h4 className="font-medium">{item.label}</h4>
                 {item.secondaryLabel && (
-                  <span className="text-green-600 font-semibold">{item.secondaryLabel}</span>
+                  <span className="text-primary font-semibold">{item.secondaryLabel}</span>
                 )}
               </div>
             </div>

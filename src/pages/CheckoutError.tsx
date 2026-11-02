@@ -22,9 +22,9 @@ export default function CheckoutError() {
             animate={{ scale: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
           </motion.div>
-          <h1 className="text-4xl font-bold tracking-tight text-red-600">
+          <h1 className="text-4xl font-bold tracking-tight text-destructive">
             Payment Failed
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -37,19 +37,19 @@ export default function CheckoutError() {
             <CardTitle>Error Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <p className="text-red-800 dark:text-red-200">
+            <div className="bg-destructive/10 dark:bg-destructive border border-destructive/30 dark:border-destructive rounded-lg p-4">
+              <p className="text-destructive dark:text-destructive">
                 {errorMessage}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 mb-6">
-          <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+        <div className="bg-warning/10 dark:bg-warning border border-warning/30 dark:border-warning rounded-lg p-6 mb-6">
+          <h3 className="font-semibold text-warning dark:text-warning mb-2">
             Common solutions:
           </h3>
-          <ul className="space-y-2 text-yellow-800 dark:text-yellow-200 text-sm">
+          <ul className="space-y-2 text-warning dark:text-warning text-sm">
             <li>• Check that your payment information is correct</li>
             <li>• Ensure your card has sufficient funds</li>
             <li>• Verify that your card is not expired</li>

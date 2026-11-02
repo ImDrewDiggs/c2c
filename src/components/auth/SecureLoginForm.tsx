@@ -290,15 +290,15 @@ export function SecureLoginForm({ role, onSuccess }: SecureLoginFormProps) {
               <div className="text-xs text-muted-foreground space-y-1">
                 <div className="flex items-center justify-between">
                   <span>Enhanced Security:</span>
-                  <span className="text-green-600">Active</span>
+                  <span className="text-primary">Active</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Session Monitoring:</span>
-                  <span className="text-green-600">Enabled</span>
+                  <span className="text-primary">Enabled</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Rate Limiting:</span>
-                  <span className="text-green-600">3 attempts/15min</span>
+                  <span className="text-primary">3 attempts/15min</span>
                 </div>
               </div>
             </div>

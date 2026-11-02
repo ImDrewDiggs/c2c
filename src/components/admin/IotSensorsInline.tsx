@@ -461,7 +461,7 @@ export function IotSensorsInline() {
                 <div className="space-y-3">
                   {alerts.map((alert) => (
                     <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-lg border ${!alert.acknowledged_at ? "border-destructive/40 bg-destructive/5" : "border-border"}`}>
-                      <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${alert.severity === "critical" ? "text-destructive" : "text-yellow-500"}`} />
+                      <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${alert.severity === "critical" ? "text-destructive" : "text-warning"}`} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">{alert.message}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">

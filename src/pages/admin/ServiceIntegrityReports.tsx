@@ -48,11 +48,11 @@ import { format } from "date-fns";
 
 function getScoreBadge(score: number) {
   if (score >= 90)
-    return <Badge className="bg-green-600 text-white">Excellent ({score}%)</Badge>;
+    return <Badge className="bg-primary text-white">Excellent ({score}%)</Badge>;
   if (score >= 70)
-    return <Badge className="bg-yellow-500 text-white">Good ({score}%)</Badge>;
+    return <Badge className="bg-warning text-white">Good ({score}%)</Badge>;
   if (score >= 50)
-    return <Badge className="bg-orange-500 text-white">Fair ({score}%)</Badge>;
+    return <Badge className="bg-warning text-white">Fair ({score}%)</Badge>;
   return <Badge variant="destructive">Poor ({score}%)</Badge>;
 }
 
@@ -98,7 +98,7 @@ function ReportDetailModal({
             </Card>
             <Card>
               <CardContent className="pt-4 text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-primary">
                   {report.completed_pickups}
                 </div>
                 <div className="text-xs text-muted-foreground">Completed</div>
@@ -106,7 +106,7 @@ function ReportDetailModal({
             </Card>
             <Card>
               <CardContent className="pt-4 text-center">
-                <div className="text-2xl font-bold text-yellow-500">
+                <div className="text-2xl font-bold text-warning">
                   {report.late_pickups}
                 </div>
                 <div className="text-xs text-muted-foreground">Late</div>
@@ -114,7 +114,7 @@ function ReportDetailModal({
             </Card>
             <Card>
               <CardContent className="pt-4 text-center">
-                <div className="text-2xl font-bold text-red-500">
+                <div className="text-2xl font-bold text-destructive">
                   {report.missed_pickups}
                 </div>
                 <div className="text-xs text-muted-foreground">Missed</div>
@@ -304,7 +304,7 @@ export default function ServiceIntegrityReports() {
         </Card>
         <Card>
           <CardContent className="pt-4 flex items-center gap-3">
-            <TrendingUp className="h-8 w-8 text-green-600" />
+            <TrendingUp className="h-8 w-8 text-primary" />
             <div>
               <div className="text-2xl font-bold">{avgScore}%</div>
               <div className="text-xs text-muted-foreground">Avg Score</div>
@@ -313,7 +313,7 @@ export default function ServiceIntegrityReports() {
         </Card>
         <Card>
           <CardContent className="pt-4 flex items-center gap-3">
-            <CheckCircle2 className="h-8 w-8 text-blue-500" />
+            <CheckCircle2 className="h-8 w-8 text-info" />
             <div>
               <div className="text-2xl font-bold">{totalScheduled}</div>
               <div className="text-xs text-muted-foreground">Total Scheduled</div>

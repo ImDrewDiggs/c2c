@@ -180,7 +180,7 @@ export function RealAnalyticsDashboard() {
             <p className="text-3xl font-bold">{value}</p>
             {change && (
               <div className={`flex items-center text-sm mt-1 ${
-                changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+                changeType === 'increase' ? 'text-primary' : 'text-destructive'
               }`}>
                 {changeType === 'increase' ? (
                   <TrendingUp className="h-4 w-4 mr-1" />
@@ -335,7 +335,7 @@ export function RealAnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="text-4xl font-bold text-green-600">
+              <div className="text-4xl font-bold text-primary">
                 {data.completedJobs + data.pendingJobs > 0 
                   ? Math.round((data.completedJobs / (data.completedJobs + data.pendingJobs)) * 100)
                   : 0}%
@@ -353,7 +353,7 @@ export function RealAnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600">94%</div>
+              <div className="text-4xl font-bold text-info">94%</div>
               <p className="text-muted-foreground mt-2">Average efficiency rating</p>
             </div>
           </CardContent>
@@ -365,7 +365,7 @@ export function RealAnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600">
+              <div className="text-4xl font-bold text-info">
                 {data.totalVehicles > 0 
                   ? Math.round((data.totalVehicles * 0.95))
                   : 0}/{data.totalVehicles}
