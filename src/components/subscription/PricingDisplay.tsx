@@ -75,7 +75,7 @@ const PricingDisplay = ({
           )}
           
           {discount > 0 && (
-            <div className="flex justify-between text-sm text-green-600">
+            <div className="flex justify-between text-sm text-primary">
               <span>Contract discount ({discount}%):</span>
               <span className="font-medium">-${(((basePrice || 0) + (addOnsTotal || 0)) * (discount / 100)).toFixed(2)}</span>
             </div>
@@ -98,18 +98,18 @@ const PricingDisplay = ({
       
       {(discount > 0 || (bundleDiscount && bundleDiscount > 0)) && (
         <div className="text-center mt-3 space-y-1">
-          <p className="text-sm text-green-600 font-medium">
+          <p className="text-sm text-primary font-medium">
             {subscriptionType === "multi-family" && "Volume & Contract Discount Applied"}
             {subscriptionType === "single-family" && "Discounts Applied"}
             {subscriptionType === "business" && "Contract & Bundle Discount Applied"}
           </p>
           {discount > 0 && (
-            <p className="text-xs text-green-600">
+            <p className="text-xs text-primary">
               {contractLength} contract: {discount}% off
             </p>
           )}
           {bundleDiscount && bundleDiscount > 0 && (
-            <p className="text-xs text-green-600">
+            <p className="text-xs text-primary">
               Bundle discount: 25% off 2nd add-on
             </p>
           )}

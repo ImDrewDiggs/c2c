@@ -189,7 +189,7 @@ const SEVERITY_ICON: Record<Severity, React.ComponentType<{ className?: string }
 
 const SEVERITY_TONE: Record<Severity, string> = {
   error: "text-destructive border-destructive/40 bg-destructive/10",
-  warning: "text-amber-500 border-amber-500/40 bg-amber-500/10",
+  warning: "text-warning border-warning/40 bg-warning/10",
   info: "text-primary border-primary/40 bg-primary/10",
 };
 

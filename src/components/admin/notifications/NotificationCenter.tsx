@@ -283,19 +283,19 @@ export function NotificationCenter() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'normal': return 'bg-blue-100 text-blue-800';
-      case 'low': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'urgent': return 'bg-destructive/10 text-destructive';
+      case 'high': return 'bg-warning/10 text-warning';
+      case 'normal': return 'bg-info/10 text-info';
+      case 'low': return 'bg-muted text-muted-foreground';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'warning': return <AlertTriangle className="h-4 w-4" />;
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'error': return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      case 'success': return <CheckCircle className="h-4 w-4 text-primary" />;
       case 'maintenance': return <Calendar className="h-4 w-4" />;
       case 'assignment': return <Users className="h-4 w-4" />;
       default: return <Bell className="h-4 w-4" />;
@@ -630,7 +630,7 @@ export function NotificationCenter() {
                   filteredNotifications.map((notification) => (
                     <TableRow 
                       key={notification.id}
-                      className={notification.status === 'unread' ? 'bg-blue-50' : ''}
+                      className={notification.status === 'unread' ? 'bg-info/10' : ''}
                     >
                       <TableCell>
                         <div className="flex items-center gap-2">

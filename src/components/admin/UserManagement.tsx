@@ -184,7 +184,7 @@ export function UserManagement() {
         ))}
         {users.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+            <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
               No {userType}s found
             </TableCell>
           </TableRow>

@@ -126,7 +126,7 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
                 <p className="font-semibold">
                   {userData?.role === 'admin' ? 'Admin Location' : 'Your Location'}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Last updated: {new Date().toLocaleTimeString()}
                 </p>
               </div>
@@ -144,10 +144,10 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
             <Popup>
               <div className="text-sm">
                 <p className="font-semibold">Employee ID: {employee.employee_id}</p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-muted-foreground">
                   Status: {employee.is_online ? 'Active' : 'Inactive'}
                 </p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-muted-foreground">
                   Last seen: {new Date(employee.last_seen_at || '').toLocaleString()}
                 </p>
               </div>
@@ -177,11 +177,11 @@ export default function Map({ houses, assignments, currentLocation, employeeLoca
               <Popup>
                 <div className="text-sm">
                   <p className="font-semibold">{house.address}</p>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     Status: <span className="capitalize">{status}</span>
                   </p>
                   {getAssignedEmployee(house.id) && (
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       Assigned to: Employee {getAssignedEmployee(house.id)}
                     </p>
                   )}

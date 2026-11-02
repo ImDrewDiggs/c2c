@@ -367,7 +367,7 @@ export default function AdminPricing() {
           <ul className="space-y-2">
             {service.features.map((feature, idx) => (
               <li key={idx} className="flex items-start">
-                <span className="mr-2 text-green-500 mt-0.5">✓</span>
+                <span className="mr-2 text-primary mt-0.5">✓</span>
                 <span className="text-sm">{feature}</span>
               </li>
             ))}

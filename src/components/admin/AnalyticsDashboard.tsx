@@ -42,7 +42,7 @@ export function AnalyticsDashboard() {
           <h3 className="text-xl font-semibold">Analytics Dashboard</h3>
           <div className="flex space-x-2">
             <select 
-              className="px-3 py-1 rounded-md border border-gray-300 bg-background"
+              className="px-3 py-1 rounded-md border border-border bg-background"
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value as any)}
             >

@@ -100,11 +100,11 @@ export default function AdminNotifications() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               {notification.type === 'System' ? (
-                                <Bell className="h-4 w-4 text-slate-500" />
+                                <Bell className="h-4 w-4 text-muted-foreground" />
                               ) : notification.type === 'Customer' ? (
-                                <Mail className="h-4 w-4 text-blue-500" />
+                                <Mail className="h-4 w-4 text-info" />
                               ) : (
-                                <MessageSquare className="h-4 w-4 text-green-500" />
+                                <MessageSquare className="h-4 w-4 text-primary" />
                               )}
                               {notification.type}
                             </div>
@@ -115,10 +115,10 @@ export default function AdminNotifications() {
                           <TableCell>
                             <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               notification.status === 'Active' 
-                                ? 'bg-green-100 text-green-800' 
+                                ? 'bg-primary/10 text-primary' 
                                 : notification.status === 'Scheduled'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                  ? 'bg-info/10 text-info'
+                                  : 'bg-muted text-muted-foreground'
                             }`}>
                               {notification.status}
                             </div>

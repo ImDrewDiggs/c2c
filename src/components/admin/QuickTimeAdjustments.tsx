@@ -192,7 +192,7 @@ export function QuickTimeAdjustments() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5 text-blue-500" />
+              <UserIcon className="h-5 w-5 text-info" />
               <div>
                 <p className="text-2xl font-bold">{new Set(sessions.map(s => s.employee_id)).size}</p>
                 <p className="text-sm text-muted-foreground">Active Employees</p>

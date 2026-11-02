@@ -57,7 +57,7 @@ export default function CustomerBillingPage() {
               <p>Loading subscription…</p>
             ) : subscriber ? (
               <>
-                <p>Status: <span className={isActive ? "text-emerald-600" : "text-muted-foreground"}>{isActive ? "Active" : "Inactive"}</span></p>
+                <p>Status: <span className={isActive ? "text-primary" : "text-muted-foreground"}>{isActive ? "Active" : "Inactive"}</span></p>
                 <p>Tier: {subscriber.subscription_tier || "-"}</p>
                 <p>Next billing: {subscriber.subscription_end ? new Date(subscriber.subscription_end).toLocaleDateString() : "-"}</p>
                 <div className="pt-2">

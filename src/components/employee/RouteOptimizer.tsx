@@ -125,8 +125,8 @@ export function RouteOptimizer({ selectedAssignment, currentLocation, onClose }:
           <div className="ml-6 h-6 border-l-2 border-dashed border-muted-foreground"></div>
           
           <div className="flex items-start gap-3">
-            <div className="bg-green-100 p-2 rounded-full">
-              <MapPin className="h-5 w-5 text-green-500" />
+            <div className="bg-primary/10 p-2 rounded-full">
+              <MapPin className="h-5 w-5 text-primary" />
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Destination</div>

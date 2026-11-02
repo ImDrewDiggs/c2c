@@ -306,12 +306,12 @@ export default function AdminSettings() {
                     <Input 
                       id="secondary-color" 
                       type="color" 
-                      value={settings.secondary_color || '#9b87f5'} 
+                      value={settings.secondary_color || '#73e600'} 
                       onChange={(e) => handleInputChange('secondary_color', e.target.value)}
                       className="w-16 h-10" 
                     />
                     <Input 
-                      value={settings.secondary_color || '#9b87f5'} 
+                      value={settings.secondary_color || '#73e600'} 
                       onChange={(e) => handleInputChange('secondary_color', e.target.value)}
                       className="flex-1" 
                     />

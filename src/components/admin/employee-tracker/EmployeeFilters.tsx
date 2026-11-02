@@ -52,7 +52,7 @@ export function EmployeeFilters({
           variant={statusFilter === "active" ? "default" : "outline"} 
           size="sm"
           onClick={() => onStatusFilterChange("active")}
-          className={statusFilter === "active" ? "bg-green-600 hover:bg-green-700" : ""}
+          className={statusFilter === "active" ? "bg-primary hover:bg-primary" : ""}
         >
           Active
         </Button>
@@ -60,7 +60,7 @@ export function EmployeeFilters({
           variant={statusFilter === "inactive" ? "default" : "outline"} 
           size="sm"
           onClick={() => onStatusFilterChange("inactive")}
-          className={statusFilter === "inactive" ? "bg-gray-500 hover:bg-gray-600" : ""}
+          className={statusFilter === "inactive" ? "bg-secondary hover:bg-secondary" : ""}
         >
           Inactive
         </Button>

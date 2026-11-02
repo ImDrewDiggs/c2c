@@ -33,7 +33,7 @@ export const LoadingState = React.memo(function LoadingState({
         "animate-spin text-primary"
       )} />
       {message && (
-        <p className="mt-2 text-sm text-gray-400">{message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{message}</p>
       )}
     </div>
   );

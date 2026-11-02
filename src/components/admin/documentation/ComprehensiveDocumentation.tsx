@@ -96,9 +96,9 @@ export function ComprehensiveDocumentation() {
       category: "getting-started",
       content: (
         <div className="space-y-6">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-2">🎯 System Purpose</h4>
-            <p className="text-blue-800">
+          <div className="bg-info/10 p-4 rounded-lg border border-info/30">
+            <h4 className="font-semibold text-info mb-2">🎯 System Purpose</h4>
+            <p className="text-info">
               Can2Curb is a comprehensive waste management platform designed to streamline operations, 
               manage customers, track employees, and provide real-time analytics for waste collection businesses.
             </p>
@@ -133,20 +133,20 @@ export function ComprehensiveDocumentation() {
             <h4 className="font-semibold mb-3">👥 User Roles & Permissions</h4>
             <div className="space-y-3">
               <Card className="p-3 border-l-4 border-l-green-500">
-                <h5 className="font-medium text-green-700">Super Admin</h5>
-                <p className="text-sm text-green-600">Full system access, user management, security settings</p>
+                <h5 className="font-medium text-primary">Super Admin</h5>
+                <p className="text-sm text-primary">Full system access, user management, security settings</p>
               </Card>
               <Card className="p-3 border-l-4 border-l-blue-500">
-                <h5 className="font-medium text-blue-700">Admin</h5>
-                <p className="text-sm text-blue-600">Operations management, customer service, analytics</p>
+                <h5 className="font-medium text-info">Admin</h5>
+                <p className="text-sm text-info">Operations management, customer service, analytics</p>
               </Card>
               <Card className="p-3 border-l-4 border-l-yellow-500">
-                <h5 className="font-medium text-yellow-700">Employee</h5>
-                <p className="text-sm text-yellow-600">Time tracking, job assignments, route management</p>
+                <h5 className="font-medium text-warning">Employee</h5>
+                <p className="text-sm text-warning">Time tracking, job assignments, route management</p>
               </Card>
               <Card className="p-3 border-l-4 border-l-purple-500">
-                <h5 className="font-medium text-purple-700">Customer</h5>
-                <p className="text-sm text-purple-600">Service requests, billing, account management</p>
+                <h5 className="font-medium text-info">Customer</h5>
+                <p className="text-sm text-info">Service requests, billing, account management</p>
               </Card>
             </div>
           </div>
@@ -162,9 +162,9 @@ export function ComprehensiveDocumentation() {
       category: "getting-started",
       content: (
         <div className="space-y-6">
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h4 className="font-semibold text-red-900 mb-2">🔐 Security Notice</h4>
-            <p className="text-red-800">
+          <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/30">
+            <h4 className="font-semibold text-destructive mb-2">🔐 Security Notice</h4>
+            <p className="text-destructive">
               Currently, only <code>diggs844037@yahoo.com</code> has admin access. This is a security feature 
               to prevent unauthorized access during initial setup.
             </p>
@@ -201,9 +201,9 @@ export function ComprehensiveDocumentation() {
             </ol>
           </div>
 
-          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <h4 className="font-semibold text-yellow-900 mb-2">⚠️ Password Security</h4>
-            <ul className="list-disc list-inside text-yellow-800 space-y-1">
+          <div className="bg-warning/10 p-4 rounded-lg border border-warning/30">
+            <h4 className="font-semibold text-warning mb-2">⚠️ Password Security</h4>
+            <ul className="list-disc list-inside text-warning space-y-1">
               <li>Passwords are securely hashed in the database</li>
               <li>No plaintext passwords are stored anywhere in the system</li>
               <li>Change default passwords immediately after first login</li>
@@ -225,9 +225,9 @@ export function ComprehensiveDocumentation() {
       category: "admin-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-2">📊 Dashboard Overview</h4>
-            <p className="text-blue-800">
+          <div className="bg-info/10 p-4 rounded-lg border border-info/30">
+            <h4 className="font-semibold text-info mb-2">📊 Dashboard Overview</h4>
+            <p className="text-info">
               The admin dashboard provides real-time insights into your business operations, 
               employee activity, customer management, and financial performance.
             </p>
@@ -294,9 +294,9 @@ export function ComprehensiveDocumentation() {
       category: "admin-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-900 mb-2">👥 User Management Features</h4>
-            <p className="text-green-800">
+          <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
+            <h4 className="font-semibold text-primary mb-2">👥 User Management Features</h4>
+            <p className="text-primary">
               Comprehensive user management with role-based access control, secure authentication, 
               and detailed audit logging for all user actions.
             </p>
@@ -371,9 +371,9 @@ export function ComprehensiveDocumentation() {
             </div>
           </div>
 
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h4 className="font-semibold text-red-900 mb-2">🗑️ User Deletion (Super Admin Only)</h4>
-            <ul className="list-disc list-inside text-red-800 space-y-1">
+          <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/30">
+            <h4 className="font-semibold text-destructive mb-2">🗑️ User Deletion (Super Admin Only)</h4>
+            <ul className="list-disc list-inside text-destructive space-y-1">
               <li>User deletion is permanent and cannot be undone</li>
               <li>All user data, assignments, and history are removed</li>
               <li>Requires explicit confirmation and audit logging</li>
@@ -395,9 +395,9 @@ export function ComprehensiveDocumentation() {
       category: "customer-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-2">🎯 Customer Management Overview</h4>
-            <p className="text-blue-800">
+          <div className="bg-info/10 p-4 rounded-lg border border-info/30">
+            <h4 className="font-semibold text-info mb-2">🎯 Customer Management Overview</h4>
+            <p className="text-info">
               Comprehensive customer relationship management from initial contact through 
               ongoing service delivery, billing, and support.
             </p>
@@ -499,9 +499,9 @@ export function ComprehensiveDocumentation() {
       category: "customer-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-900 mb-2">💰 Billing System Features</h4>
-            <p className="text-green-800">
+          <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
+            <h4 className="font-semibold text-primary mb-2">💰 Billing System Features</h4>
+            <p className="text-primary">
               Comprehensive billing and payment processing with automated invoicing, 
               multiple payment methods, and detailed financial reporting.
             </p>
@@ -592,9 +592,9 @@ export function ComprehensiveDocumentation() {
       category: "employee-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-2">👷 Employee Management Overview</h4>
-            <p className="text-purple-800">
+          <div className="bg-info/10 p-4 rounded-lg border border-info/30">
+            <h4 className="font-semibold text-info mb-2">👷 Employee Management Overview</h4>
+            <p className="text-info">
               Complete employee lifecycle management from hiring through performance tracking, 
               scheduling, payroll, and offboarding processes.
             </p>
@@ -708,9 +708,9 @@ export function ComprehensiveDocumentation() {
       category: "employee-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <h4 className="font-semibold text-orange-900 mb-2">📈 Performance & Scheduling</h4>
-            <p className="text-orange-800">
+          <div className="bg-warning/10 p-4 rounded-lg border border-warning/30">
+            <h4 className="font-semibold text-warning mb-2">📈 Performance & Scheduling</h4>
+            <p className="text-warning">
               Advanced performance monitoring, intelligent scheduling, and productivity analytics 
               for optimal workforce management.
             </p>
@@ -786,9 +786,9 @@ export function ComprehensiveDocumentation() {
       category: "operations-management",
       content: (
         <div className="space-y-6">
-          <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-            <h4 className="font-semibold text-indigo-900 mb-2">🎯 Operations Command Center</h4>
-            <p className="text-indigo-800">
+          <div className="bg-info/10 p-4 rounded-lg border border-info/30">
+            <h4 className="font-semibold text-info mb-2">🎯 Operations Command Center</h4>
+            <p className="text-info">
               Central hub for real-time operations management, route monitoring, 
               service area coverage, and live GPS tracking of all field operations.
             </p>
@@ -840,19 +840,19 @@ export function ComprehensiveDocumentation() {
                 <h5 className="font-medium mb-2">Job Status Tracking</h5>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 bg-gray-400 rounded-full"></span>
+                    <span className="w-3 h-3 bg-secondary rounded-full"></span>
                     <span><strong>Pending:</strong> Job assigned but not yet started</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span className="w-3 h-3 bg-warning rounded-full"></span>
                     <span><strong>In Progress:</strong> Employee en route or at location</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                    <span className="w-3 h-3 bg-primary rounded-full"></span>
                     <span><strong>Completed:</strong> Pickup completed successfully</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="w-3 h-3 bg-red-400 rounded-full"></span>
+                    <span className="w-3 h-3 bg-destructive rounded-full"></span>
                     <span><strong>Exception:</strong> Issue requiring attention</span>
                   </div>
                 </div>
@@ -1139,9 +1139,9 @@ export function ComprehensiveDocumentation() {
       category: "security-audit",
       content: (
         <div className="space-y-6">
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <h4 className="font-semibold text-red-900 mb-2">🔒 Security & Compliance</h4>
-            <p className="text-red-800">
+          <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/30">
+            <h4 className="font-semibold text-destructive mb-2">🔒 Security & Compliance</h4>
+            <p className="text-destructive">
               Comprehensive security framework with role-based access control, 
               audit logging, and compliance monitoring for data protection and operational security.
             </p>
@@ -1254,9 +1254,9 @@ export function ComprehensiveDocumentation() {
       category: "troubleshooting",
       content: (
         <div className="space-y-6">
-          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <h4 className="font-semibold text-yellow-900 mb-2">🔧 Troubleshooting Guide</h4>
-            <p className="text-yellow-800">
+          <div className="bg-warning/10 p-4 rounded-lg border border-warning/30">
+            <h4 className="font-semibold text-warning mb-2">🔧 Troubleshooting Guide</h4>
+            <p className="text-warning">
               Comprehensive troubleshooting guide for common issues, error resolution, 
               and system maintenance procedures.
             </p>
@@ -1387,9 +1387,9 @@ export function ComprehensiveDocumentation() {
       category: "advanced-features",
       content: (
         <div className="space-y-6">
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <h4 className="font-semibold text-purple-900 mb-2">🚀 Advanced Features</h4>
-            <p className="text-purple-800">
+          <div className="bg-info/10 p-4 rounded-lg border border-info/30">
+            <h4 className="font-semibold text-info mb-2">🚀 Advanced Features</h4>
+            <p className="text-info">
               Advanced system features including API integrations, automation workflows, 
               custom notifications, and third-party service connections.
             </p>

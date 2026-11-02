@@ -108,10 +108,10 @@ export default function AdminSupportTickets() {
                           <TableCell>
                             <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               ticket.status === 'Open' 
-                                ? 'bg-blue-100 text-blue-800' 
+                                ? 'bg-info/10 text-info' 
                                 : ticket.status === 'In Progress'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-green-100 text-green-800'
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-primary/10 text-primary'
                             }`}>
                               {ticket.status}
                             </div>
@@ -119,10 +119,10 @@ export default function AdminSupportTickets() {
                           <TableCell className="hidden md:table-cell">
                             <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               ticket.priority === 'High' 
-                                ? 'bg-red-100 text-red-800' 
+                                ? 'bg-destructive/10 text-destructive' 
                                 : ticket.priority === 'Medium'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-green-100 text-green-800'
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-primary/10 text-primary'
                             }`}>
                               {ticket.priority}
                             </div>

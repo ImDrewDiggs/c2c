@@ -116,7 +116,7 @@ export default function AdminSchedules() {
                           <TableCell className="hidden md:table-cell">{pickup.customer}</TableCell>
                           <TableCell className="hidden md:table-cell">{pickup.employee}</TableCell>
                           <TableCell>
-                            <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">
+                            <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-info/10 text-info">
                               {pickup.status}
                             </div>
                           </TableCell>
@@ -163,7 +163,7 @@ export default function AdminSchedules() {
                           <TableCell className="hidden md:table-cell">{pickup.customer}</TableCell>
                           <TableCell className="hidden md:table-cell">{pickup.employee}</TableCell>
                           <TableCell>
-                            <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800">
+                            <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary">
                               {pickup.status}
                             </div>
                           </TableCell>

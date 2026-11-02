@@ -108,7 +108,7 @@ const Index = () => {
               <h2 className="text-xl font-semibold mb-3 text-primary">
                 {feature.title}
               </h2>
-              <p className="text-gray-300">{feature.description}</p>
+              <p className="text-foreground">{feature.description}</p>
             </motion.div>
           ))}
         </div>

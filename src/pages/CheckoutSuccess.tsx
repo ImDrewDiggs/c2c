@@ -87,10 +87,10 @@ export default function CheckoutSuccess() {
             {loading ? (
               <Loader2 className="w-16 h-16 text-primary mx-auto mb-4 animate-spin" />
             ) : (
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
             )}
           </motion.div>
-          <h1 className="text-4xl font-bold tracking-tight text-green-600">
+          <h1 className="text-4xl font-bold tracking-tight text-primary">
             {loading ? "Verifying payment…" : paid ? "Order Confirmed!" : "Payment Pending"}
           </h1>
           <p className="text-muted-foreground mt-2">

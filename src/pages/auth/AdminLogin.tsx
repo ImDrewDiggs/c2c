@@ -104,7 +104,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="card max-w-md w-full space-y-8">
         <div>
-          <Link to="/" className="inline-flex items-center text-sm text-gray-400 hover:text-gray-300 mb-8">
+          <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
@@ -123,7 +123,7 @@ export default function AdminLogin() {
               decoding="async"
             />
             <h2 className="text-3xl font-bold text-white">Admin Login</h2>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-muted-foreground">
               Access the administrative dashboard.
             </p>
           </motion.div>
@@ -142,7 +142,7 @@ export default function AdminLogin() {
                 Email address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
                   name="email"
@@ -162,7 +162,7 @@ export default function AdminLogin() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
                   name="password"
@@ -180,13 +180,13 @@ export default function AdminLogin() {
           </div>
 
           {(loginForm.error || adminCreationForm.error) && (
-            <div className="rounded-md p-3 bg-red-600/20 border border-red-500/30">
+            <div className="rounded-md p-3 bg-destructive/20 border border-destructive/30">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-red-400" />
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-200">
+                  <p className="text-sm text-destructive">
                     {loginForm.error || adminCreationForm.error}
                   </p>
                 </div>
@@ -197,28 +197,28 @@ export default function AdminLogin() {
           {adminCreationResult && (
             <div className={`rounded-md p-3 ${
               adminCreationResult.includes('confirmation') || adminCreationResult.includes('check your email')
-                ? 'bg-yellow-600/20 border border-yellow-500/30'
+                ? 'bg-warning/20 border border-warning/30'
                 : adminCreationResult.includes('successfully') || adminCreationResult.includes('verified')
-                ? 'bg-green-600/20 border border-green-500/30'
-                : 'bg-red-600/20 border border-red-500/30'
+                ? 'bg-primary/20 border border-primary/30'
+                : 'bg-destructive/20 border border-destructive/30'
             }`}>
               <div className="flex">
                 <div className="flex-shrink-0">
                   <AlertCircle className={`h-5 w-5 ${
                     adminCreationResult.includes('confirmation') || adminCreationResult.includes('check your email')
-                      ? 'text-yellow-400'
+                      ? 'text-warning'
                       : adminCreationResult.includes('successfully') || adminCreationResult.includes('verified')
-                      ? 'text-green-400'
-                      : 'text-red-400'
+                      ? 'text-primary'
+                      : 'text-destructive'
                   }`} />
                 </div>
                 <div className="ml-3">
                   <p className={`text-sm ${
                     adminCreationResult.includes('confirmation') || adminCreationResult.includes('check your email')
-                      ? 'text-yellow-200'
+                      ? 'text-warning'
                       : adminCreationResult.includes('successfully') || adminCreationResult.includes('verified')
-                      ? 'text-green-200'
-                      : 'text-red-200'
+                      ? 'text-primary'
+                      : 'text-destructive'
                   }`}>
                     {adminCreationResult}
                   </p>
@@ -260,7 +260,7 @@ export default function AdminLogin() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Need help with admin access?{" "}
               <button 
                 onClick={handleRequestAdminAccess}

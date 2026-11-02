@@ -166,7 +166,7 @@ export default function TermsPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-start space-x-3 mb-6">
-            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm text-muted-foreground">
               <p className="font-medium mb-1">Important Privacy Notice:</p>
               <p>

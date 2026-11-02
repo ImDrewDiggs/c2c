@@ -75,7 +75,7 @@ const MultiFamilyPlans = ({
             placeholder="Enter number of units"
           />
           {unitCount > 0 && unitCount <= 10 && (
-            <p className="text-sm text-yellow-600 mt-1">
+            <p className="text-sm text-warning mt-1">
               For communities with 10 or fewer units, please contact us for custom pricing.
             </p>
           )}

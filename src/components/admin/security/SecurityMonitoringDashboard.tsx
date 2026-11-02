@@ -123,10 +123,10 @@ export function SecurityMonitoringDashboard() {
 
   const getSecurityLevelIcon = (level: string) => {
     switch (level) {
-      case 'critical': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'high': return <Shield className="h-4 w-4 text-orange-500" />;
-      case 'medium': return <Activity className="h-4 w-4 text-yellow-500" />;
-      default: return <Activity className="h-4 w-4 text-blue-500" />;
+      case 'critical': return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      case 'high': return <Shield className="h-4 w-4 text-warning" />;
+      case 'medium': return <Activity className="h-4 w-4 text-warning" />;
+      default: return <Activity className="h-4 w-4 text-info" />;
     }
   };
 
@@ -145,30 +145,30 @@ export function SecurityMonitoringDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Critical Events (24h)</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{criticalEvents}</div>
+            <div className="text-2xl font-bold text-destructive">{criticalEvents}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Admin Sessions</CardTitle>
-            <Users className="h-4 w-4 text-blue-500" />
+            <Users className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{activeSessions}</div>
+            <div className="text-2xl font-bold text-info">{activeSessions}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Blocked IPs</CardTitle>
-            <Ban className="h-4 w-4 text-orange-500" />
+            <Ban className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{blockedIPs}</div>
+            <div className="text-2xl font-bold text-warning">{blockedIPs}</div>
           </CardContent>
         </Card>
       </div>
@@ -230,7 +230,7 @@ export function SecurityMonitoringDashboard() {
                 {adminSessions.map((session) => (
                   <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
-                      <Clock className="h-4 w-4 text-blue-500" />
+                      <Clock className="h-4 w-4 text-info" />
                       <div>
                         <div className="font-medium">Admin Session</div>
                         <div className="text-sm text-muted-foreground">
@@ -276,7 +276,7 @@ export function SecurityMonitoringDashboard() {
                 {rateLimits.map((limit) => (
                   <div key={limit.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
-                      <Ban className="h-4 w-4 text-red-500" />
+                      <Ban className="h-4 w-4 text-destructive" />
                       <div>
                         <div className="font-medium">{limit.action_type}</div>
                         <div className="text-sm text-muted-foreground">
