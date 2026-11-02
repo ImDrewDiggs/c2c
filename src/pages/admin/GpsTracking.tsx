@@ -64,22 +64,32 @@ function GpsTrackingContent() {
   }
   
   const { employeeLocations, currentLocation } = dashboardContext;
-  
+
   return (
-    <div className="h-[600px]">
-      {isLoading ? (
-        <Loading 
-          fullscreen={false}
-          size="medium"
-          message="Loading employee location data..."
-          className="h-full"
-        />
-      ) : (
-        <EmployeeTracker 
-          employeeLocations={employeeLocations || []} 
-          currentLocation={currentLocation || null}
-        />
-      )}
+    <div className="space-y-6">
+      <div className="h-[600px]">
+        {isLoading ? (
+          <Loading
+            fullscreen={false}
+            size="medium"
+            message="Loading employee location data..."
+            className="h-full"
+          />
+        ) : (
+          <EmployeeTracker
+            employeeLocations={employeeLocations || []}
+            currentLocation={currentLocation || null}
+          />
+        )}
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Live Traffic (Waze)</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <WazeLiveMap center={currentLocation ?? null} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -122,14 +132,6 @@ export default function AdminGpsTracking() {
               >
                 <GpsTrackingContent />
               </ErrorBoundary>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Traffic (Waze)</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <WazeLiveMap />
             </CardContent>
           </Card>
         </div>
