@@ -23,3 +23,9 @@
 - [ ] Postgres upgrade — needs Supabase dashboard (user)
 - [ ] Google Search Console verification — needs publish + verify (user)
 - [ ] Loose types cleanup, bundle size reduction
+
+## Waze setup (Nov 2026)
+- [x] Native waze:// deep link with web fallback for drivers on the mobile app
+- [x] Navigate button opens Waze app on phones, Waze website on desktop
+- [x] Admin Live Traffic map centers on the viewer location (Cincinnati fallback)
+- [x] Waze link tests (app URL, live map URL, zoom clamping)
