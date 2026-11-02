@@ -1,6 +1,5 @@
 
-import { Star, Play } from "lucide-react";
-import { useState } from "react";
+import { Star } from "lucide-react";
 import Seo from "@/components/seo/Seo";
 
 const testimonials = [
@@ -9,99 +8,58 @@ const testimonials = [
     name: "Sarah Johnson",
     location: "Amelia, Ohio",
     rating: 5,
-    text: "Can2Curb has made my life so much easier! No more worrying about trash day or dealing with smelly bins. Their service is reliable and their staff is always professional.",
-    videoUrl: "https://player.vimeo.com/video/1234567890"
+    text: "Can2Curb has made my life so much easier! No more worrying about trash day or dealing with smelly bins. Their service is reliable and their staff is always professional."
   },
   {
     id: 2,
     name: "Michael Chen",
     location: "Bethel, Ohio",
     rating: 5,
-    text: "As a busy professional, this service is a game-changer. They're always on time, and the bin cleaning service keeps everything fresh and clean. Worth every penny!",
-    videoUrl: "https://player.vimeo.com/video/1234567891"
+    text: "As a busy professional, this service is a game-changer. They're always on time, and the bin cleaning service keeps everything fresh and clean. Worth every penny!"
   },
   {
     id: 3,
     name: "Emily Rodriguez",
     location: "New Richmond, Ohio",
     rating: 5,
-    text: "The premium service is fantastic! Having my bins cleaned monthly makes such a difference. The customer service team is always responsive and helpful.",
-    videoUrl: "https://player.vimeo.com/video/1234567892"
+    text: "The premium service is fantastic! Having my bins cleaned monthly makes such a difference. The customer service team is always responsive and helpful."
   },
   {
     id: 4,
     name: "David Thompson",
     location: "Beechmont, Ohio",
     rating: 5,
-    text: "I manage a large apartment complex, and Can2Curb's multi-family service has simplified our waste management tremendously. Highly recommended!",
-    videoUrl: "https://player.vimeo.com/video/1234567893"
+    text: "I manage a large apartment complex, and Can2Curb's multi-family service has simplified our waste management tremendously. Highly recommended!"
   },
   {
     id: 5,
     name: "Lisa Anderson",
     location: "Eastgate, Ohio",
     rating: 5,
-    text: "The environmental focus of Can2Curb really stands out. It's great to work with a company that cares about sustainability while providing excellent service.",
-    videoUrl: "https://player.vimeo.com/video/1234567894"
+    text: "The environmental focus of Can2Curb really stands out. It's great to work with a company that cares about sustainability while providing excellent service."
   },
   {
     id: 6,
     name: "James Wilson",
     location: "Williamsburg, Ohio",
     rating: 5,
-    text: "The comprehensive service package is perfect for our needs. Pet waste pickup and bulk trash removal have been invaluable additions to the regular service.",
-    videoUrl: "https://player.vimeo.com/video/1234567895"
+    text: "The comprehensive service package is perfect for our needs. Pet waste pickup and bulk trash removal have been invaluable additions to the regular service."
   },
   {
     id: 7,
     name: "Maria Garcia",
     location: "Amelia, Ohio",
     rating: 5,
-    text: "Premiere service customer here and couldn't be happier. The personal account manager makes everything so smooth, and the daily pickup option is perfect for our busy household.",
-    videoUrl: "https://player.vimeo.com/video/1234567896"
+    text: "Premiere service customer here and couldn't be happier. The personal account manager makes everything so smooth, and the daily pickup option is perfect for our busy household."
   },
   {
     id: 8,
     name: "Robert Kim",
     location: "Bethel, Ohio",
     rating: 5,
-    text: "Started with the standard service and upgraded to premium. The difference is notable, and the value for money is excellent. This service has become essential for our home.",
-    videoUrl: "https://player.vimeo.com/video/1234567897"
+    text: "Started with the standard service and upgraded to premium. The difference is notable, and the value for money is excellent. This service has become essential for our home."
   },
 ];
-
-const VideoTestimonial = ({ testimonial }: { testimonial: typeof testimonials[0] }) => {
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  return (
-    <div className="mb-4 relative">
-      {hasError || isLoading ? (
-        <div className="w-full h-48 rounded-lg bg-muted flex flex-col items-center justify-center border-2 border-dashed border-border">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Play className="h-8 w-8 text-primary" />
-          </div>
-          <p className="text-sm text-muted-foreground font-medium">Video Testimonial</p>
-          <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
-        </div>
-      ) : (
-        <iframe
-          src={testimonial.videoUrl}
-          className="w-full h-48 rounded-lg"
-          frameBorder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          title={`Video testimonial from ${testimonial.name}`}
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            setHasError(true);
-            setIsLoading(false);
-          }}
-        />
-      )}
-    </div>
-  );
-};
 
 export default function Testimonials() {
   return (
@@ -130,7 +88,6 @@ export default function Testimonials() {
                   />
                 ))}
               </div>
-              <VideoTestimonial testimonial={testimonial} />
               <p className="text-card-foreground mb-4 italic">"{testimonial.text}"</p>
               <div className="text-sm text-muted-foreground">
                 <p className="font-semibold">{testimonial.name}</p>
