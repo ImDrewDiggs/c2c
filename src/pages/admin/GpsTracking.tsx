@@ -134,14 +134,6 @@ export default function AdminGpsTracking() {
               </ErrorBoundary>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Traffic (Waze)</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <WazeLiveMap />
-            </CardContent>
-          </Card>
         </div>
       </AdminPageLayout>
     </SimpleDashboardProvider>
