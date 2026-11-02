@@ -8,9 +8,9 @@ const corsHeaders = {
 };
 
 // Helper logging function for enhanced debugging
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
+const logStep = (step: string, _details?: Record<string, unknown>) => {
+  // Deliberately omit provider responses and customer details from logs.
+  console.log(`[CHECK-SUBSCRIPTION] ${step}`);
 };
 
 serve(async (req) => {
@@ -43,7 +43,7 @@ serve(async (req) => {
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

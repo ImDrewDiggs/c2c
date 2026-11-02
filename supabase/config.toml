@@ -22,7 +22,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.accept-terms]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-integrity-report]
 verify_jwt = false
@@ -31,10 +31,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.instant-quote-checkout]
-verify_jwt = false
+verify_jwt = true
 
 [functions.provision-quote]
-verify_jwt = false
+verify_jwt = true
 
 [functions.stripe-webhook]
 verify_jwt = false
@@ -46,7 +46,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-abandoned-quote-reminders]
-verify_jwt = false
+verify_jwt = true
 
 [functions.record-location]
 verify_jwt = true

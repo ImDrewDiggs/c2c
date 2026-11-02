@@ -13,6 +13,13 @@ const FROM = Deno.env.get("REMINDER_FROM_EMAIL") || "Can2Curb <hello@can2curb.co
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return new Response(null, { status: 405, headers: corsHeaders });
+  const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+  const authClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "", { global: { headers: { Authorization: `Bearer ${token ?? ""}` } } });
+  const { data: authData, error: authError } = token ? await authClient.auth.getUser(token) : { data: { user: null }, error: true };
+  if (authError || !authData.user) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const { data: isAdmin, error: roleError } = await authClient.rpc("is_admin_user");
+  if (roleError || isAdmin !== true) return new Response(JSON.stringify({ error: "Access denied" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey) {
@@ -91,8 +98,8 @@ serve(async (req) => {
         .eq("id", q.id);
       sent += 1;
     } else {
-      const t = await res.text();
-      console.error("[reminders] resend failed", { email: q.email, status: res.status, t });
+      await res.body?.cancel();
+      console.error("[reminders] delivery failed", { status: res.status });
     }
   }
 
