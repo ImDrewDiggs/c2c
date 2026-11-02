@@ -11,6 +11,7 @@
 - [x] Fix employee clock in/out (TimeTracker) — location capture no longer blocks, buttons show state
 
 ## Audit fixes (Nov 2026)
+- [ ] Ordered deep-scan fixes: checkout ownership, email delivery, sensor authentication, NDA ownership, private role checks, trusted return links, private logs, safe exports
 - [x] Security log inserts limited to caller's own user id
 - [x] Services list limited to active services for signed-in users
 - [x] Chat helper no longer reveals prices (NDA) or fake phone numbers
