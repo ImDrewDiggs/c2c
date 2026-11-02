@@ -1,0 +1,17 @@
+# Can2Curb
+
+> Trash can concierge and trash can cleaning service in Greater Cincinnati. We roll your bins to the curb, bring them back, and keep them clean.
+
+Contact: support@can2curb.com
+
+## Pages
+
+- [Home](/): Trash can curbside service and instant quote for Greater Cincinnati.
+- [Trash Can Cleaning Cincinnati](/trash-can-cleaning-cincinnati): Professional bin cleaning and sanitizing.
+- [HOA Communities](/hoa): Trash valet service for HOAs and multi-family properties.
+- [Airbnb & Short-Term Rentals](/airbnb-str): Bin service timed to guest turnovers.
+- [Seniors](/seniors): Help taking trash cans to and from the curb.
+- [About](/about): Who we are.
+- [Testimonials](/testimonials): What customers say.
+- [FAQ](/faq): Common questions.
+- [Contact](/contact): Get in touch.
