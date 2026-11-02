@@ -1,11 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { ownsCheckout } from "../_shared/securityPolicy.ts";
 
 // Restrict CORS to known domains
 const allowedOrigins = [
   'https://100289ea-3c34-415f-a645-b7b29b76a548.lovableproject.com',
   'https://id-preview--100289ea-3c34-415f-a645-b7b29b76a548.lovable.app',
+  'https://c2c.lovable.app',
+  'https://c2c-site.site',
   'http://localhost:8080',
   'http://localhost:5173',
 ];
@@ -25,11 +28,12 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  if (req.method !== "POST") return new Response(null, { status: 405, headers: corsHeaders });
 
   try {
     const { sessionId } = await req.json();
 
-    if (!sessionId) {
+    if (typeof sessionId !== "string" || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) {
       return new Response(
         JSON.stringify({ error: 'Session ID is required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
@@ -41,15 +45,21 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
 
-    // Retrieve the session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
     // Create Supabase service client
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+    if (!token) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: authData, error: authError } = await supabaseService.auth.getUser(token);
+    const user = authData.user;
+    if (authError || !user) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: order } = await supabaseService.from("orders").select("id,status,metadata,service_address,total").eq("stripe_session_id", sessionId).eq("user_id", user.id).maybeSingle();
+    if (!order) return new Response(JSON.stringify({ error: "Payment unavailable" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (!ownsCheckout(user.id, session.metadata)) return new Response(JSON.stringify({ error: "Payment unavailable" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // Update order status based on payment status
     if (session.payment_status === "paid") {
@@ -60,26 +70,24 @@ serve(async (req) => {
           status: "paid",
           updated_at: new Date().toISOString()
         })
-        .eq("stripe_session_id", sessionId);
+        .eq("stripe_session_id", sessionId).eq("user_id", user.id);
 
       // If this is a subscription, create subscription record
-      if (session.mode === "subscription" && session.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-        
-        await supabaseService.from("subscriptions").upsert({
-          user_id: session.metadata?.userId || null,
-          stripe_subscription_id: subscription.id,
-          stripe_customer_id: subscription.customer as string,
-          status: subscription.status,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          subscription_type: session.metadata?.subscriptionType || "",
-          selected_tier: session.metadata?.selectedTier || "",
-          unit_count: parseInt(session.metadata?.unitCount || "1"),
-          contract_length: session.metadata?.contractLength || "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+      if (session.metadata?.flow !== "instant_quote") {
+        const { data: existing } = await supabaseService.from("subscriptions").select("id").eq("user_id", user.id).contains("selected_features", { checkout_order_id: order.id }).maybeSingle();
+        if (!existing) {
+          const { error: subscriptionError } = await supabaseService.from("subscriptions").insert({
+            user_id: user.id,
+            plan_type: session.metadata?.subscriptionType || "single-family",
+            selected_features: { ...order.metadata, checkout_order_id: order.id },
+            unit_count: Number(session.metadata?.unitCount) || 1,
+            total_price: order.total / 100,
+            billing_cycle: session.mode === "subscription" ? "monthly" : "prepaid",
+            status: "active",
+            service_address: order.service_address,
+          });
+          if (subscriptionError) throw subscriptionError;
+        }
       }
 
       // Qualify any pending referral for this user (idempotent)
@@ -104,9 +112,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       status: session.payment_status,
-      customerEmail: session.customer_details?.email,
       amountTotal: session.amount_total,
-      metadata: session.metadata
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
